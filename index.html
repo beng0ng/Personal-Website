@@ -84,6 +84,34 @@ body {
 .hero { position: absolute; left: 0; top: 0; transform-style: preserve-3d; transform-origin: 0 0; }
 .hero canvas { display: block; position: relative; }
 .hero .hands { position: absolute; transform: translateZ(0.6px); visibility: hidden; }
+.hub-paper > .eyebrow, .hub-lede, .hub-hint, .hub-doors .hub-door .l, .hub-doors .hub-proj .l, .hp-kick { display: none !important; }
+.hub-doors .hub-proj { align-items: center; }
+
+/* v78: the crow over the deck */
+.crow-fly { position: fixed; inset: 0; z-index: 60; pointer-events: none; overflow: hidden; visibility: hidden; contain: strict; }
+.crow-fly.on { visibility: visible; }
+.cw-bird { position: absolute; left: 0; top: 0; width: 220px; height: 174px; transform-origin: 110px 60px; will-change: transform; filter: drop-shadow(0 10px 14px rgba(0,0,0,0.35)); }
+.cw-svg { width: 100%; height: 100%; overflow: visible; }
+.cw-body, .cw-head { fill: url(#cwBody); }
+.cw-tail { fill: #0a0a0e; }
+.cw-sheen { fill: url(#cwSheen); mix-blend-mode: screen; }
+.cw-wing path { fill: url(#cwWing); stroke: rgba(120,135,190,0.25); stroke-width: 0.6; }
+.cw-wing .cw-cov { fill: #15161d; stroke: none; }
+.cw-wing.far path { fill: #050507; }
+.cw-beak { fill: url(#cwBeak); }
+.cw-beakline { stroke: rgba(255,255,255,0.18); stroke-width: 0.8; fill: none; }
+.cw-legs { stroke: #111; stroke-width: 2.4; stroke-linecap: round; fill: none; }
+.cw-eye { fill: #1a1408; stroke: #6b5a2c; stroke-width: 0.8; }
+.cw-shadow { position: absolute; left: 0; top: 0; width: 140px; height: 40px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0,0,0,0.9), rgba(0,0,0,0)); filter: blur(6px); opacity: 0; will-change: transform, opacity; }
+.cw-say { position: absolute; right: 100%; top: 62px; margin-right: -14px; white-space: nowrap; transform-origin: 100% 100%; transform: scale(0.6) translateY(10px) rotate(4deg); opacity: 0; transition: transform 0.5s cubic-bezier(0.2, 1.5, 0.4, 1), opacity 0.3s ease; }
+.cw-say.show { transform: none; opacity: 1; }
+.cw-say.rt { right: auto; left: 52%; top: 18px; margin: 0; transform-origin: 0 100%; }
+.cw-say.rt span { border-radius: 14px 14px 14px 4px; }
+.cw-say span { display: inline-block; padding: 10px 18px 11px; border-radius: 14px 14px 4px 14px; background: linear-gradient(180deg, #fbf6ea, #efe5cf); color: #241d16; border: 1px solid rgba(154,108,28,0.55);
+  font: italic 500 22px/1 var(--font-display); letter-spacing: 0.005em; box-shadow: 0 1px 0 rgba(255,255,255,0.7) inset, 0 12px 26px -10px rgba(0,0,0,0.6); }
+.cw-feather { position: absolute; left: 0; top: 0; width: 12px; height: 30px; border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%; background: linear-gradient(90deg, #07070a 0 46%, #3a3e52 48% 52%, #0c0c11 54%); opacity: 0; will-change: transform, opacity; }
+@media (max-width: 699px) { .cw-say span { font-size: 17px; padding: 8px 14px 9px; } }
+
 .hero .robot { position: absolute; transform: translateZ(0.7px); visibility: hidden; pointer-events: none; }
 .edge { position: absolute; backface-visibility: hidden; background: linear-gradient(180deg, #c99e5a, #8f6a33); }
 .edge.e-b { transform-origin: top; transform: rotateX(-90deg); background: linear-gradient(180deg, #b5884a, #7c5a2c); }
@@ -2105,7 +2133,7 @@ body.scrolled .cue { opacity: 0; pointer-events: none; }
         <i class="hub-tape" aria-hidden="true"></i>
         <div class="hub-paper">
           <p class="eyebrow"><i class="stone b"></i><span>Ben Gong · the board</span></p>
-          <h2 class="hub-h">Start here.<svg class="hub-ul" viewBox="0 0 200 12" preserveAspectRatio="none" aria-hidden="true"><path d="M3 8.5 C 38 3.5, 78 10.5, 118 6 S 170 2.5, 197 7" /></svg></h2>
+          <h2 class="hub-h">Start here<svg class="hub-ul" viewBox="0 0 200 12" preserveAspectRatio="none" aria-hidden="true"><path d="M3 8.5 C 38 3.5, 78 10.5, 118 6 S 170 2.5, 197 7" /></svg></h2>
           <p class="hub-lede">Game two, just after Move 37, the position the opening played out. Every lettered stone is a door to a part of this site. Pick one to go there, or play a stone of your own.</p>
           <div class="hub-doors" id="hubDoors" aria-label="Where the stones lead"></div>
           <p class="hub-hint" id="hubHint"></p>
@@ -5116,7 +5144,7 @@ function buildHands() {
   const pad = 4.5 * cellW * HD;
   g.shadowColor = "#000"; g.shadowBlur = 5 * cellW * HD; g.shadowOffsetX = 1e4; g.fillStyle = "#000";
   g.fillRect(EXT * HD - pad - 1e4, EXT * HD - pad, CW * HD + 2 * pad, CH * HD + 2 * pad);
-  handMask = m;
+  handMask = m; h3Load();
   // Where the hand starts: on the line from its mount beyond the far edge to the point, a little off the board.
   for (const mv of handMoves) {
     const tx = posX(mv.c), ty = posY(mv.r);
@@ -5149,6 +5177,126 @@ function drawCards(a) {
   card(M + boardW / 2 - 9.5 * u, -3.6 * u, CONFIG.players.black, "BLACK");
 }
 
+// v78: AlphaGo's hand as a real 3D model. three.js (served next to the page) renders a lit, gloss-black robotic hand
+// with steel joints and blue light into a small offscreen square around the hand each frame it moves, seen from the
+// viewer's own angle; the square is then laid onto the hands layer, so the board's shadow, fade and cards all still
+// apply. Units are centimetres in the drawn hand's frame (the held stone at the origin, the arm toward +sy, height h).
+// Until the library has loaded, or if WebGL is missing, the drawn hand stands in.
+const H3 = { ok: false, tried: false };
+function h3Load() {
+  if (H3.tried || (window.__lite && !/[?&]h3\b/.test(location.search))) return; H3.tried = true;
+  const go = () => { try { h3Build(); } catch (e) { H3.ok = false; } };
+  if (window.THREE) return go();
+  const s = document.createElement("script"); s.src = "lib/three.min.js"; s.async = true; s.onload = go; document.head.append(s);
+}
+function h3Build() {
+  const T3 = window.THREE; if (!T3) return;
+  const canvas = document.createElement("canvas");
+  const renderer = new T3.WebGLRenderer({ canvas, alpha: true, antialias: true, premultipliedAlpha: true, powerPreference: "default" });
+  renderer.setClearColor(0x000000, 0);
+  renderer.outputEncoding = T3.sRGBEncoding; renderer.toneMapping = T3.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+  const scene = new T3.Scene();
+  // a studio to reflect: a dark room with a broad softbox overhead and a cool strip light behind
+  const env = new T3.Scene();
+  env.add(new T3.Mesh(new T3.SphereGeometry(50, 16, 8), new T3.MeshBasicMaterial({ color: 0x0c0d10, side: T3.BackSide })));
+  const box = (w, h, x, y, z, c) => { const m = new T3.Mesh(new T3.PlaneGeometry(w, h), new T3.MeshBasicMaterial({ color: c, side: T3.DoubleSide })); m.position.set(x, y, z); m.lookAt(0, 0, 0); env.add(m); };
+  box(40, 24, -14, 8, 30, 0xffffff); box(60, 6, 0, 40, 10, 0x6fbfff); box(18, 30, 36, -10, 12, 0x8a8f96); box(30, 10, -30, -30, 6, 0x3a3f46);
+  const pm = new T3.PMREMGenerator(renderer); scene.environment = pm.fromScene(env, 0.02).texture; pm.dispose();
+  const key = new T3.DirectionalLight(0xffffff, 1.6); key.position.set(-0.55, 0.35, 1); scene.add(key);
+  const rim = new T3.DirectionalLight(0x8fd0ff, 1.2); rim.position.set(0.3, 1, 0.25); scene.add(rim);
+  scene.add(new T3.HemisphereLight(0x9aa6b4, 0x1a120a, 0.35));
+
+  const shell = new T3.MeshPhysicalMaterial({ color: 0x0b0c0f, metalness: 0.1, roughness: 0.4, clearcoat: 1, clearcoatRoughness: 0.1, envMapIntensity: 0.55 });
+  const steel = new T3.MeshStandardMaterial({ color: 0xc9d0d8, metalness: 1, roughness: 0.24, envMapIntensity: 1.4 });
+  const rubber = new T3.MeshStandardMaterial({ color: 0x22252a, metalness: 0, roughness: 0.85 });
+  const glow = new T3.MeshBasicMaterial({ color: 0x7ccfff, toneMapped: false });
+  const stoneM = new T3.MeshPhysicalMaterial({ color: 0x0a0a0b, metalness: 0, roughness: 0.35, clearcoat: 0.8, clearcoatRoughness: 0.25 });
+
+  const hand = new T3.Group(); scene.add(hand);
+  const V = (sx, sy, h) => new T3.Vector3(sx, -sy, h);
+  const add = (geo, mat, pos) => { const m = new T3.Mesh(geo, mat); if (pos) m.position.copy(pos); m.frustumCulled = false; hand.add(m); return m; };
+  const up = new T3.Vector3(0, 1, 0);
+  const rod = (a, b, r0, r1, mat, seg = 20) => {   // a cylinder from a to b
+    const d = new T3.Vector3().subVectors(b, a), L = d.length();
+    const m = add(new T3.CylinderGeometry(r1, r0, L, seg, 1), mat, a.clone().addScaledVector(d, 0.5));
+    m.quaternion.setFromUnitVectors(up, d.normalize()); return m;
+  };
+  const ball = (p, r, mat) => add(new T3.SphereGeometry(r, 20, 14), mat, p);
+  const ring = (p, dir, r, tube, mat) => { const m = add(new T3.TorusGeometry(r, tube, 8, 32), mat, p); m.quaternion.setFromUnitVectors(new T3.Vector3(0, 0, 1), dir.clone().normalize()); return m; };
+  const finger = (pts, ws, tip) => {
+    const P = pts.map(([x, y, h]) => V(x, y, h));
+    for (let i = 0; i < P.length - 1; i++) {
+      const a = P[i], b = P[i + 1], d = new T3.Vector3().subVectors(b, a), L = d.length(); d.normalize();
+      rod(a.clone().addScaledVector(d, 0.22), b.clone().addScaledVector(d, i === P.length - 2 ? 0 : -0.22), ws[i] * 0.46, ws[i + 1] * 0.46, shell);
+      if (i > 0 || true) { ball(a, ws[i] * 0.36, steel); ring(a, d, ws[i] * 0.4, 0.035, glow); }
+    }
+    if (tip) ball(P[P.length - 1], ws[ws.length - 1] * 0.47, rubber);
+    else ball(P[P.length - 1], ws[ws.length - 1] * 0.46, shell);
+  };
+  // the palm: a domed shell plate over a steel frame
+  const palm = add(new T3.SphereGeometry(1, 32, 20), shell, V(0.6, 13.2, 4.9)); palm.scale.set(4.4, 5.4, 1.2);
+  const frame = add(new T3.SphereGeometry(1, 24, 12), steel, V(0.6, 13.4, 4.3)); frame.scale.set(4.3, 5.3, 1.3);
+  rod(V(-3.3, 9.3, 4.4), V(4.5, 10.1, 4.0), 1.0, 1.0, steel);   // the knuckle bar
+  ring(V(0.6, 9.6, 4.3), new T3.Vector3(1, 0.1, 0), 1.05, 0.05, glow);
+  // the emblem: a ring of light around a white stone
+  const em = V(0.6, 14.6, 6.65);
+  ring(em, new T3.Vector3(0, -0.15, 1), 0.95, 0.12, glow);
+  const es = ball(em, 0.5, new T3.MeshStandardMaterial({ color: 0xf2f5f8, roughness: 0.25, metalness: 0 })); es.scale.z = 0.5;
+  // wrist, forearm, elbow
+  const w0 = V(1, 17.4, 5.4), w1 = V(1, 19.4, 6.4);
+  rod(w0, w1, 3.0, 3.0, steel, 28);
+  ring(V(1, 18.4, 5.9), new T3.Vector3().subVectors(w1, w0), 3.05, 0.09, glow);
+  const e0 = V(1, 31, 12.2), a1 = V(1, 44, 19);
+  rod(w1, e0, 2.7, 3.1, shell, 28);
+  rod(e0.clone().add(V(0, -0.6, -0.3)), e0.clone().add(V(0, 0.6, 0.3)), 3.35, 3.35, steel, 28);
+  ring(e0, new T3.Vector3().subVectors(a1, e0), 3.4, 0.08, glow);
+  rod(e0, a1, 3.2, 3.6, shell, 28);
+  const stripe = (a, b) => { const d = new T3.Vector3().subVectors(b, a).normalize(), n = new T3.Vector3(0, 0, 1).cross(d).cross(d).negate().normalize(); return rod(a.clone().addScaledVector(n, 0), b, 0.07, 0.07, glow, 6); };
+  stripe(V(-1.9, 20, 8.9), V(-2.1, 30.5, 14.6)); stripe(V(-2.2, 31.6, 15.3), V(-2.5, 43.5, 22.2));
+  // fingers: thumb along the index, little and ring folded under, middle beneath the stone, index on top of it
+  finger([[-3.3, 13.4, 4.4], [-4.3, 10.3, 3.2], [-3.4, 7.6, 2.0]], [2.4, 2.1, 1.65], true);
+  finger([[3.4, 9.6, 4.0], [3.8, 8.0, 3.0], [4.0, 6.9, 2.2]], [1.55, 1.4, 1.25], false);
+  finger([[1.8, 8.7, 4.2], [2.3, 6.6, 3.1], [2.6, 5.2, 2.2]], [1.85, 1.7, 1.55], false);
+  finger([[-0.05, 8.3, 4.4], [0.6, 5.2, 3.3], [1.1, 3.3, 1.8], [1.5, 1.9, 0.75]], [2.0, 1.85, 1.7, 1.55], true);
+  finger([[-2.0, 8.9, 4.7], [-1.1, 5.4, 3.9], [-0.4, 2.6, 2.75], [0.15, 0.2, 1.85]], [2.05, 1.9, 1.75, 1.6], true);
+  const stone = add(new T3.SphereGeometry(1.1, 32, 16), stoneM, V(0, 0, 0.75)); stone.scale.z = 0.42;
+
+  const cam = new T3.OrthographicCamera(-1, 1, 1, -1, -10, 10);
+  const M = new T3.Matrix4();
+  const out = document.createElement("canvas"), og = out.getContext("2d");
+  Object.assign(H3, { T3, renderer, scene, hand, stone, cam, M, canvas, out, og, ok: true });
+  renderer.compile(scene, cam);
+}
+// draw the hand at canvas point (x,y) on the board plane, raised by lift cells, turned by ang
+H3.draw = (x, y, lift, ang, holding, alpha, tanT) => {
+  const { T3, renderer, scene, hand, stone, cam, M, canvas, out, og } = H3;
+  const u = cellW / 2.3, cosT = 1 / Math.sqrt(1 + tanT * tanT), sinT = tanT * cosT;
+  const S = Math.ceil(118 * u), pr = Math.min(HD, S > 1100 ? 1 : 1.25);
+  if (canvas.width !== Math.round(S * pr)) { renderer.setPixelRatio(pr); renderer.setSize(S, S, false); out.width = canvas.width; out.height = canvas.height; }
+  const Z = lift * cellH;
+  // the square: centred a little up the arm from the stone, where the hand and forearm are
+  const cx = x - Math.sin(ang) * 14 * u, cy = y + Math.cos(ang) * 14 * u - (Z + 9 * u) * tanT;
+  const RX0 = cx - S / 2, RY0 = cy - S / 2, D = 400 * u;
+  hand.scale.setScalar(u); hand.rotation.set(0, 0, -ang); hand.position.set(x, -y, Z);
+  stone.visible = holding;
+  M.set(2 / S, 0, 0, -2 * RX0 / S - 1,
+        0, 2 / S, 2 * tanT / S, 1 + 2 * RY0 / S,
+        0, sinT / D, -cosT / D, -sinT * (-y) / D,
+        0, 0, 0, 1);
+  cam.position.set(x, -y, 0); cam.rotation.set(Math.atan2(sinT, cosT), 0, 0); cam.updateMatrixWorld(true);
+  cam.projectionMatrix.copy(M).multiply(cam.matrixWorld); cam.projectionMatrixInverse.copy(cam.projectionMatrix).invert();
+  renderer.render(scene, cam);
+  // fade the forearm into the dark beyond its elbow
+  og.globalCompositeOperation = "copy"; og.drawImage(canvas, 0, 0);
+  const at = (sy, h) => [(x - Math.sin(ang) * sy * u - RX0) * pr, (y + Math.cos(ang) * sy * u - (Z + h * u) * tanT - RY0) * pr];
+  const [ax, ay] = at(27, 13), [bx, by] = at(41, 18);
+  const gr = og.createLinearGradient(ax, ay, bx, by); gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,1)");
+  og.globalCompositeOperation = "destination-out"; og.fillStyle = gr; og.fillRect(0, 0, out.width, out.height);
+  og.globalCompositeOperation = "source-over";
+  hctx.save(); hctx.setTransform(HD, 0, 0, HD, EXT * HD, EXT * HD); hctx.globalAlpha = alpha;
+  hctx.drawImage(out, RX0, RY0, S, S); hctx.restore();
+  return true;
+};
 function renderHands(t) {
   const cardsA = CONFIG.cards ? easeInOutSine(prog(t, 900, 900)) * (1 - prog(t, T.PULL + 100, 500)) : 0;
   const active = handMoves.filter(m => t >= m.t0 && t <= m.t1);
@@ -5182,7 +5330,7 @@ function renderHands(t) {
     hctx.drawImage(sp.shadow, -sp.ox, -sp.oy, sp.w, sp.h); hctx.restore();
     hctx.save(); hctx.globalAlpha = alpha;
     hctx.translate(x, y - lift * cellH * tanTilt); hctx.rotate(m.ang); { const sc = 1 + lift * 0.12; hctx.scale(sc, sc); }
-    hctx.drawImage(holding ? sp.hold : sp.empty, -sp.ox, -sp.oy, sp.w, sp.h); hctx.restore();
+    if (!(H3.ok && H3.draw(x, y, lift, m.ang, holding, alpha, tanTilt))) hctx.drawImage(holding ? sp.hold : sp.empty, -sp.ox, -sp.oy, sp.w, sp.h); hctx.restore();
   }
   hctx.setTransform(1, 0, 0, 1, 0, 0);
   hctx.globalCompositeOperation = "destination-in";
@@ -10252,6 +10400,81 @@ const AMB = window.AMB = (() => {
     for (const e of es) { if (!e.isIntersecting) continue; e.target.style.setProperty("--rd", Math.min(batch++, 8) * 70 + "ms"); e.target.classList.add("seen"); io.unobserve(e.target); }
   }, { rootMargin: "0px 0px -6% 0px" });
   for (const n of document.querySelectorAll(".r-rows > li, .r-group > h3, .r-top, .part-body > p, .fin-hd, .tags")) { n.classList.add("rv"); io.observe(n); }
+})();
+
+
+// v78: as the deck comes into view, a crow sweeps across the felt, glides past with a card's worth of patter
+// ("Pick a card, any card.") and beats away; a feather or two drifts down behind it. Once per visit to the page.
+(() => {
+  const deck = document.getElementById("deck"); if (!deck) return;
+  const NS = "http://www.w3.org/2000/svg";
+  const wing = (id, cls) => `<g class="cw-wing ${cls}" id="${id}"><path d="M0,0 C-6,-22 6,-48 30,-70 L37,-64 L35,-57 L45,-56 L41,-47 L52,-45 L46,-36 L57,-33 L49,-24 L58,-19 L47,-13 C33,-6 18,0 10,6 Z"/><path class="cw-cov" d="M0,0 C-2,-14 6,-30 20,-44 C22,-30 18,-14 10,5 Z"/></g>`;
+  const wrap = document.createElement("div"); wrap.className = "crow-fly"; wrap.setAttribute("aria-hidden", "true");
+  wrap.innerHTML = `<div class="cw-shadow"></div><div class="cw-bird"><svg viewBox="-20 -90 240 190" class="cw-svg">
+    <defs>
+      <linearGradient id="cwBody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2d3a"/><stop offset="0.35" stop-color="#121319"/><stop offset="1" stop-color="#040405"/></linearGradient>
+      <linearGradient id="cwSheen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="rgba(120,140,255,0)"/><stop offset="0.5" stop-color="rgba(120,150,255,0.38)"/><stop offset="1" stop-color="rgba(160,90,220,0)"/></linearGradient>
+      <linearGradient id="cwWing" x1="0" y1="1" x2="0.4" y2="0"><stop offset="0" stop-color="#16171e"/><stop offset="0.6" stop-color="#0a0a0d"/><stop offset="1" stop-color="#1d2030"/></linearGradient>
+      <linearGradient id="cwBeak" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3b40"/><stop offset="1" stop-color="#08080a"/></linearGradient>
+    </defs>
+    <g class="cw-far" transform="translate(92 52)">${wing("cwFar", "far")}</g>
+    <path class="cw-tail" d="M150,56 C170,50 190,46 212,44 L216,52 L206,56 L218,60 L210,66 L216,74 C192,72 170,70 150,70 Z"/>
+    <path class="cw-body" d="M40,58 C56,40 112,38 152,54 C162,59 162,68 152,72 C112,88 62,84 40,70 Z"/>
+    <path class="cw-sheen" d="M54,50 C80,40 118,42 146,54 C118,50 84,50 60,58 Z"/>
+    <path class="cw-legs" d="M96,78 L104,90 M108,78 L114,89"/>
+    <circle class="cw-head" cx="35" cy="56" r="15.5"/>
+    <path class="cw-beak" d="M25,48 C14,49 5,53 -2,58 C6,61 15,63 25,65 Z"/>
+    <path class="cw-beakline" d="M23,57 L3,58"/>
+    <circle class="cw-eye" cx="31" cy="52" r="2.6"/><circle cx="30.2" cy="51.2" r="0.9" fill="#fff"/>
+    <g class="cw-near" transform="translate(100 60)">${wing("cwNear", "near")}</g>
+  </svg><div class="cw-say"><span>Pick a card, any card.</span></div></div>`;
+  document.body.append(wrap);
+  const bird = wrap.querySelector(".cw-bird"), shadow = wrap.querySelector(".cw-shadow"), say = wrap.querySelector(".cw-say");
+  const far = wrap.querySelector("#cwFar"), near = wrap.querySelector("#cwNear");
+  const feather = () => { const f = document.createElement("i"); f.className = "cw-feather"; wrap.append(f); return f; };
+  const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let flying = false, lastFly = -1e9;
+  const bez = (a, b, c, d, t) => { const m = 1 - t; return m * m * m * a + 3 * m * m * t * b + 3 * m * t * t * c + t * t * t * d; };
+  const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  function fly() {
+    if (flying || document.hidden) return; flying = true; lastFly = performance.now();
+    const W = innerWidth, H = innerHeight, small = W < 700;
+    const r = deck.getBoundingClientRect(), tableY = Math.min(H * 0.86, Math.max(H * 0.45, r.top + r.height * 0.55));
+    const base = small ? 0.55 : 1;
+    wrap.classList.add("on");
+    if (RM) { say.classList.add("show"); bird.style.transform = `translate(${W * 0.5 - 110}px, ${H * 0.22}px) scale(${base})`; setTimeout(() => { wrap.classList.remove("on"); say.classList.remove("show"); flying = false; }, 2600); return; }
+    // a path in from the right, dipping low over the table, then climbing away to the upper left
+    const P = { x: [W + 160, W * 0.72, W * 0.25, -320], y: [H * 0.2, H * 0.56, H * 0.42, H * 0.06], s: [0.8, 1.55, 1.75, 1.15] };
+    const DUR = small ? 5200 : 6200, t0 = performance.now(); let feathers = [], dropped = 0;
+    const step = now => {
+      const k = Math.min(1, (now - t0) / DUR), p = k * 0.7 + ease(k) * 0.3;
+      const x = bez(...P.x, p), y = bez(...P.y, p), sc = bez(...P.s, p) * base;
+      const x2 = bez(...P.x, Math.min(1, p + 0.01)), y2 = bez(...P.y, Math.min(1, p + 0.01));
+      const ang = Math.atan2(y2 - y, x - x2) * 180 / Math.PI;   // facing left: tilt along the path
+      // wing beats: hard at the start and the end, a long glide through the middle while it talks
+      const glide = k > 0.3 && k < 0.66, ph = (now - t0) / (glide ? 900 : 230);
+      let w = glide ? 0.25 + Math.sin(ph) * 0.12 : Math.sin(ph * Math.PI * 2);
+      w = w > 0 ? Math.pow(w, 0.7) : -Math.pow(-w, 1.3);   // fast downstroke, slower recovery
+      near.setAttribute("transform", `rotate(${-8 + w * 10}) scale(1 ${(0.15 + 0.95 * w).toFixed(3)})`);
+      far.setAttribute("transform", `rotate(${-14 + w * 8}) scale(0.92 ${(0.1 + 0.8 * w).toFixed(3)})`);
+      bird.style.transform = `translate(${x - 110 * sc}px, ${y - 60 * sc}px) rotate(${(-ang * 0.6).toFixed(2)}deg) scale(${sc.toFixed(3)})`;
+      bird.style.filter = `blur(${(Math.max(0, 1 - Math.abs(k - 0.48) * 3) < 0.2 ? 0.6 : 0).toFixed(1)}px)`;
+      const hgt = Math.max(0, tableY - y);
+      shadow.style.transform = `translate(${x - 70 * sc}px, ${tableY}px) scale(${(sc * (1 + hgt / H)).toFixed(3)}, ${(sc * 0.5).toFixed(3)})`;
+      shadow.style.opacity = (0.32 * (1 - Math.min(1, hgt / (H * 0.9))) * Math.min(1, k * 6, (1 - k) * 6)).toFixed(3);
+      say.classList.toggle("show", k > 0.26 && k < 0.7); say.classList.toggle("rt", x < W * (small ? 0.62 : 0.4));
+      if (dropped < 2 && k > 0.2 + dropped * 0.3) { dropped++; const f = feather(); feathers.push({ f, x: x + 60 * sc, y: y + 20 * sc, t0: now, r: Math.random() * 360, dx: (Math.random() - 0.3) * 60 }); }
+      feathers = feathers.filter(o => { const a = (now - o.t0) / 2600; if (a >= 1) { o.f.remove(); return false; }
+        o.f.style.transform = `translate(${o.x + o.dx * a + Math.sin(a * 9) * 18}px, ${o.y + a * H * 0.35}px) rotate(${o.r + Math.sin(a * 7) * 50}deg) scale(${base})`; o.f.style.opacity = (Math.min(1, a * 5) * (1 - a)).toFixed(2); return true; });
+      if (k < 1 || feathers.length) requestAnimationFrame(step);
+      else { wrap.classList.remove("on"); say.classList.remove("show"); flying = false; }
+    };
+    requestAnimationFrame(step);
+  }
+  // when the deck comes into view on the projects page: once, and again after a while away
+  const io = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting && document.body.dataset.page === "projects" && performance.now() - lastFly > 45000) setTimeout(fly, 900); }, { threshold: 0.3 });
+  io.observe(deck);
+  window.__crow = { fly, state: () => ({ flying }) };
 })();
 
 </script>
