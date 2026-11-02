@@ -278,6 +278,17 @@ html { scroll-behavior: smooth; }
 .manga-links.port .mg-head h2 { font-size: calc(var(--fs) * 2.2); }
 .manga-links.port .mg-head .mg-kick { font-size: 10px; }
 
+/* v74: the moving background under the plain pages, and smoother entrances */
+.amb { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: 0; display: block; }
+/* the text column stays clear: the drawing fades where the words are */
+@media (min-width: 1000px) { .amb { -webkit-mask-image: linear-gradient(90deg, #000 0 36%, rgba(0,0,0,0.3) 45% 88%, #000 97%); mask-image: linear-gradient(90deg, #000 0 36%, rgba(0,0,0,0.3) 45% 88%, #000 97%); } }
+@media (max-width: 999px) { .amb { -webkit-mask-image: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)); mask-image: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)); } }
+.part-head, .part-body { transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) !important; }
+.rv { opacity: 0; transform: translateY(16px); transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1); transition-delay: var(--rd, 0ms); }
+.rv.seen { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .rv { opacity: 1; transform: none; transition: none; } }
+@media print { .amb { display: none; } .rv { opacity: 1 !important; transform: none !important; } }
+
 .manga-links { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; }
 .manga-links.on { opacity: 1; }
 .manga-links.on a { pointer-events: auto; }
@@ -10070,6 +10081,138 @@ window.__intro = {
   manga: { setZ(z) { MG.on = true; buildManga(); MG.zOverride = z; renderManga(); }, set(p) { MG.on = true; buildManga(); MG.zOverride = null; MG.p = p; MG.target = p; MG.drawnP = -1; renderManga(); }, state: () => ({ p: MG.p, z: mgZ(MG.p), W: MG.W, H: MG.H, n: MG_N, lead: MG.lead, links: MG.links.length, linksOn: MG.linksOn }) },
 };
 })();
+// v74: behind the plain pages, a background of their own that moves slowly: a Go board where stones come and go
+// (About), graph paper with a timeline being inked (Résumé), a notebook's ruled lines with ink drifting (Blog), paper
+// planes crossing (Contact), the painting's swirls in color (Muse), stones falling onto a board (Go), and a globe
+// turning with arcs between the places the lessons reach (Go Global). One canvas, under everything, drawn at most 30
+// times a second, and only while its page is showing
+const AMB = window.AMB = (() => {
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const c = document.createElement("canvas"); c.className = "amb"; c.setAttribute("aria-hidden", "true");
+  document.body.prepend(c);
+  const g = c.getContext("2d"), rnd = (a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; })(74);
+  let W = 0, H = 0, d = 1, theme = null, raf = 0, last = 0, alpha = 0, shown = null, seed = [];
+  const GOLD = "217,179,108", INK = "243,233,214";
+  const size = () => { d = Math.min(window.devicePixelRatio || 1, window.__lite ? 1 : 1.5); W = innerWidth; H = innerHeight; c.width = Math.round(W * d); c.height = Math.round(H * d); seed = []; };
+  const S = n => { while (seed.length < n) seed.push([rnd(), rnd(), rnd(), rnd(), rnd()]); return seed; };
+  const ease = x => x * x * (3 - 2 * x);
+  const T = {
+    about(t, sy) {   // a board, seen at an angle, its stones placed and lifted one by one
+      const cell = Math.max(34, Math.min(W, H) / 14), ox = W * 0.62, oy = -((sy * 0.15) % cell);
+      g.strokeStyle = `rgba(${GOLD},0.07)`; g.lineWidth = 1;
+      for (let x = ox % cell; x < W; x += cell) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
+      for (let y = oy; y < H; y += cell) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
+      const s = S(26);
+      s.forEach((q, i) => {
+        const per = 9 + q[2] * 7, ph = ((t / 1000 + q[3] * per) % per) / per, a = ph < 0.15 ? ease(ph / 0.15) : ph > 0.8 ? ease((1 - ph) / 0.2) : 1;
+        const gx = Math.round(q[0] * W / cell) * cell + (ox % cell), gy = Math.round(q[1] * H / cell) * cell + oy;
+        g.globalAlpha = a * 0.13; g.fillStyle = i % 2 ? "#f3ede0" : "#000"; g.beginPath(); g.arc(gx, gy, cell * 0.43, 0, Math.PI * 2); g.fill();
+        if (i % 2 === 0) { g.strokeStyle = `rgba(${GOLD},0.6)`; g.lineWidth = 1; g.stroke(); }
+      });
+      g.globalAlpha = 1;
+    },
+    resume(t, sy) {   // graph paper, and a timeline being inked down the right side
+      const step = 26, oy = -((sy * 0.1) % step);
+      g.fillStyle = `rgba(${GOLD},0.09)`;
+      for (let y = oy; y < H; y += step) for (let x = 0; x < W; x += step) g.fillRect(x, y, 1, 1);
+      g.strokeStyle = `rgba(${GOLD},0.05)`; g.lineWidth = 1;
+      for (let y = oy; y < H; y += step * 5) { g.beginPath(); g.moveTo(0, y + 0.5); g.lineTo(W, y + 0.5); g.stroke(); }
+      const x = W * 0.06, len = H * 1.2, p = (t / 14000) % 1, head = -H * 0.1 + p * len;
+      g.strokeStyle = `rgba(${GOLD},0.22)`; g.lineWidth = 1.5; g.beginPath(); g.moveTo(x, -10); g.lineTo(x, head); g.stroke();
+      for (let k = 0; k < 8; k++) { const y = k * H / 7 + 30; if (y > head) break; g.fillStyle = `rgba(${GOLD},0.35)`; g.beginPath(); g.arc(x, y, 3.5, 0, Math.PI * 2); g.fill(); g.fillStyle = `rgba(${INK},0.06)`; g.fillRect(x + 14, y - 2, 60 + (k * 37) % 90, 3); }
+      g.fillStyle = `rgba(${GOLD},0.8)`; g.beginPath(); g.arc(x, head, 2.2, 0, Math.PI * 2); g.fill();
+    },
+    blog(t, sy) {   // ruled notebook lines, a red margin, and drops of ink drifting and spreading
+      const step = 34, oy = -((sy * 0.2) % step);
+      g.strokeStyle = "rgba(120,160,210,0.06)"; g.lineWidth = 1;
+      for (let y = oy; y < H; y += step) { g.beginPath(); g.moveTo(0, y + 0.5); g.lineTo(W, y + 0.5); g.stroke(); }
+      g.strokeStyle = "rgba(220,90,90,0.09)"; g.beginPath(); g.moveTo(W * 0.07, 0); g.lineTo(W * 0.07, H); g.stroke();
+      S(14).forEach(q => { const per = 12 + q[2] * 10, ph = ((t / 1000 + q[3] * per) % per) / per, r = 6 + ph * (30 + q[4] * 40);
+        g.globalAlpha = 0.09 * Math.sin(Math.PI * ph); g.fillStyle = "#6f8fd6"; g.beginPath(); g.arc(q[0] * W, (q[1] * H + ph * 40) % H, r, 0, Math.PI * 2); g.fill(); });
+      g.globalAlpha = 1;
+    },
+    hello(t) {   // paper planes, crossing slowly with a dotted trail
+      S(6).forEach(q => {
+        const per = 16 + q[2] * 12, ph = ((t / 1000 + q[3] * per) % per) / per, x = -80 + ph * (W + 160), y = q[1] * H * 0.9 + Math.sin(ph * Math.PI * 2 + q[4] * 6) * 30, a = Math.sin(Math.PI * ph);
+        const dy = Math.cos(ph * Math.PI * 2 + q[4] * 6) * 30 * Math.PI * 2 / (W + 160), ang = Math.atan(dy), s = 10 + q[0] * 8;
+        g.strokeStyle = `rgba(${GOLD},${0.12 * a})`; g.setLineDash([2, 7]); g.lineWidth = 1; g.beginPath();
+        for (let k = 0; k < 30; k++) { const pp = ph - k * 0.006, xx = -80 + pp * (W + 160), yy = q[1] * H * 0.9 + Math.sin(pp * Math.PI * 2 + q[4] * 6) * 30; k ? g.lineTo(xx, yy) : g.moveTo(xx, yy); } g.stroke(); g.setLineDash([]);
+        g.save(); g.translate(x, y); g.rotate(ang); g.globalAlpha = 0.28 * a;
+        g.fillStyle = "#f3ede0"; g.beginPath(); g.moveTo(s * 1.6, 0); g.lineTo(-s, -s * 0.8); g.lineTo(-s * 0.4, 0); g.lineTo(-s, s * 0.8); g.closePath(); g.fill();
+        g.fillStyle = "#c9bfa8"; g.beginPath(); g.moveTo(s * 1.6, 0); g.lineTo(-s * 0.4, 0); g.lineTo(-s, s * 0.8); g.closePath(); g.fill(); g.restore();
+      });
+      g.globalAlpha = 1;
+    },
+    muse(t) {   // the painting's sky: ribbons of color, slowly swirling
+      const cols = ["74,110,200", "240,200,90", "90,160,200", "200,120,170"];
+      for (let k = 0; k < 4; k++) {
+        g.strokeStyle = `rgba(${cols[k]},0.07)`; g.lineWidth = 26 + k * 6; g.lineCap = "round"; g.beginPath();
+        for (let i = 0; i <= 60; i++) { const x = i / 60 * W, y = H * (0.2 + k * 0.2) + Math.sin(i / 60 * 6 + t / 3200 + k) * 50 + Math.sin(i / 60 * 13 - t / 2100) * 18; i ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke();
+      }
+      S(5).forEach((q, i) => { const cx = q[0] * W, cy = q[1] * H, R = 30 + q[2] * 50; g.strokeStyle = `rgba(${cols[i % 4]},0.1)`; g.lineWidth = 3; g.beginPath();
+        for (let a = 0; a < Math.PI * 5; a += 0.15) { const r = R * a / (Math.PI * 5), aa = a + t / (2500 + q[3] * 2000); const x = cx + Math.cos(aa) * r, y = cy + Math.sin(aa) * r; a ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); });
+      g.lineCap = "butt";
+    },
+    go(t, sy) {   // a board in perspective at the bottom, and stones dropping onto it
+      const hz = H * 0.5, n = 19, bw = W * 1.4;
+      g.strokeStyle = `rgba(${GOLD},0.08)`; g.lineWidth = 1;
+      for (let i = 0; i < n; i++) { const u = i / (n - 1); g.beginPath(); g.moveTo(W / 2 + (u - 0.5) * W * 0.5, hz); g.lineTo(W / 2 + (u - 0.5) * bw, H + 40); g.stroke(); }
+      for (let j = 0; j < 12; j++) { const v = Math.pow(j / 11, 1.8), y = hz + v * (H + 40 - hz); g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
+      S(12).forEach((q, i) => { const per = 7 + q[2] * 6, ph = ((t / 1000 + q[3] * per) % per) / per;
+        const v = 0.15 + q[1] * 0.8, u = q[0], gy = hz + Math.pow(v, 1.8) * (H + 40 - hz), gx = W / 2 + (u - 0.5) * (W * 0.5 + (bw - W * 0.5) * Math.pow(v, 1.8)), r = 5 + 16 * Math.pow(v, 1.8);
+        const fall = ph < 0.18 ? 1 - ease(ph / 0.18) : 0, a = ph > 0.85 ? (1 - ph) / 0.15 : Math.min(1, ph / 0.05);
+        g.globalAlpha = 0.22 * a; g.fillStyle = i % 2 ? "#f3ede0" : "#050505"; g.beginPath(); g.ellipse(gx, gy - fall * 140, r, r * 0.8, 0, 0, Math.PI * 2); g.fill();
+        if (i % 2 === 0) { g.strokeStyle = `rgba(${GOLD},0.5)`; g.stroke(); } });
+      g.globalAlpha = 1; void sy;
+    },
+    goglobal(t) {   // a dotted globe turning, with arcs from place to place
+      const wide = W >= 1000, R = wide ? Math.min(W * 0.15, H * 0.3) : Math.min(W, H) * 0.42, cx = wide ? W * 0.18 : W * 0.78, cy = wide ? H * 0.72 : H * 0.55, rot = t / 9000;
+      for (let la = -80; la <= 80; la += 10) for (let lo = 0; lo < 360; lo += 10) {
+        const p = la * Math.PI / 180, l = lo * Math.PI / 180 + rot, z = Math.cos(p) * Math.cos(l); if (z < 0) continue;
+        g.fillStyle = `rgba(${GOLD},${0.08 + z * 0.24})`; g.fillRect(cx + R * Math.cos(p) * Math.sin(l), cy - R * Math.sin(p), 2, 2);
+      }
+      const pts = [[49, -123], [37, 127], [35, 139], [31, 121], [51, 0], [40, -74], [-34, 151], [28, 77]];
+      const at = ([la, lo]) => { const p = la * Math.PI / 180, l = lo * Math.PI / 180 + rot; return [cx + R * Math.cos(p) * Math.sin(l), cy - R * Math.sin(p), Math.cos(p) * Math.cos(l)]; };
+      for (let k = 0; k < pts.length; k++) { const A = at(pts[k]), B = at(pts[(k + 3) % pts.length]); if (A[2] < 0.05 || B[2] < 0.05) continue;
+        const mx = (A[0] + B[0]) / 2 + (cx - (A[0] + B[0]) / 2) * -0.25, my = (A[1] + B[1]) / 2 - R * 0.25, ph = ((t / 2600 + k * 0.37) % 1);
+        g.strokeStyle = `rgba(${GOLD},0.16)`; g.lineWidth = 1; g.beginPath(); g.moveTo(A[0], A[1]); g.quadraticCurveTo(mx, my, B[0], B[1]); g.stroke();
+        const x = (1 - ph) * (1 - ph) * A[0] + 2 * (1 - ph) * ph * mx + ph * ph * B[0], y = (1 - ph) * (1 - ph) * A[1] + 2 * (1 - ph) * ph * my + ph * ph * B[1];
+        g.fillStyle = `rgba(${GOLD},0.7)`; g.beginPath(); g.arc(x, y, 2, 0, Math.PI * 2); g.fill();
+        g.fillStyle = `rgba(${GOLD},0.45)`; g.beginPath(); g.arc(A[0], A[1], 2.6, 0, Math.PI * 2); g.fill(); }
+    },
+  };
+  function frame(now) {
+    raf = 0;
+    const want = T[document.body.dataset.page] ? document.body.dataset.page : null;
+    if (want !== theme) { if (alpha <= 0.01 || !theme) { theme = want; } }
+    const target = want && want === theme ? 1 : 0;
+    alpha += (target - alpha) * (reduceMotion ? 1 : 0.08); if (Math.abs(target - alpha) < 0.005) alpha = target;
+    if (now - last >= 33 || alpha !== shown) {
+      last = now;
+      g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, W, H);
+      if (theme && alpha > 0) { T[theme](reduceMotion ? 0 : now, scrollY); }
+      c.style.opacity = alpha.toFixed(3); shown = alpha;
+    }
+    if (!document.hidden && (theme || want) && !(reduceMotion && alpha === target)) raf = requestAnimationFrame(frame);
+  }
+  const kick = () => { if (!raf) raf = requestAnimationFrame(frame); };
+  size(); addEventListener("resize", () => { size(); kick(); });
+  new MutationObserver(kick).observe(document.body, { attributes: true, attributeFilter: ["data-page"] });
+  document.addEventListener("visibilitychange", kick); addEventListener("scroll", () => { if (reduceMotion) kick(); }, { passive: true });
+  kick();
+  return { state: () => ({ theme, alpha }) };
+})();
+// v74: rows ease in as they come into view, one after another, instead of all at once
+(() => {
+  if (!("IntersectionObserver" in window) || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  let batch = 0, at = 0;
+  const io = new IntersectionObserver(es => {
+    const now = performance.now(); if (now - at > 120) batch = 0; at = now;
+    for (const e of es) { if (!e.isIntersecting) continue; e.target.style.setProperty("--rd", Math.min(batch++, 8) * 70 + "ms"); e.target.classList.add("seen"); io.unobserve(e.target); }
+  }, { rootMargin: "0px 0px -6% 0px" });
+  for (const n of document.querySelectorAll(".r-rows > li, .r-group > h3, .r-top, .part-body > p, .fin-hd, .tags")) { n.classList.add("rv"); io.observe(n); }
+})();
+
 </script>
 
 </body>
