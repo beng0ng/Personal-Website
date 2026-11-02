@@ -4907,11 +4907,16 @@ function renderRobot(t) {
 
 // The drawn hand: the fallback when WebGL is unavailable.
 function makeRobotHand(o) {
-  const u = cellW / 2.3, k = u * HD;                 // board px per cm; device px per cm
-  const OX = 8.5, OY = 4, WC = 18, HC = 46;          // the sprite box in cm, origin at (OX, OY)
+  // v77: AlphaGo's hand, redrawn. Gloss-black shell plates with a hard specular band down every curved surface and a
+  // rim of reflected light on the shadow side, so each part reads as a solid; brushed-steel joints; a thin blue light
+  // in every seam and a glowing ring on the back of the hand. Same pose, same frame: centimetres, the held stone's
+  // centre at the origin, fingers toward -y, the forearm running off toward +y into the dark.
+  const u = cellW / 2.3, k = u * HD;
+  const OX = 8.5, OY = 4, WC = 18, HC = 46;
   const [lx, ly] = o.light;
-  const SHELL = ["#f2f3f4", "#d3d6d9", "#a3a7ad", "#70747b"];   // matte white shell, lit edge to shadow
-  const CORE = ["#8f949c", "#4a4e55", "#24272c", "#131517"];    // graphite
+  const GLOSS = ["#0b0c0f", "#1c2026", "#3a414b", "#dfe6ee", "#4a525d", "#14171b", "#2b323b"];   // core shadow → body → spec → rim
+  const STEEL = ["#e9edf1", "#9aa2ab", "#4c535c", "#1b1e22"];
+  const GLOW = "120,205,255";
   const towardLight = (nx, ny) => (nx * lx + ny * ly) >= 0 ? [nx, ny] : [-nx, -ny];
   const draw = withStone => {
     const c = document.createElement("canvas");
@@ -4919,15 +4924,22 @@ function makeRobotHand(o) {
     const g = c.getContext("2d");
     g.setTransform(k, 0, 0, k, OX * k, OY * k);
     g.lineCap = "round"; g.lineJoin = "round";
-    const shadowOn = () => { g.shadowColor = "rgba(0,0,0,0.5)"; g.shadowBlur = 0.5 * k; g.shadowOffsetX = -lx * 0.26 * k; g.shadowOffsetY = -ly * 0.26 * k; };
+    const shadowOn = (b = 0.7, d = 0.34) => { g.shadowColor = "rgba(0,0,0,0.6)"; g.shadowBlur = b * k; g.shadowOffsetX = -lx * d * k; g.shadowOffsetY = -ly * d * k; };
     const shadowOff = () => { g.shadowColor = "transparent"; g.shadowBlur = 0; g.shadowOffsetX = 0; g.shadowOffsetY = 0; };
-    const across = (cx, cy, nx, ny, w, cols) => {
+    // a cylinder across a part of width w, its axis through (cx,cy), normal (nx,ny): gloss black
+    const cyl = (cx, cy, nx, ny, w, cols = GLOSS) => {
       const [sx, sy] = towardLight(nx, ny);
       const gr = g.createLinearGradient(cx + sx * w / 2, cy + sy * w / 2, cx - sx * w / 2, cy - sy * w / 2);
-      gr.addColorStop(0, cols[0]); gr.addColorStop(0.32, cols[1]); gr.addColorStop(0.82, cols[2]); gr.addColorStop(1, cols[3]);
+      gr.addColorStop(0, cols[2]); gr.addColorStop(0.1, cols[4]); gr.addColorStop(0.2, cols[3]); gr.addColorStop(0.3, cols[2]);
+      gr.addColorStop(0.55, cols[1]); gr.addColorStop(0.86, cols[0]); gr.addColorStop(1, cols[6]);
       return gr;
     };
-    // A tapered capsule from (x0,y0) to (x1,y1); leaves the path set for clipping.
+    const steel = (cx, cy, nx, ny, w) => {
+      const [sx, sy] = towardLight(nx, ny);
+      const gr = g.createLinearGradient(cx + sx * w / 2, cy + sy * w / 2, cx - sx * w / 2, cy - sy * w / 2);
+      gr.addColorStop(0, STEEL[1]); gr.addColorStop(0.25, STEEL[0]); gr.addColorStop(0.6, STEEL[2]); gr.addColorStop(1, STEEL[3]);
+      return gr;
+    };
     const capsule = (x0, y0, x1, y1, w0, w1) => {
       const dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len, nx = -uy, ny = ux;
       g.beginPath();
@@ -4939,113 +4951,144 @@ function makeRobotHand(o) {
       g.closePath();
       return { ux, uy, nx, ny, len };
     };
-    const pivot = (x, y, r) => {
-      g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2);
-      const gr = g.createRadialGradient(x + lx * r * 0.45, y + ly * r * 0.45, 0, x, y, r);
-      gr.addColorStop(0, "#aab0b8"); gr.addColorStop(0.55, "#3b3f46"); gr.addColorStop(1, "#17191c");
-      g.fillStyle = gr; g.fill();
-      g.strokeStyle = "rgba(255,255,255,0.28)"; g.lineWidth = 0.04; g.stroke();
-      g.beginPath(); g.arc(x, y, r * 0.3, 0, Math.PI * 2); g.fillStyle = "#0e0f11"; g.fill();
+    const glowLine = (pts, w = 0.09, a = 0.85) => {
+      g.save(); g.shadowColor = `rgba(${GLOW},0.9)`; g.shadowBlur = 0.45 * k;
+      g.strokeStyle = `rgba(${GLOW},${a})`; g.lineWidth = w; g.beginPath();
+      pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke(); g.restore();
     };
-    // A finger: shell segments between pivots, a graphite joint showing at each gap, a rubber pad at the tip.
+    // a ball joint: brushed steel sphere in a dark socket, a blue ring of light around it
+    const joint = (x, y, r) => {
+      g.beginPath(); g.arc(x, y, r * 1.25, 0, Math.PI * 2); g.fillStyle = "#07080a"; g.fill();
+      g.save(); g.shadowColor = `rgba(${GLOW},0.8)`; g.shadowBlur = 0.3 * k;
+      g.beginPath(); g.arc(x, y, r * 1.12, 0, Math.PI * 2); g.strokeStyle = `rgba(${GLOW},0.55)`; g.lineWidth = 0.05; g.stroke(); g.restore();
+      const gr = g.createRadialGradient(x + lx * r * 0.45, y + ly * r * 0.45, r * 0.05, x, y, r);
+      gr.addColorStop(0, "#ffffff"); gr.addColorStop(0.25, STEEL[1]); gr.addColorStop(0.7, STEEL[2]); gr.addColorStop(1, STEEL[3]);
+      g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fillStyle = gr; g.fill();
+    };
+    // a finger: gloss shell segments, steel joints, a soft rubber tip
     const finger = (pts, ws, pad) => {
-      for (let i = 0; i < pts.length - 1; i++) { const [x, y] = pts[i]; g.beginPath(); g.arc(x, y, ws[i] * 0.47, 0, Math.PI * 2); g.fillStyle = CORE[2]; g.fill(); }
+      // its shadow on the hand below, soft
+      g.save(); g.shadowColor = "rgba(0,0,0,0.55)"; g.shadowBlur = 0.9 * k; g.shadowOffsetX = -lx * 0.45 * k; g.shadowOffsetY = -ly * 0.45 * k;
+      g.strokeStyle = "rgba(0,0,0,0.01)"; g.lineWidth = ws[0] * 0.9; g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke(); g.restore();
+      for (let i = 0; i < pts.length - 1; i++) { const [x, y] = pts[i]; g.beginPath(); g.arc(x, y, ws[i] * 0.46, 0, Math.PI * 2); g.fillStyle = "#08090b"; g.fill(); }
       for (let i = 0; i < pts.length - 1; i++) {
         const [x0, y0] = pts[i], [x1, y1] = pts[i + 1];
         const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L;
-        const in0 = i === 0 ? 0.05 : 0.16, in1 = i === pts.length - 2 ? 0 : 0.16;
+        const in0 = i === 0 ? 0.05 : 0.2, in1 = i === pts.length - 2 ? 0 : 0.2;
         const d = capsule(x0 + ux * in0, y0 + uy * in0, x1 - ux * in1, y1 - uy * in1, ws[i], ws[i + 1]);
-        shadowOn(); g.fillStyle = across((x0 + x1) / 2, (y0 + y1) / 2, d.nx, d.ny, (ws[i] + ws[i + 1]) / 2, SHELL); g.fill(); shadowOff();
-        g.strokeStyle = "rgba(255,255,255,0.3)"; g.lineWidth = 0.05; g.stroke();
+        shadowOn(0.5, 0.2); g.fillStyle = cyl((x0 + x1) / 2, (y0 + y1) / 2, d.nx, d.ny, (ws[i] + ws[i + 1]) / 2); g.fill(); shadowOff();
         g.save(); g.clip();
-        // a seam down the segment's spine and a shadow where it tucks under the next joint
-        g.strokeStyle = "rgba(0,0,0,0.18)"; g.lineWidth = 0.04;
-        g.beginPath(); g.moveTo(x0 + ux * 0.3, y0 + uy * 0.3); g.lineTo(x1 - ux * 0.3, y1 - uy * 0.3); g.stroke();
-        let gr = g.createLinearGradient(x0 + ux * 0.6, y0 + uy * 0.6, x0, y0);
-        gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,0.35)");
+        // the end of each segment rounds away from the light: darken toward both ends, brighten its crown
+        let gr = g.createLinearGradient(x0, y0, x1, y1);
+        gr.addColorStop(0, "rgba(0,0,0,0.55)"); gr.addColorStop(0.22, "rgba(0,0,0,0)"); gr.addColorStop(0.78, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,0.4)");
         g.fillStyle = gr; g.fillRect(-OX, -OY, WC, HC);
+        // a specular glint on the crown
+        const [sx, sy] = towardLight(d.nx, d.ny), w = (ws[i] + ws[i + 1]) / 2;
+        g.strokeStyle = "rgba(255,255,255,0.75)"; g.lineWidth = w * 0.08;
+        g.beginPath(); g.moveTo(x0 + ux * L * 0.3 + sx * w * 0.27, y0 + uy * L * 0.3 + sy * w * 0.27); g.lineTo(x0 + ux * L * 0.62 + sx * w * 0.27, y0 + uy * L * 0.62 + sy * w * 0.27); g.stroke();
         if (pad && i === pts.length - 2) {
-          gr = g.createLinearGradient(x1 - ux * 0.75, y1 - uy * 0.75, x1 - ux * 0.5, y1 - uy * 0.5);
-          gr.addColorStop(0, "rgba(44,47,52,0)"); gr.addColorStop(1, "rgba(44,47,52,1)");
-          g.fillStyle = gr; g.fillRect(-OX, -OY, WC, HC);
-          gr = g.createLinearGradient(x1 - ux * 0.5, y1 - uy * 0.5, x1, y1);
-          gr.addColorStop(0, "#2c2f34"); gr.addColorStop(1, "#4a4f56");
-          g.fillStyle = gr;
-          g.beginPath(); g.arc(x1, y1, ws[i + 1] / 2 + 0.1, 0, Math.PI * 2); g.fill();
+          gr = g.createRadialGradient(x1 + sx * 0.25, y1 + sy * 0.25, 0, x1, y1, ws[i + 1] * 0.75);
+          gr.addColorStop(0, "#5a616b"); gr.addColorStop(0.5, "#272b31"); gr.addColorStop(1, "#101215");
+          g.fillStyle = gr; g.beginPath(); g.arc(x1, y1, ws[i + 1] * 0.55, 0, Math.PI * 2); g.fill();
         }
         g.restore();
+        g.strokeStyle = "rgba(170,190,210,0.35)"; g.lineWidth = 0.035; capsule(x0 + ux * in0, y0 + uy * in0, x1 - ux * in1, y1 - uy * in1, ws[i], ws[i + 1]); g.stroke();
       }
-      for (let i = 1; i < pts.length - 1; i++) pivot(pts[i][0], pts[i][1], 0.2);
-      pivot(pts[0][0], pts[0][1], 0.24);
+      for (let i = 1; i < pts.length - 1; i++) joint(pts[i][0], pts[i][1], 0.24);
+      joint(pts[0][0], pts[0][1], 0.3);
     };
     const [ax] = towardLight(1, 0);
 
-    // forearm: a graphite core with a shell plate along it, fading into the dark
-    g.beginPath(); g.moveTo(-3.2, 18.6); g.lineTo(5.2, 18.6); g.lineTo(5.9, 42); g.lineTo(-3.9, 42); g.closePath();
-    let gr = g.createLinearGradient(1 + ax * 4.6, 0, 1 - ax * 4.6, 0);
-    gr.addColorStop(0, CORE[0]); gr.addColorStop(0.3, CORE[1]); gr.addColorStop(0.8, CORE[2]); gr.addColorStop(1, CORE[3]);
+    // forearm: a gloss cylinder in two sleeves over a steel core, an elbow housing, a blue line of light along it
+    const arm = (y0, y1, x0a, x1a, x0b, x1b) => {
+      g.beginPath(); g.moveTo(x0a, y0); g.lineTo(x1a, y0); g.lineTo(x1b, y1); g.lineTo(x0b, y1); g.closePath();
+    };
+    arm(18.6, 42, -3.0, 5.0, -4.0, 6.0);
+    g.fillStyle = steel(1, 30, 1, 0, 9); g.fill();
+    arm(19.4, 29.6, -2.6, 4.6, -3.1, 5.1);
+    shadowOn(); g.fillStyle = cyl(1, 24.5, 1, 0, 7.7); g.fill(); shadowOff();
+    g.strokeStyle = "rgba(170,190,210,0.3)"; g.lineWidth = 0.05; g.stroke();
+    arm(30.6, 41.8, -3.2, 5.2, -3.8, 5.8);
+    shadowOn(); g.fillStyle = cyl(1, 36, 1, 0, 8.8); g.fill(); shadowOff();
+    g.stroke();
+    // the elbow housing: a ring with depth where the two sleeves meet
+    g.beginPath(); g.ellipse(1, 30.1, 4.4, 0.9, 0, 0, Math.PI * 2);
+    let gr = g.createLinearGradient(1 + ax * 4.4, 0, 1 - ax * 4.4, 0); gr.addColorStop(0, STEEL[1]); gr.addColorStop(0.3, STEEL[0]); gr.addColorStop(0.7, STEEL[2]); gr.addColorStop(1, STEEL[3]);
     g.fillStyle = gr; g.fill();
-    g.beginPath(); g.moveTo(-2.3, 19.6); g.lineTo(4.3, 19.6); g.lineTo(4.9, 41.5); g.lineTo(-2.9, 41.5); g.closePath();
-    gr = g.createLinearGradient(1 + ax * 3.6, 0, 1 - ax * 3.6, 0);
-    gr.addColorStop(0, SHELL[0]); gr.addColorStop(0.4, SHELL[1]); gr.addColorStop(0.85, SHELL[2]); gr.addColorStop(1, SHELL[3]);
-    shadowOn(); g.fillStyle = gr; g.fill(); shadowOff();
-    g.strokeStyle = "rgba(0,0,0,0.35)"; g.lineWidth = 0.05; g.stroke();
-    g.beginPath(); g.moveTo(1.0, 20.2); g.lineTo(1.1, 41); g.stroke();
-    g.beginPath(); g.moveTo(-2.0, 27.5); g.lineTo(4.4, 27.5); g.stroke();
+    glowLine([[1 - ax * 3.2, 30.15], [1 + ax * 3.2, 30.15]], 0.07, 0.6);
+    glowLine([[1 - ax * 1.6, 20.2], [1 - ax * 1.75, 29.2]], 0.08, 0.75);
+    glowLine([[1 - ax * 1.85, 31.2], [1 - ax * 2.05, 41.2]], 0.08, 0.6);
+    // a cable along the shadow side
+    g.strokeStyle = "#090a0c"; g.lineWidth = 0.55; g.beginPath(); g.moveTo(1 + ax * 4.3, 20); g.quadraticCurveTo(1 + ax * 5.2, 30, 1 + ax * 5.0, 42); g.stroke();
+    g.strokeStyle = "rgba(255,255,255,0.18)"; g.lineWidth = 0.08; g.beginPath(); g.moveTo(1 + ax * 4.15, 20); g.quadraticCurveTo(1 + ax * 5.05, 30, 1 + ax * 4.85, 42); g.stroke();
     g.globalCompositeOperation = "destination-out";
-    gr = g.createLinearGradient(0, 25, 0, 42); gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,1)");
-    g.fillStyle = gr; g.fillRect(-OX, 25, WC, 17);
+    gr = g.createLinearGradient(0, 27, 0, 42); gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,1)");
+    g.fillStyle = gr; g.fillRect(-OX, 27, WC, 15);
     g.globalCompositeOperation = "source-over";
 
-    // wrist: a graphite ring with a hairline of light in it
-    rrect(g, -3.3, 17.2, 8.8, 2.0, 0.5);
-    shadowOn(); g.fillStyle = across(1.1, 18.2, 1, 0, 8.8, CORE); g.fill(); shadowOff();
-    g.strokeStyle = "rgba(255,255,255,0.22)"; g.lineWidth = 0.05; g.stroke();
-    g.strokeStyle = "rgba(150,215,225,0.4)"; g.lineWidth = 0.06;
-    g.beginPath(); g.moveTo(-2.9, 18.2); g.lineTo(5.1, 18.2); g.stroke();
+    // wrist: a steel gimbal ring with a band of light in it
+    rrect(g, -3.5, 17.0, 9.2, 2.3, 0.9);
+    shadowOn(); g.fillStyle = steel(1.1, 18.2, 1, 0, 9.2); g.fill(); shadowOff();
+    g.strokeStyle = "rgba(0,0,0,0.5)"; g.lineWidth = 0.05; g.stroke();
+    glowLine([[-3.0, 18.15], [5.2, 18.15]], 0.1, 0.9);
 
-    // the back of the hand: one shell plate, seamed, over a dark knuckle bar the fingers hinge on
-    g.beginPath();
-    g.moveTo(-2.6, 18.0);
-    g.quadraticCurveTo(-4.6, 14.6, -3.7, 10.4);
-    g.quadraticCurveTo(-3.3, 8.8, -2.4, 8.6);
-    g.quadraticCurveTo(-1.4, 7.8, -0.4, 8.0);
-    g.quadraticCurveTo(0.7, 7.9, 1.6, 8.4);
-    g.quadraticCurveTo(2.7, 8.8, 3.5, 9.5);
-    g.quadraticCurveTo(4.9, 10.6, 4.7, 12.8);
-    g.quadraticCurveTo(4.6, 15.4, 4.4, 18.0);
-    g.closePath();
-    gr = g.createLinearGradient(1 + lx * 5.5, 12.5 + ly * 5.5, 1 - lx * 5.5, 12.5 - ly * 5.5);
-    gr.addColorStop(0, SHELL[0]); gr.addColorStop(0.35, SHELL[1]); gr.addColorStop(0.85, SHELL[2]); gr.addColorStop(1, SHELL[3]);
-    shadowOn(); g.fillStyle = gr; g.fill(); shadowOff();
-    g.strokeStyle = "rgba(255,255,255,0.3)"; g.lineWidth = 0.06; g.stroke();
+    // the back of the hand: one domed gloss plate over a dark knuckle bar
+    const plate = () => {
+      g.beginPath();
+      g.moveTo(-2.6, 18.0);
+      g.quadraticCurveTo(-4.6, 14.6, -3.7, 10.4);
+      g.quadraticCurveTo(-3.3, 8.8, -2.4, 8.6);
+      g.quadraticCurveTo(-1.4, 7.8, -0.4, 8.0);
+      g.quadraticCurveTo(0.7, 7.9, 1.6, 8.4);
+      g.quadraticCurveTo(2.7, 8.8, 3.5, 9.5);
+      g.quadraticCurveTo(4.9, 10.6, 4.7, 12.8);
+      g.quadraticCurveTo(4.6, 15.4, 4.4, 18.0);
+      g.closePath();
+    };
+    plate();
+    shadowOn(1, 0.45); g.fillStyle = "#15181d"; g.fill(); shadowOff();
     g.save(); g.clip();
-    g.strokeStyle = "rgba(0,0,0,0.26)"; g.lineWidth = 0.05;
-    g.beginPath(); g.moveTo(-3.8, 12.8); g.quadraticCurveTo(0.8, 11.3, 4.8, 13.1); g.stroke();
-    g.beginPath(); g.moveTo(0.6, 11.6); g.lineTo(0.9, 17.9); g.stroke();
-    gr = g.createLinearGradient(0, 13, 0, 18.2); gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,0.25)");
-    g.fillStyle = gr; g.fillRect(-OX, 12, WC, 7);
+    // a dome: radial light from the lit side, a crisp highlight, a rim of reflected light opposite
+    gr = g.createRadialGradient(0.5 + lx * 2.2, 13 + ly * 2.2, 0.2, 0.5, 13.2, 6.4);
+    gr.addColorStop(0, "#6a7480"); gr.addColorStop(0.35, "#2b313a"); gr.addColorStop(0.8, "#0d0f12"); gr.addColorStop(1, "#262c34");
+    g.fillStyle = gr; g.fillRect(-OX, 6, WC, 13);
+    g.save(); g.translate(0.5 + lx * 2.4, 12.6 + ly * 1.6); g.rotate(Math.atan2(ly, lx) + Math.PI / 2); g.scale(1, 0.32);
+    gr = g.createRadialGradient(0, 0, 0, 0, 0, 2.4); gr.addColorStop(0, "rgba(255,255,255,0.85)"); gr.addColorStop(0.45, "rgba(255,255,255,0.25)"); gr.addColorStop(1, "rgba(255,255,255,0)");
+    g.fillStyle = gr; g.beginPath(); g.arc(0, 0, 2.4, 0, Math.PI * 2); g.fill(); g.restore();
+    g.strokeStyle = "rgba(0,0,0,0.6)"; g.lineWidth = 0.06;
+    g.beginPath(); g.moveTo(-3.8, 12.2); g.quadraticCurveTo(0.8, 10.7, 4.8, 12.5); g.stroke();
     g.restore();
+    g.strokeStyle = "rgba(190,210,230,0.4)"; g.lineWidth = 0.05; plate(); g.stroke();
+    // the emblem: a ring of light with a stone at its centre
+    const ex = 0.75, ey = 14.6;
+    g.beginPath(); g.arc(ex, ey, 1.25, 0, Math.PI * 2); g.fillStyle = "#07080a"; g.fill();
+    g.save(); g.shadowColor = `rgba(${GLOW},1)`; g.shadowBlur = 0.8 * k;
+    g.beginPath(); g.arc(ex, ey, 0.95, 0, Math.PI * 2); g.strokeStyle = `rgba(${GLOW},0.95)`; g.lineWidth = 0.16; g.stroke();
+    g.beginPath(); g.arc(ex, ey, 0.95, -0.4, 1.2); g.strokeStyle = "rgba(235,248,255,0.95)"; g.lineWidth = 0.08; g.stroke(); g.restore();
+    gr = g.createRadialGradient(ex + lx * 0.18, ey + ly * 0.18, 0, ex, ey, 0.45); gr.addColorStop(0, "#f4f8fb"); gr.addColorStop(1, "#8d98a4");
+    g.beginPath(); g.arc(ex, ey, 0.42, 0, Math.PI * 2); g.fillStyle = gr; g.fill();
+    // the knuckle bar the fingers hinge on: a steel axle with light in its groove
     g.beginPath(); g.moveTo(-3.0, 9.5); g.quadraticCurveTo(0.5, 7.6, 4.3, 10.3);
-    g.strokeStyle = CORE[2]; g.lineWidth = 2.1; g.stroke();
-    g.strokeStyle = "rgba(255,255,255,0.1)"; g.lineWidth = 0.08;
-    g.beginPath(); g.moveTo(-3.0, 8.5); g.quadraticCurveTo(0.5, 6.6, 4.3, 9.3); g.stroke();
+    g.strokeStyle = "#08090b"; g.lineWidth = 2.2; g.stroke();
+    g.strokeStyle = "#3d444d"; g.lineWidth = 1.3; g.stroke();
+    g.strokeStyle = "rgba(255,255,255,0.35)"; g.lineWidth = 0.14;
+    g.beginPath(); g.moveTo(-3.0, 9.1); g.quadraticCurveTo(0.5, 7.2, 4.3, 9.9); g.stroke();
+    glowLine([[-2.6, 9.95], [0.5, 8.35], [4.0, 10.7]].map(([x, y]) => [x, y]), 0.08, 0.7);
 
-    // thumb alongside the index, the little and ring fingers folded under, the middle under the stone, the index over it
-    finger([[-3.3, 13.4], [-4.3, 10.3], [-3.4, 7.6]], [2.4, 2.1, 1.6], true);
-    finger([[3.4, 9.6], [3.8, 8.0], [4.0, 6.9]], [1.5, 1.35, 1.2], false);
-    finger([[1.8, 8.7], [2.3, 6.6], [2.6, 5.2]], [1.8, 1.65, 1.5], false);
-    finger([[-0.05, 8.3], [0.6, 5.2], [1.1, 3.3], [1.5, 1.9]], [1.95, 1.8, 1.65, 1.5], true);
+    finger([[-3.3, 13.4], [-4.3, 10.3], [-3.4, 7.6]], [2.4, 2.1, 1.65], true);
+    finger([[3.4, 9.6], [3.8, 8.0], [4.0, 6.9]], [1.55, 1.4, 1.25], false);
+    finger([[1.8, 8.7], [2.3, 6.6], [2.6, 5.2]], [1.85, 1.7, 1.55], false);
+    finger([[-0.05, 8.3], [0.6, 5.2], [1.1, 3.3], [1.5, 1.9]], [2.0, 1.85, 1.7, 1.55], true);
     if (withStone) {
       const ss = sprites[o.stone], sz = ss.size / u;
-      g.save(); g.rotate(o.stoneRot); g.drawImage(ss.canvas, -sz / 2, -sz / 2, sz, sz); g.restore();
+      g.save(); g.shadowColor = "rgba(0,0,0,0.6)"; g.shadowBlur = 0.6 * k; g.shadowOffsetX = -lx * 0.3 * k; g.shadowOffsetY = -ly * 0.3 * k;
+      g.rotate(o.stoneRot); g.drawImage(ss.canvas, -sz / 2, -sz / 2, sz, sz); g.restore();
     }
-    finger([[-2.0, 8.9], [-1.1, 5.4], [-0.4, 2.6], [0.15, 0.2]], [2.0, 1.85, 1.7, 1.55], true);
+    finger([[-2.0, 8.9], [-1.1, 5.4], [-0.4, 2.6], [0.15, 0.2]], [2.05, 1.9, 1.75, 1.6], true);
 
-    // a matte grain
     const pat = g.createPattern(grainCanvas, "repeat");
     pat.setTransform(new DOMMatrix([1 / k, 0, 0, 1 / k, 0, 0]));
-    g.globalCompositeOperation = "source-atop"; g.globalAlpha = 0.05;
+    g.globalCompositeOperation = "source-atop"; g.globalAlpha = 0.035;
     g.fillStyle = pat; g.fillRect(-OX, -OY, WC, HC);
     g.globalAlpha = 1; g.globalCompositeOperation = "source-over";
     return c;
@@ -5053,8 +5096,8 @@ function makeRobotHand(o) {
   const hold = draw(true), empty = draw(false);
   const sh = document.createElement("canvas"); sh.width = hold.width; sh.height = hold.height;
   const sg2 = sh.getContext("2d");
-  sg2.filter = `blur(${(0.45 * k).toFixed(1)}px)`; sg2.drawImage(hold, 0, 0); sg2.filter = "none";
-  sg2.globalCompositeOperation = "source-in"; sg2.fillStyle = "#140b04"; sg2.fillRect(0, 0, sh.width, sh.height);
+  sg2.filter = `blur(${(0.7 * k).toFixed(1)}px)`; sg2.drawImage(hold, 0, 0); sg2.filter = "none";
+  sg2.globalCompositeOperation = "source-in"; sg2.fillStyle = "#0d0703"; sg2.fillRect(0, 0, sh.width, sh.height);
   return { hold, empty, shadow: sh, ox: OX * u, oy: OY * u, w: WC * u, h: HC * u };
 }
 
@@ -5138,7 +5181,7 @@ function renderHands(t) {
     hctx.translate(x + (0.12 + lift * 0.18) * cellW, y + (0.16 + lift * 0.28) * cellH); hctx.rotate(m.ang);
     hctx.drawImage(sp.shadow, -sp.ox, -sp.oy, sp.w, sp.h); hctx.restore();
     hctx.save(); hctx.globalAlpha = alpha;
-    hctx.translate(x, y - lift * cellH * tanTilt); hctx.rotate(m.ang);
+    hctx.translate(x, y - lift * cellH * tanTilt); hctx.rotate(m.ang); { const sc = 1 + lift * 0.12; hctx.scale(sc, sc); }
     hctx.drawImage(holding ? sp.hold : sp.empty, -sp.ox, -sp.oy, sp.w, sp.h); hctx.restore();
   }
   hctx.setTransform(1, 0, 0, 1, 0, 0);
