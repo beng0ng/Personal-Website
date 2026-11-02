@@ -3865,7 +3865,7 @@ const SITE = {
             { when: "Expected Aug 2030", what: "UC Berkeley · Haas School of Business", text: "B.S. in business, Global Management Program, with an intended double major in computer science. Coursework: CS 70 (discrete math and probability), CS 61A, Math 51 and 52, Stat 2 and Econ 1." } ] },
           { name: "Honors", rows: [
             { when: "2024", what: "AMC 12B · AIME qualifier", text: "Scored 111, in the top 2.5% of everyone who took it, with a Certificate of Distinction." },
-            { when: "2023", what: "World Youth Go Championships · Top 8, under-18", text: "Chosen by the Canadian Go Association to play for Canada: six rounds against national representatives from around the world, after training with world-class professionals.", href: "#about", cta: "The Go story" } ] },
+            { when: "2023", what: "World Youth Go Championships · Top 8, under-18", text: "Chosen by the Canadian Go Association to play for Canada: six rounds against national representatives from around the world, after training with world-class professionals." } ] },
           { name: "Projects", rows: [
             { when: "Sept 2026 – now", what: "PolyMind · Creator and developer", text: "The Battle of Polytopia rebuilt as a Python engine for all 12 tribes, with frozen rule sets and 313 automated tests. Generations of PyTorch agents (the Legion and Alpha families) trained by self-play with a policy network, a win-prediction head and lookahead search, picked by an Elo pipeline. Five of them are playable in the browser.", href: "#polymind", cta: "Play against it" },
             { when: "Aug 2024 – now", what: "Go Global · Founder and website developer", text: "An international, youth-led online Go community with free classes, partnered with the Canadian Go Association and the Canada West Go Association. I designed the website and the curricula, manage 45+ volunteer teachers who have given 500+ hours of lessons, and trained a local AI to play Go at a beginner level.", href: "#goglobal", cta: "See it" },
@@ -3878,7 +3878,7 @@ const SITE = {
       },
     },
     {
-      id: "about", nav: "About me", eyebrow: "Who I am", title: "About me.",
+      id: "about", hidden: 1, eyebrow0: "About me", eyebrow: "Who I am", title: "About me.",
       lede: "I build things, most of them in a browser, and I play Go. The things are on the Projects page. This is the rest: who I am, and what has my attention right now.",
       paras: [
         "I'm Ben Gong. I study business at Berkeley Haas, in the Global Management Program, with computer science as an intended second major. The building and the Go keep leaking into each other: this site opens with a Go game, one project is an AI that learned a strategy game from nothing but its rules, and the one I'm making now paints what it hears.",
@@ -3925,7 +3925,7 @@ const SITE = {
       },
     },
     {
-      id: "now", navTo: "about", eyebrow: "About me \u00b7 What I'm up to", title: "Right now.",
+      id: "now", hidden: 1, navTo: "about", eyebrow: "About me \u00b7 What I'm up to", title: "Right now.",
       lede: "A running list of whatever has my attention. I update it when it changes.",
       items: [
         { when: "Studying", text: "Business at Berkeley Haas, in the Global Management Program, with computer science on the side." },
@@ -5577,7 +5577,7 @@ function tickGo(nowMs) {
 // ---------- the parts
 function buildSite() {
   el("brand").textContent = CONFIG.name;
-  el("topnav").replaceChildren(h("a", { href: "#intro", text: "Home" }), ...SITE.parts.filter(p => p.nav).map(p => h("a", { href: "#" + (p.navTo || p.id), text: p.nav })));
+  SITE.parts = SITE.parts.filter(p => !p.hidden); el("topnav").replaceChildren(h("a", { href: "#intro", text: "Home" }), ...SITE.parts.filter(p => p.nav).map(p => h("a", { href: "#" + (p.navTo || p.id), text: p.nav })));
   site.replaceChildren();
   SITE.parts.forEach((p, i) => {
     const head = h("div", { class: "part-head" },
@@ -5746,6 +5746,8 @@ function nbGo(t, now) {
   const ei = t - 2; NB.tabs.querySelectorAll("button").forEach((b, i) => b.classList.toggle("on", i === ei));
   NB.where.textContent = t === 0 ? "Closed" : t === 1 ? "Contents" : ei < NB.entries.length ? `Entry ${ei + 1} of ${NB.entries.length}` : "The end, for now";
 }
+if (/^#(about|now)$/.test(location.hash)) history.replaceState(null, "", location.pathname + location.search);
+addEventListener("hashchange", () => { if (/^#(about|now)$/.test(location.hash)) location.replace("#intro"); });
 buildSite();
 const PAGE_OF = { intro: "home", hub: "home", manga: "story", projects: "projects", fraguessr: "fraguessr", polymind: "polymind", "polymind-play": "polymind", muse: "muse", resume: "resume", about: "about", gofilm: "go", go: "go", goglobal: "goglobal", now: "about", blog: "blog", hello: "hello" };
 { const id = location.hash.slice(1), t = id && document.getElementById(id);
@@ -6391,7 +6393,6 @@ function mgLevel7(s, o, W, H, win) {
   // the facing page: what I build, as it was first sketched
   const P = R || L, px0 = P[0] + pad, px1 = P[2] - pad, pw = px1 - px0, ty = portrait ? win.y + win.h + fs * 3.2 : P[1] + fs * 3.4;
   const cards = [
-    { name: "Who I am", href: "#about", text: "Business at Berkeley Haas, Go since I was small, and the things I make.", k: 3 },
     { name: "How Go works", href: "#gofilm", text: "Five short chapters, on a real board.", k: 0 },
     { name: "Go Global", href: "#goglobal", text: "The youth-led Go community I founded.", k: 1 },
     { name: "Résumé", href: "#resume", text: "The short version, on one page.", k: 4 },
@@ -6428,7 +6429,7 @@ function mgLevel7(s, o, W, H, win) {
   // an arrow down the page: the real thing follows
   const ay = portrait ? H * 0.915 : P[3] - fs * 2.6, ax = portrait ? W * 0.5 : px0 + pw * 0.5;
   s.text(ax, ay, "the rest of me", sm, { align: "center" }); s.line(ax, ay + fs * 0.5, ax, ay + fs * 1.9, "heavy");
-  MG.links.push({ x: ax - fs * 3.5, y: ay - fs * 1.2, w: fs * 7, h: fs * 3.4, href: "#about", name: "The rest of me: About me" }); s.line(ax - fs * 0.5, ay + fs * 1.4, ax, ay + fs * 1.9, "heavy"); s.line(ax + fs * 0.5, ay + fs * 1.4, ax, ay + fs * 1.9, "heavy");
+  MG.links.push({ x: ax - fs * 3.5, y: ay - fs * 1.2, w: fs * 7, h: fs * 3.4, href: "#projects", name: "Keep scrolling: projects" }); s.line(ax - fs * 0.5, ay + fs * 1.4, ax, ay + fs * 1.9, "heavy"); s.line(ax + fs * 0.5, ay + fs * 1.4, ax, ay + fs * 1.9, "heavy");
   // pencil shavings, an eraser, a ruler at the edge of the desk; the hand that drew it, still drawing
   if (!portrait) { for (let i = 0; i < 6; i++) { const x = W * 0.012 + s.r() * W * 0.025, y = H * 0.3 + s.r() * H * 0.45; s.curve([[x, y], [x + 5, y - 6], [x + 11, y + 2], [x + 6, y + 8]], "mid"); } }
   const ex = portrait ? W * 0.14 : W * 0.6, ey = portrait ? H * 0.95 : H * 0.975; s.shape(s.rr(ex, ey, u * 1.1, u * 0.45, u * 0.08, -0.12), "#e9d7c0", "heavy"); s.hatch(s.rr(ex, ey, u * 1.1, u * 0.45, u * 0.08, -0.12), 0.3, 3);
@@ -8656,7 +8657,6 @@ const HUB_DOORS = [
   { key: "B", group: "The story", name: "Blog", line: "Short notes on what I’m building and learning.", href: "#blog", at: [9, 3] },
   { key: "C", group: "The work", name: "Projects", line: "PolyMind, Go, Fraguessr, Muse and Go Global, in one deck of cards. Deal it and pick one.", href: "#projects", at: [3, 3] },
   { key: "D", group: "Me", name: "Résumé", line: "The short version, on one page.", href: "#resume", at: [15, 16] },
-  { key: "E", group: "Me", name: "Now", line: "What has my attention this month.", href: "#now", at: [8, 9] },
   { key: "F", group: "Me", name: "Contact me", line: "A note straight to my inbox.", href: "#hello", at: [9, 16] },
 ];
 const HUB_COLUMNS = [["The story", "The work"], ["Me"]];   // how the legend splits on a wide screen
@@ -9187,20 +9187,19 @@ const FIN_ITEMS = [
   { id: "polymind", deck: 1, href: "#polymind", page: "polymind", name: "PolyMind", line: "A Polytopia AI from the rules up. Play against it." },
   { id: "muse", deck: 1, href: "#muse", page: "muse", name: "Muse", line: "A painting that changes color with the music." },
   { id: "resume", href: "#resume", page: "resume", name: "Résumé", line: "The short version, on one page." },
-  { id: "about", href: "#about", page: "about", name: "About me", line: "Who I am, and what I do when I'm not building." },
   { id: "go", deck: 1, href: "#gofilm", page: "go", name: "Learn more about Go", line: "How the game works, then eight AlphaGo games to play through." },
   { id: "goglobal", deck: 1, href: "#goglobal", page: "goglobal", name: "Go Global", line: "The youth-run nonprofit: free lessons, and Go where it hasn't reached." },
   { id: "blog", href: "#blog", page: "blog", name: "Blog", line: "Short notes on what I'm building and learning." },
   { id: "hello", href: "#hello", page: "hello", name: "Contact me", line: "A note straight to my inbox." },
 ];
-const FIN_NEXT = { projects: "polymind", polymind: "go", go: "fraguessr", fraguessr: "muse", muse: "goglobal", goglobal: "resume", resume: "about", about: "blog", blog: "hello", hello: "home" };
+const FIN_NEXT = { projects: "polymind", polymind: "go", go: "fraguessr", fraguessr: "muse", muse: "goglobal", goglobal: "resume", resume: "blog", blog: "hello", hello: "home" };
 const FIN_AFTER = { projects: "projects", fraguessr: "fraguessr", polymind: "polymind-play", muse: "muse", go: "go", goglobal: "goglobal", resume: "resume", about: "now", blog: "blog", hello: "hello" };
 const finShade = (hex, f) => { const n = parseInt(hex.slice(1), 16), c = s => Math.max(0, Math.min(255, Math.round(((n >> s) & 255) * f))); return "#" + ((1 << 24) + (c(16) << 16) + (c(8) << 8) + c(0)).toString(16).slice(1); };
 const FIN_THEMES = {
   projects: { cls: "fin-blue", kicker: "Sheet 2 of 2", title: "Off the bench.", lede: "That's the workshop. Here's the rest of the house, drawn to scale.", next: "Next sheet",
     deco: (it, i) => h("span", { class: "fin-ic", text: "A-" + String(i + 1).padStart(2, "0") }) },
   fraguessr: { cls: "fin-frag", kicker: "The dry-down", title: "The rest of the shelf.", lede: "That was one bottle. Here's everything else, arranged like a perfume: what you notice first, what holds, and what stays with you.", next: "Next on the strip",
-    groups: [["Top notes", "bright, and quick to say hello", ["home", "blog", "hello"]], ["Heart notes", "the body of it", ["projects", "about"]], ["Base notes", "what lingers", ["resume"]]],
+    groups: [["Top notes", "bright, and quick to say hello", ["home", "blog", "hello"]], ["Heart notes", "the body of it", ["projects"]], ["Base notes", "what lingers", ["resume"]]],
     deco: (it, i) => h("span", { class: "fin-ic bottle", style: "--liq:" + ["#d9a441", "#d77a8a", "#8fb37a", "#a491c9", "#e0b860", "#8a5a3c", "#f0c43c", "#6f8f5a", "#8a86c0", "#f2a65a", "#c9a58a"][i % 11] }, h("i")) },
   polymind: { cls: "fin-poly", kicker: "Fog of war, lifted", title: "The rest of the map.", lede: "Every tile you haven't explored yet. Pick one and send a scout.", next: "Next tile",
     deco: (it, i) => { const c = ["#e8524a", "#3d7be0", "#f2c230", "#43b05c", "#9b59d0", "#ef8a2f", "#2fb7b0", "#d94f9a", "#7c8a99", "#5bc0eb", "#c0392b"][i % 11], s = h("span", { class: "fin-ic tile", "aria-hidden": "true" });
@@ -9249,7 +9248,6 @@ const SECRETS = [
   { id: "polymind", where: "PolyMind", glyph: "◆", name: "The lost ruin", line: "Dug out from under the fog of war." },
   { id: "muse", where: "Muse", glyph: "♪", name: "The first melody", line: "Played back on the color wheel, by ear and by eye." },
   { id: "resume", where: "Résumé", glyph: "37", name: "Page 37", line: "A note in pencil, in the margin of the index." },
-  { id: "about", where: "About me", glyph: "●", name: "Tesuji", line: "The one move that captures, found on a little board." },
   { id: "blog", where: "Blog", glyph: "✎", name: "The editor's pen", line: "Solved the puzzle corner on the back page." },
   { id: "hello", where: "Contact me", glyph: "✉", name: "The Inverted Jenny", line: "The misprint on the collector's sheet." },
 ];
@@ -9264,7 +9262,7 @@ function secToast(html) {
 function secCollect(id) {
   if (SEC.got.has(id)) return; SEC.got.add(id); secSave();
   const s = SECRETS.find(x => x.id === id), n = SEC.got.size;
-  secToast(`<i>${s.glyph}</i><span><b>Secret found: ${s.name}</b>${n === SECRETS.length ? "All eight. A hidden chapter is open in the cabinet." : n + " of " + SECRETS.length + ". A keepsake is waiting in your cabinet."}</span>`);
+  secToast(`<i>${s.glyph}</i><span><b>Secret found: ${s.name}</b>${n === SECRETS.length ? "All " + ["", "one", "two", "three", "four", "five", "six", "seven", "eight"][SECRETS.length] + ". A hidden chapter is open in the cabinet." : n + " of " + SECRETS.length + ". A keepsake is waiting in your cabinet."}</span>`);
   secRender(); if (SEC.btn) { SEC.btn.classList.remove("pulse"); void SEC.btn.offsetWidth; SEC.btn.classList.add("pulse"); }
 }
 function secWidget(id, k, title, hint, body) {
@@ -9287,7 +9285,7 @@ function secRender() {
     : h("li", null, h("i", { class: "ci", text: "?" }), h("span", null, h("b", { text: "Still hidden" }), h("small", null, "Somewhere at the end of " + s.where + ". ", h("a", { href: "#fin-" + s.id, text: "Go look" }))))));
   SEC.reward.replaceChildren(all
     ? h("a", { class: "cab-reward on", href: "#manga" }, h("small", { text: "Unlocked" }), h("b", { text: "More about AlphaGo" }), h("span", { text: "Move 37, drawn as a manga, and where it led me." }))
-    : h("div", { class: "cab-reward" }, h("small", { text: "Locked" }), h("b", { text: "A hidden chapter" }), h("span", { text: "Find all eight secrets to open it." })));
+    : h("div", { class: "cab-reward" }, h("small", { text: "Locked" }), h("b", { text: "A hidden chapter" }), h("span", { text: "Find all " + ["", "one", "two", "three", "four", "five", "six", "seven", "eight"][SECRETS.length] + " secrets to open it." })));
   SEC.count.textContent = n + " of " + SECRETS.length + " found";
 }
 {
