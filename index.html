@@ -11282,8 +11282,9 @@ const AMB = window.AMB = (() => {
     document.body.append(wrap); const cv = wrap.querySelector("canvas");
     { const c = noise(160, 160, (g, w, h) => { const im = g.createImageData(w, h); for (let i = 0; i < im.data.length; i += 4) { const v = Math.random() * 255; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255; } g.putImageData(im, 0, 0); });
       wrap.querySelector(".hs-grain").style.backgroundImage = `url(${c.toDataURL()})`; }
-    const R = new T3.WebGLRenderer({ canvas: cv, antialias: true, powerPreference: "high-performance" }); R.setPixelRatio(Math.min(devicePixelRatio, 2)); R.setSize(innerWidth, innerHeight, false);
-    R.outputEncoding = T3.sRGBEncoding; R.toneMapping = T3.ACESFilmicToneMapping; R.toneMappingExposure = 0; R.shadowMap.enabled = true; R.shadowMap.type = T3.PCFSoftShadowMap; R.physicallyCorrectLights = false;
+    const LOW = !!window.__lite && !force;   // software rendering: still the whole tour, just lighter on the pixels
+    const R = new T3.WebGLRenderer({ canvas: cv, antialias: !LOW, powerPreference: "high-performance" }); R.setPixelRatio(LOW ? Math.min(devicePixelRatio, 1) * 0.75 : Math.min(devicePixelRatio, 2)); R.setSize(innerWidth, innerHeight, false);
+    R.outputEncoding = T3.sRGBEncoding; R.toneMapping = T3.ACESFilmicToneMapping; R.toneMappingExposure = 0; R.shadowMap.enabled = !LOW; R.shadowMap.type = T3.PCFSoftShadowMap; R.physicallyCorrectLights = false;
     const S = new T3.Scene(); S.background = new T3.Color(0x060912); S.fog = new T3.FogExp2(0x060912, 0.035);
     const FOV = tall ? 64 : 44, cam = new T3.PerspectiveCamera(FOV, innerWidth / innerHeight, 0.02, 80);
     const rnd = (() => { let q = 37; return () => (q = (q * 16807) % 2147483647) / 2147483647; })();
@@ -11546,7 +11547,8 @@ const AMB = window.AMB = (() => {
     R.compile(S, cam); requestAnimationFrame(() => { wrap.classList.add("in"); raf = requestAnimationFrame(frame); });
     window.__house.running = () => !done;
   }
-  window.__house = { play: () => play().catch(() => { dispatchEvent(new Event("house:done")); }), running: () => false, claim: () => { played = true; }, able: () => !!(force || !window.__lite) && !RM };
+  const GL = () => { try { const c = document.createElement("canvas"); return !!(c.getContext("webgl") || c.getContext("experimental-webgl")); } catch (e) { return false; } };
+  window.__house = { play: () => play().catch(() => { dispatchEvent(new Event("house:done")); }), running: () => false, claim: () => { played = true; }, able: () => !RM && (force || !window.__lite || GL()) };
   if (played) return;
   if (window.__lite && !force) return;
   const go = () => { if (played) return; played = true; try { sessionStorage.setItem("bgHouse", "1"); } catch (e) {} play().catch(() => {}); };
@@ -11563,7 +11565,7 @@ const AMB = window.AMB = (() => {
   const intro = document.getElementById("intro"), reveal = document.getElementById("reveal"); if (!intro || !reveal || !window.__hub) return;
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const force = /[?&]house\b/.test(location.search), H5 = window.__house;
-  let ran = false, busy = false;
+  let ran = false, busy = false, runs = 0, away = false;
   const seen = () => { try { return localStorage.getItem("bgSeenHouse") === "1"; } catch (e) { return false; } };
   const revealed = () => { const cs = getComputedStyle(reveal); return +cs.opacity > 0.5 && cs.visibility !== "hidden"; };
   const home = () => (document.body.dataset.page || "home") === "home";
@@ -11571,7 +11573,7 @@ const AMB = window.AMB = (() => {
   const to = y => scrollTo({ top: y, behavior: "instant" });
   function run() {
     if (ran || busy) return; ran = busy = true;
-    const first = (force || !seen()) && H5 && H5.able(); if (H5) H5.claim();
+    const first = runs === 0 && !!H5 && H5.able(); runs++; if (H5) H5.claim();   // v87: the house every first time per load; the dark on a return to home
     const W = innerWidth, H = innerHeight, k = clamp(Math.min(W, H) / 820, 0.62, 1.25), y0 = scrollY, land = window.__hub.landing(), lead = (window.__hub.state().lead || H), D = Math.max(y0, Math.min(y0 + H * 0.2, lead * 0.16));   // stay short of where the Lumos starts by itself
     const cr = reveal.querySelector(".cue").getBoundingClientRect(), shown = revealed() && cr.width > 0 && cr.top > 0 && cr.top < H, cx = shown ? cr.left + cr.width / 2 : W / 2, cy = (shown ? cr.top + cr.height / 2 : H * 0.8) + y0;   // the opening may not have finished: start where the arrow will be
     const wrap = document.createElement("div"); wrap.className = "trn"; wrap.innerHTML = `<canvas></canvas><button class="hs-skip" type="button">Skip <span aria-hidden="true">›</span></button>`; document.body.append(wrap);
@@ -11660,6 +11662,8 @@ const AMB = window.AMB = (() => {
   // dragging the scrollbar (or a middle-click autoscroll) away from the top counts too
   let held = false; addEventListener("pointerdown", () => { held = true; }, true); addEventListener("pointerup", () => { held = false; }, true);
   addEventListener("scroll", () => { if (held && !ran && !busy && home() && scrollY > 0 && scrollY < window.__hub.landing() * 0.6) { to(0); run(); } }, { passive: true });
+  // coming back to the home page from another part of the site: the walk is offered again, this time into the dark
+  addEventListener("hashchange", () => { if (!home()) away = true; else if (away && !busy) { away = false; ran = false; } });
   window.__transit = { run, state: () => ({ ran, busy }) };
 })();
 
