@@ -330,6 +330,14 @@ body.pj-lit[data-page="projects"] #projects .dk-table { opacity: 1; }
 @keyframes hsGrain { 0% { transform: translate(0, 0); } 25% { transform: translate(-17px, 9px); } 50% { transform: translate(11px, -23px); } 75% { transform: translate(-7px, 19px); } }
 .hs-cap, .hs-skip { z-index: 3; }
 
+
+/* v86: the bridge from the opening to the desk */
+.trn { position: fixed; inset: 0; z-index: 96; pointer-events: none; transition: opacity 0.7s ease; }
+.trn canvas { width: 100%; height: 100%; display: block; }
+.trn .hs-skip { pointer-events: auto; position: absolute; left: 18px; right: auto; bottom: 18px; font: 600 13px/1 var(--font-ui); letter-spacing: 0.14em; text-transform: uppercase; color: #e8dcc4; background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(232, 220, 196, 0.35); border-radius: 999px; padding: 10px 16px; cursor: pointer; }
+.trn.out { opacity: 0; transition-duration: 1.2s; }
+body:has(.trn:not(.out)) .hub-lumos { opacity: 0; }
+
 .hero .robot { position: absolute; transform: translateZ(0.7px); visibility: hidden; pointer-events: none; }
 .edge { position: absolute; backface-visibility: hidden; background: linear-gradient(180deg, #c99e5a, #8f6a33); }
 .edge.e-b { transform-origin: top; transform: rotateX(-90deg); background: linear-gradient(180deg, #b5884a, #7c5a2c); }
@@ -11204,7 +11212,7 @@ const AMB = window.AMB = (() => {
   };
   const noise = (w, h, f) => { const c = document.createElement("canvas"); c.width = w; c.height = h; const g = c.getContext("2d"); f(g, w, h); return c; };
   async function play() {
-    const T3 = await loadThree(); if (!T3) return;
+    const T3 = await loadThree(); if (!T3) { dispatchEvent(new Event("house:done")); return; }
     const tall = innerWidth / innerHeight < 0.9, dW = tall ? 0.9 : 1.6, dD = tall ? 1.6 : 1.0, dX = 0.9, dZ = -2.5 + dD / 2 + 0.02, top = 0.77;
     const deskPic = await paintDesk(tall);
     const wrap = document.createElement("div"); wrap.className = "house"; wrap.setAttribute("aria-hidden", "true");
@@ -11454,6 +11462,7 @@ const AMB = window.AMB = (() => {
     addEventListener("wheel", stopScroll, { passive: false }); addEventListener("touchmove", stopScroll, { passive: false }); addEventListener("keydown", stopKeys);
     const finish = () => { if (done) return; done = true; cancelAnimationFrame(raf); wrap.classList.add("out");
       removeEventListener("wheel", stopScroll); removeEventListener("touchmove", stopScroll); removeEventListener("keydown", stopKeys);
+      try { localStorage.setItem("bgSeenHouse", "1"); } catch (e) {} dispatchEvent(new Event("house:done"));
       setTimeout(() => { R.dispose(); wrap.remove(); }, 1300); };
     wrap.querySelector(".hs-skip").addEventListener("click", finish);
     const frame = now => {
@@ -11475,12 +11484,112 @@ const AMB = window.AMB = (() => {
     R.compile(S, cam); requestAnimationFrame(() => { wrap.classList.add("in"); raf = requestAnimationFrame(frame); });
     window.__house.running = () => !done;
   }
-  window.__house = { play: () => play().catch(() => {}), running: () => false };
+  window.__house = { play: () => play().catch(() => { dispatchEvent(new Event("house:done")); }), running: () => false, claim: () => { played = true; }, able: () => !!(force || !window.__lite) && !RM };
   if (played) return;
   if (window.__lite && !force) return;
   const go = () => { if (played) return; played = true; try { sessionStorage.setItem("bgHouse", "1"); } catch (e) {} play().catch(() => {}); };
   const check = () => { if (desk.classList.contains("on") && (document.body.dataset.page || "home") === "home") go(); };
   new MutationObserver(check).observe(desk, { attributes: true, attributeFilter: ["class"] }); check();
+})();
+
+
+// v86: from the opening to the desk, on foot. When you leave the opening (scroll on, or press the arrow under it), a
+// pencil bridge sketches itself out of that arrow and winds down into the next page to a door; a stick figure walks
+// it while the page follows him down. The first time, the door is lit and opens onto the walk through the house;
+// after that it opens onto the dark, and the wand's Lumos lights the desk as before.
+(() => {
+  const intro = document.getElementById("intro"), reveal = document.getElementById("reveal"); if (!intro || !reveal || !window.__hub) return;
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const force = /[?&]house\b/.test(location.search), H5 = window.__house;
+  let ran = false, busy = false;
+  const seen = () => { try { return localStorage.getItem("bgSeenHouse") === "1"; } catch (e) { return false; } };
+  const revealed = () => { const cs = getComputedStyle(reveal); return +cs.opacity > 0.5 && cs.visibility !== "hidden"; };
+  const home = () => (document.body.dataset.page || "home") === "home";
+  const ss = x => x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x), clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+  const to = y => scrollTo({ top: y, behavior: "instant" });
+  function run() {
+    if (ran || busy) return; ran = busy = true;
+    const first = (force || !seen()) && H5 && H5.able(); if (H5) H5.claim();
+    const W = innerWidth, H = innerHeight, k = clamp(Math.min(W, H) / 820, 0.62, 1.25), y0 = scrollY, land = window.__hub.landing(), lead = (window.__hub.state().lead || H), D = Math.max(y0, Math.min(y0 + H * 0.2, lead * 0.16));   // stay short of where the Lumos starts by itself
+    const cr = reveal.querySelector(".cue").getBoundingClientRect(), cx = cr.left + cr.width / 2, cy = cr.top + cr.height / 2 + y0;
+    const wrap = document.createElement("div"); wrap.className = "trn"; wrap.innerHTML = `<canvas></canvas><button class="hs-skip" type="button">Skip <span aria-hidden="true">›</span></button>`; document.body.append(wrap);
+    const cv = wrap.querySelector("canvas"), g = cv.getContext("2d"), dpr = Math.min(devicePixelRatio || 1, 2); cv.width = W * dpr; cv.height = H * dpr;
+    // the bridge, in page coordinates, so it is fixed to the page as the page moves
+    const yS = cy + 14 * k, yE = D + H * 0.76, sp = yE - yS; const ctrl = [[cx, yS], [W * 0.2, yS + sp * 0.38], [W * 0.5, yS + sp * 0.78], [W * 0.76, yE]];
+    const pts = []; { const cr2 = (p0, p1, p2, p3, t) => { const t2 = t * t, t3 = t2 * t; return 0.5 * (2 * p1 + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3); };
+      const C = [ctrl[0], ...ctrl, ctrl[3]]; for (let i = 1; i < C.length - 2; i++) for (let j = 0; j < 40; j++) { const t = j / 40; pts.push([cr2(C[i - 1][0], C[i][0], C[i + 1][0], C[i + 2][0], t), cr2(C[i - 1][1], C[i][1], C[i + 1][1], C[i + 2][1], t)]); } pts.push(ctrl[3]); }
+    const acc = [0]; for (let i = 1; i < pts.length; i++) acc.push(acc[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])); const LEN = acc[acc.length - 1];
+    const at = s => { const d = clamp(s, 0, 1) * LEN; let i = 1; while (i < acc.length - 1 && acc[i] < d) i++; const f = (d - acc[i - 1]) / ((acc[i] - acc[i - 1]) || 1); return [pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * f, pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * f, Math.sign(pts[i][0] - pts[i - 1][0]) || 1]; };
+    const RAIL = 34 * k, WALK = clamp(LEN / (230 * k), 3.4, 5.6), T_SK = 1.3, T_W0 = T_SK + 0.1, T_W1 = T_W0 + WALK, T_OPEN = T_W1 + 0.15, T_IN = T_OPEN + 0.6, T_END = T_IN + 0.8;
+    let seed = 1, boil = 0; const jr = () => (seed = (seed * 16807) % 2147483647) / 2147483647 - 0.5;
+    const ink = (a = 0.9) => `rgba(236,229,214,${a})`;
+    const line = (pa, w = 1.4, a = 0.85, j = 0.8) => { for (let pass = 0; pass < 2; pass++) { g.strokeStyle = ink(pass ? a * 0.45 : a); g.lineWidth = pass ? w * 0.6 : w; g.beginPath(); pa.forEach(([x, y], i) => { const X = x + jr() * j * k, Y = y + jr() * j * k; i ? g.lineTo(X, Y) : g.moveTo(X, Y); }); g.stroke(); } };
+    const door = E => { const [ex, ey] = E, dw = 44 * k, dh = 86 * k, x0 = ex + 8 * k, y1 = ey; return { x0, y0: y1 - dh, dw, dh }; };
+    const stick = (x, y, ph, dir, a = 1) => {   // a walking stick figure, feet at (x, y)
+      const s = k, bob = Math.abs(Math.sin(ph)) * 2.2 * s, hip = [x, y - 30 * s - bob], sh = [x + dir * 1.5 * s, y - 52 * s - bob], hd = [x + dir * 3 * s, y - 61 * s - bob];
+      const leg = q => { const sw = Math.sin(ph + q) * 0.5, knee = [hip[0] + Math.sin(sw) * 15 * s, hip[1] + Math.cos(sw) * 15 * s], kb = Math.max(0, Math.sin(ph + q + 1.3)) * 0.7, foot = [knee[0] + Math.sin(sw - kb * dir) * 15 * s, knee[1] + Math.cos(sw - kb) * 15 * s]; return [hip, knee, foot]; };
+      const arm = q => { const sw = Math.sin(ph + q) * 0.55, el = [sh[0] + Math.sin(sw) * 11 * s, sh[1] + Math.cos(sw) * 11 * s], hn = [el[0] + Math.sin(sw + 0.4 * dir) * 10 * s, el[1] + Math.cos(sw + 0.4) * 10 * s]; return [sh, el, hn]; };
+      g.globalAlpha = a; line(leg(Math.PI), 2, 0.55); line(arm(0), 1.8, 0.55); line([hip, sh], 2.2, 0.95); line(leg(0), 2.2, 0.95); line(arm(Math.PI), 2, 0.95);
+      g.strokeStyle = ink(0.95); g.lineWidth = 2; g.beginPath(); g.arc(hd[0] + jr() * 0.6, hd[1] + jr() * 0.6, 7.5 * s, 0, 7); g.stroke(); g.globalAlpha = 1; };
+    const stopKeys = e => { if (["ArrowDown", "ArrowUp", "PageDown", "PageUp", " ", "Home", "End"].includes(e.key)) e.preventDefault(); if (e.key === "Escape") skip(); };
+    const stopScroll = e => e.preventDefault();
+    addEventListener("wheel", stopScroll, { passive: false }); addEventListener("touchmove", stopScroll, { passive: false }); addEventListener("keydown", stopKeys);
+    const unlock = () => { removeEventListener("wheel", stopScroll); removeEventListener("touchmove", stopScroll); removeEventListener("keydown", stopKeys); busy = false; };
+    let t0 = 0, raf = 0, phase = "walk", done = false;
+    const glide = (from, toY, ms, after) => { const s0 = performance.now(); const st = now => { const f = Math.min(1, (now - s0) / ms), e = f < 0.5 ? 2 * f * f : 1 - Math.pow(-2 * f + 2, 2) / 2; to(from + (toY - from) * e); if (f < 1) requestAnimationFrame(st); else after && after(); }; requestAnimationFrame(st); };
+    const toHouse = () => { to(land); if (first) { H5.play(); setTimeout(() => wrap.remove(), 900); addEventListener("house:done", unlock, { once: true }); } else { wrap.remove(); unlock(); } };
+    const toLumos = () => { to(land); unlock(); requestAnimationFrame(() => wrap.classList.add("out")); setTimeout(() => wrap.remove(), 1800); };
+    const skip = () => { if (done) return; done = true; cancelAnimationFrame(raf); if (first) { g.fillStyle = "#000"; g.fillRect(0, 0, cv.width, cv.height); toHouse(); } else { wrap.remove(); to(land); unlock(); } };
+    wrap.querySelector(".hs-skip").addEventListener("click", skip);
+    const E = ctrl[3], Dr = door(E);
+    const frame = now => {
+      if (!t0) t0 = now; const t = window.__trnT != null ? window.__trnT : (now - t0) / 1000; if (now - boil > 90) { boil = now; seed = 1 + ((now / 90) | 0) % 7 * 977; }
+      // the camera: the page follows the walker down
+      const wf = clamp((t - T_W0) / WALK, 0, 1), we = wf < 0.5 ? 2 * wf * wf : 1 - Math.pow(-2 * wf + 2, 2) / 2;
+      to(y0 + (D - y0) * ss(clamp((t - T_W0 + 0.3) / (WALK + 0.3), 0, 1)));
+      const sy = scrollY; g.setTransform(dpr, 0, 0, dpr, 0, -sy * dpr); g.clearRect(0, sy, W, H);
+      // the bridge sketches itself out of the arrow, then its rail, hangers and planks
+      const rv = ss(clamp(t / T_SK, 0, 1)), n = Math.max(2, Math.round(pts.length * rv));
+      const deck = pts.slice(0, n); line(deck, 2.2, 0.95, 0.6);
+      line(deck.map(([x, y]) => [x, y + 6 * k]), 1.1, 0.5, 0.6);
+      const rail = []; for (let s = 0; s <= rv + 1e-6; s += 0.01) { const [x, y] = at(s), sag = Math.sin((s * LEN / (90 * k)) * Math.PI) * 5 * k; rail.push([x, y - RAIL + Math.abs(sag)]); } if (rail.length > 1) line(rail, 1.3, 0.7, 0.7);
+      for (let d = 0; d < rv * LEN; d += 15 * k) { const [x, y] = at(d / LEN); line([[x - 1.5 * k, y + 1 * k], [x + 1.5 * k, y + 6 * k]], 1, 0.55, 0.3); }
+      for (let d = 0; d < rv * LEN; d += 45 * k) { const [x, y] = at(d / LEN), sag = Math.abs(Math.sin((d / (90 * k)) * Math.PI) * 5 * k); line([[x, y], [x, y - RAIL + sag]], 0.9, 0.45, 0.4); }
+      { const [x, y] = at(0); line([[x - 4 * k, y + 8 * k], [x - 4 * k, y - RAIL - 10 * k]], 3, 0.9, 0.4); }
+      // the door at the far end, on the next page; lit the first time, dark after
+      const da = ss(clamp((t - T_SK * 0.7) / 0.6, 0, 1));
+      if (da > 0) { g.globalAlpha = da; const { x0, y0: dy0, dw, dh } = Dr;
+        line([[x0 - 6 * k, E[1] + 1], [x0 + dw + 14 * k, E[1] + 1]], 2, 0.9, 0.5);
+        const open = ss(clamp((t - T_OPEN) / 0.5, 0, 1)) * (t > T_IN + 0.25 && !first ? 1 - ss(clamp((t - T_IN - 0.25) / 0.4, 0, 1)) : 1);
+        if (first) { const gl = g.createRadialGradient(x0 + dw / 2, dy0 + dh / 2, 0, x0 + dw / 2, dy0 + dh / 2, dh * (1.1 + open)); gl.addColorStop(0, `rgba(255,205,130,${0.18 + 0.5 * open})`); gl.addColorStop(1, "rgba(255,190,110,0)"); g.fillStyle = gl; g.fillRect(x0 - dh * 2, dy0 - dh, dh * 4 + dw, dh * 3); }
+        g.fillStyle = first ? `rgba(255,214,150,${0.25 + 0.75 * open})` : "#000"; g.fillRect(x0, dy0, dw, dh);
+        const pw = dw * (1 - open * 0.92); g.fillStyle = "#14110e"; g.fillRect(x0, dy0, pw, dh);
+        line([[x0, E[1]], [x0, dy0], [x0 + dw, dy0], [x0 + dw, E[1]]], 2.4, 0.95, 0.5);
+        line([[x0 + pw, dy0 + 3 * k], [x0 + pw, E[1] - 1]], 1.6, 0.8, 0.5); if (pw > 12 * k) { g.fillStyle = ink(0.9); g.beginPath(); g.arc(x0 + pw - 6 * k, dy0 + dh * 0.55, 1.8 * k, 0, 7); g.fill(); }
+        if (first && open < 0.2) { g.fillStyle = "rgba(255,210,140,0.8)"; g.fillRect(x0 + 2, E[1] - 2, dw - 4, 2); g.fillStyle = "rgba(255,210,140,0.65)"; g.fillRect(x0 + dw * 0.25, dy0 + dh * 0.15, dw * 0.5, dh * 0.14); }
+        g.fillStyle = ink(0.85); g.font = `italic 700 ${Math.round(11 * k)}px Georgia, serif`; g.textAlign = "center"; g.fillText("37", x0 + dw / 2, dy0 - 6 * k); g.globalAlpha = 1; }
+      // the walker
+      if (t > T_W0 - 0.2) { const enter = clamp((t - T_OPEN - 0.3) / (T_IN - T_OPEN - 0.3 + 0.35), 0, 1);
+        if (t < T_W1) { const [x, y, dir] = at(we); stick(x, y, (t - T_W0) * 7.5, dir, ss(clamp((t - T_W0 + 0.2) / 0.3, 0, 1))); }
+        else if (enter < 1) { const x = E[0] + (Dr.x0 + Dr.dw / 2 - E[0]) * enter; stick(x, E[1], (t - T_W0) * 7.5 * (enter > 0 ? 1 : 0.2), 1, 1 - ss(clamp((enter - 0.55) / 0.45, 0, 1))); } }
+      // through the door
+      if (t > T_IN) { const f = clamp((t - T_IN) / (T_END - T_IN), 0, 1);
+        if (first) { const cx2 = Dr.x0 + Dr.dw / 2, cy2 = Dr.y0 + Dr.dh / 2, R2 = Math.hypot(W, H) * ss(f) * 1.1 + Dr.dh * 0.6; const gr = g.createRadialGradient(cx2, cy2, 0, cx2, cy2, R2); gr.addColorStop(0, `rgba(255,236,200,${ss(f)})`); gr.addColorStop(0.6, `rgba(255,205,130,${ss(f)})`); gr.addColorStop(1, `rgba(255,190,110,${ss(f) * 0.6})`); g.fillStyle = gr; g.fillRect(0, sy, W, H);
+          if (f > 0.75) { g.fillStyle = `rgba(0,0,0,${ss((f - 0.75) / 0.25)})`; g.fillRect(0, sy, W, H); } }
+        else { g.fillStyle = `rgba(0,0,0,${ss(f)})`; g.fillRect(0, sy, W, H); } }
+      if (t >= T_END) { done = true; return first ? toHouse() : toLumos(); }
+      raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
+    window.__trn = { first, D, LEN, WALK };
+  }
+  // leaving the opening: a scroll down from it, or the arrow/tagline under it
+  addEventListener("wheel", e => { if (!ran && !busy && home() && e.deltaY > 0 && scrollY < 40 && revealed()) { e.preventDefault(); run(); } }, { passive: false });
+  let ty = null; addEventListener("touchstart", e => { ty = e.touches[0].clientY; }, { passive: true });
+  addEventListener("touchmove", e => { if (!ran && !busy && ty != null && home() && ty - e.touches[0].clientY > 12 && scrollY < 40 && revealed()) { e.preventDefault(); run(); } }, { passive: false });
+  addEventListener("keydown", e => { if (!ran && !busy && home() && ["ArrowDown", "PageDown", " "].includes(e.key) && scrollY < 40 && revealed() && !e.target.closest("input, textarea")) { e.preventDefault(); run(); } });
+  addEventListener("click", e => { const a = e.target.closest && e.target.closest('#reveal a[href="#hub"]'); if (a && !ran && !busy && revealed()) { e.preventDefault(); e.stopImmediatePropagation(); run(); } }, true);
+  window.__transit = { run, state: () => ({ ran, busy }) };
 })();
 
 </script>
