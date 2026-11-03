@@ -87,30 +87,82 @@ body {
 .hub-paper > .eyebrow, .hub-lede, .hub-hint, .hub-doors .hub-door .l, .hub-doors .hub-proj .l, .hp-kick { display: none !important; }
 .hub-doors .hub-proj { align-items: center; }
 
-/* v78: the crow over the deck */
+/* v79: the crow, and its line written in gilt smoke */
 .crow-fly { position: fixed; inset: 0; z-index: 60; pointer-events: none; overflow: hidden; visibility: hidden; contain: strict; }
 .crow-fly.on { visibility: visible; }
-.cw-bird { position: absolute; left: 0; top: 0; width: 220px; height: 174px; transform-origin: 110px 60px; will-change: transform; filter: drop-shadow(0 10px 14px rgba(0,0,0,0.35)); }
+.cw-bird { position: absolute; left: 0; top: 0; width: 300px; height: 260px; transform-origin: 150px 100px; will-change: transform; filter: drop-shadow(0 14px 18px rgba(0,0,0,0.45)) drop-shadow(0 0 1px rgba(255,210,140,0.25)); }
 .cw-svg { width: 100%; height: 100%; overflow: visible; }
-.cw-body, .cw-head { fill: url(#cwBody); }
-.cw-tail { fill: #0a0a0e; }
-.cw-sheen { fill: url(#cwSheen); mix-blend-mode: screen; }
-.cw-wing path { fill: url(#cwWing); stroke: rgba(120,135,190,0.25); stroke-width: 0.6; }
-.cw-wing .cw-cov { fill: #15161d; stroke: none; }
-.cw-wing.far path { fill: #050507; }
-.cw-beak { fill: url(#cwBeak); }
-.cw-beakline { stroke: rgba(255,255,255,0.18); stroke-width: 0.8; fill: none; }
-.cw-legs { stroke: #111; stroke-width: 2.4; stroke-linecap: round; fill: none; }
-.cw-eye { fill: #1a1408; stroke: #6b5a2c; stroke-width: 0.8; }
-.cw-shadow { position: absolute; left: 0; top: 0; width: 140px; height: 40px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0,0,0,0.9), rgba(0,0,0,0)); filter: blur(6px); opacity: 0; will-change: transform, opacity; }
-.cw-say { position: absolute; right: 100%; top: 62px; margin-right: -14px; white-space: nowrap; transform-origin: 100% 100%; transform: scale(0.6) translateY(10px) rotate(4deg); opacity: 0; transition: transform 0.5s cubic-bezier(0.2, 1.5, 0.4, 1), opacity 0.3s ease; }
-.cw-say.show { transform: none; opacity: 1; }
-.cw-say.rt { right: auto; left: 52%; top: 18px; margin: 0; transform-origin: 0 100%; }
-.cw-say.rt span { border-radius: 14px 14px 14px 4px; }
-.cw-say span { display: inline-block; padding: 10px 18px 11px; border-radius: 14px 14px 4px 14px; background: linear-gradient(180deg, #fbf6ea, #efe5cf); color: #241d16; border: 1px solid rgba(154,108,28,0.55);
-  font: italic 500 22px/1 var(--font-display); letter-spacing: 0.005em; box-shadow: 0 1px 0 rgba(255,255,255,0.7) inset, 0 12px 26px -10px rgba(0,0,0,0.6); }
-.cw-feather { position: absolute; left: 0; top: 0; width: 12px; height: 30px; border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%; background: linear-gradient(90deg, #07070a 0 46%, #3a3e52 48% 52%, #0c0c11 54%); opacity: 0; will-change: transform, opacity; }
-@media (max-width: 699px) { .cw-say span { font-size: 17px; padding: 8px 14px 9px; } }
+.cw-svg .cf { fill: url(#cwF); stroke: rgba(140,155,210,0.28); stroke-width: 0.5; }
+.cw-svg .cr { stroke: rgba(170,185,235,0.22); stroke-width: 0.5; fill: none; }
+.cw-svg .cv { fill: #121319; stroke: rgba(140,155,210,0.22); stroke-width: 0.5; }
+.cw-svg .cv2 { fill: #1b1d28; }
+.cw-far .cf, .cw-far .cv, .cw-far .cv2 { fill: #050507; stroke: rgba(90,100,140,0.18); }
+.cw-svg .ct { stroke: rgba(120,135,190,0.25); }
+.cw-nape { fill: none; stroke: #1a1c26; stroke-width: 1.6; stroke-linecap: round; }
+.cw-bris { stroke: #0b0b0e; stroke-width: 1.1; stroke-linecap: round; }
+.cw-legs { stroke: #0f0f12; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+.cw-shadow { position: absolute; left: 0; top: 0; width: 160px; height: 44px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0,0,0,0.9), rgba(0,0,0,0)); filter: blur(7px); opacity: 0; will-change: transform, opacity; }
+.cw-words { position: absolute; left: 0; right: 0; text-align: center; white-space: nowrap; font: italic 300 clamp(26px, 4.4vw, 62px)/1.1 var(--font-display); font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1; letter-spacing: 0.04em; }
+.cw-words span { display: inline-block; opacity: 0; transform: translateY(12px) scale(0.9); filter: blur(10px);
+  background: linear-gradient(180deg, #fff3cf 0%, #e9c27a 45%, #a8742a 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  transition: opacity 0.9s ease, transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1), filter 1.1s ease; }
+.cw-words span.on { opacity: 1; transform: none; filter: blur(0) drop-shadow(0 0 10px rgba(255, 190, 100, 0.45)); }
+.cw-words.gone span { opacity: 0; transform: translateY(-26px) scale(1.04); filter: blur(12px); transition: opacity 2s ease, transform 2.4s ease, filter 2s ease; }
+.cw-words.gone span:nth-child(3n) { transition-delay: 0.15s; } .cw-words.gone span:nth-child(3n+1) { transition-delay: 0.35s; }
+
+
+/* v79: Projects is a fortune teller's parlour: velvet drapes, a lamp overhead, candles, smoke; the table in plum velvet
+   with a gilt zodiac under the cards and a crystal ball at its corner. It all comes up slowly from black as you arrive. */
+.parlour { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0; visibility: hidden; transition: opacity 2.6s ease, visibility 0s 2.6s;
+  background: radial-gradient(120% 90% at 50% 18%, rgba(70, 22, 44, 0.55), rgba(20, 6, 14, 0.9) 60%, #050304 100%), #0a0507; }
+body[data-page="projects"] .parlour { opacity: 1; visibility: visible; transition: opacity 2.6s ease, visibility 0s; }
+.parlour > * { position: absolute; }
+.pl-wall { inset: 0; opacity: 0.09; background-size: 120px 120px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23e8c47a' stroke-width='1.2'%3E%3Cpath d='M60 8c10 14 10 26 0 38-10-12-10-24 0-38zM60 74c10 14 10 26 0 38-10-12-10-24 0-38zM8 60c14-10 26-10 38 0-12 10-24 10-38 0zM74 60c14-10 26-10 38 0-12 10-24 10-38 0z'/%3E%3Ccircle cx='60' cy='60' r='9'/%3E%3Ccircle cx='0' cy='0' r='14'/%3E%3Ccircle cx='120' cy='0' r='14'/%3E%3Ccircle cx='0' cy='120' r='14'/%3E%3Ccircle cx='120' cy='120' r='14'/%3E%3C/g%3E%3C/svg%3E"); }
+.pl-beam { left: 50%; top: -5%; width: min(1100px, 120vw); height: 110%; transform: translateX(-50%); opacity: 0; clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, rgba(255, 196, 120, 0.22), rgba(255, 180, 100, 0.06) 60%, rgba(255, 180, 100, 0)); filter: blur(18px); transition: opacity 2.4s ease 0.8s; }
+.pl-pool { left: 50%; top: 30%; width: min(1300px, 130vw); height: 80%; transform: translateX(-50%); opacity: 0; background: radial-gradient(closest-side, rgba(255, 180, 100, 0.2), rgba(255, 160, 80, 0.06) 55%, transparent); transition: opacity 2.8s ease 1s; }
+body.pj-lit .pl-beam { opacity: 1; animation: plFlick 7s ease-in-out 3.6s infinite; } body.pj-lit .pl-pool { opacity: 1; }
+@keyframes plFlick { 0%, 100% { opacity: 1; } 47% { opacity: 0.86; } 50% { opacity: 0.97; } 53% { opacity: 0.8; } 56% { opacity: 1; } }
+.pl-smoke { inset: 0; width: 100%; height: 100%; }
+.pl-curt { top: 0; bottom: 0; width: clamp(46px, 11vw, 210px); height: 100%; transition: transform 3.2s cubic-bezier(0.25, 0.8, 0.2, 1); filter: drop-shadow(10px 0 26px rgba(0, 0, 0, 0.7)); }
+.pl-curt.l { left: 0; transform: translateX(-8%) scaleX(1.25); transform-origin: 0 0; }
+.pl-curt.r { right: 0; transform: translateX(8%) scaleX(-1.25); transform-origin: 50% 0; }
+body.pj-lit .pl-curt.l { transform: none; } body.pj-lit .pl-curt.r { transform: scaleX(-1); }
+.pl-val { left: 0; right: 0; top: 0; height: 58px; background: linear-gradient(180deg, #23050a, #4c0d16 55%, #2a060c);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6); -webkit-mask: radial-gradient(18px 14px at 18px 44px, transparent 98%, #000) 0 0 / 36px 100%; mask: radial-gradient(18px 14px at 18px 44px, transparent 98%, #000) 0 0 / 36px 100%; }
+.pl-val::after { content: ""; position: absolute; left: 0; right: 0; bottom: 14px; height: 2px; background: linear-gradient(90deg, transparent, #c9a25a 10%, #f2d38c 50%, #c9a25a 90%, transparent); opacity: 0.8; }
+.pl-candle { bottom: 4%; width: 16px; height: 92px; border-radius: 4px 4px 2px 2px; background: linear-gradient(90deg, #b9a380, #f3e6c8 40%, #cdb894 75%, #8d7a58); box-shadow: 0 0 30px rgba(255, 170, 80, 0.15); opacity: 0; transition: opacity 1.4s ease 1.8s; }
+.pl-candle.a { left: calc(clamp(46px, 11vw, 210px) + 4vw); } .pl-candle.b { left: calc(clamp(46px, 11vw, 210px) + 4vw + 26px); height: 64px; }
+.pl-candle.c { right: calc(clamp(46px, 11vw, 210px) + 4vw); height: 78px; }
+.pl-candle::before { content: ""; position: absolute; left: 50%; bottom: 100%; width: 12px; height: 26px; margin-left: -6px; border-radius: 50% 50% 45% 45% / 65% 65% 35% 35%;
+  background: radial-gradient(60% 50% at 50% 70%, #fff8dc, #ffd27a 40%, #ff9a2e 70%, rgba(255, 120, 30, 0)); transform-origin: 50% 100%; animation: plFlame 1.6s ease-in-out infinite alternate; filter: blur(0.4px); }
+.pl-candle.b::before { animation-duration: 1.2s; } .pl-candle.c::before { animation-duration: 1.9s; }
+.pl-candle::after { content: ""; position: absolute; left: 50%; bottom: 80%; width: 260px; height: 260px; margin-left: -130px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 170, 80, 0.22), rgba(255, 150, 60, 0)); animation: plGlow 2.3s ease-in-out infinite alternate; }
+body.pj-lit .pl-candle { opacity: 1; }
+@keyframes plFlame { 0% { transform: scale(1, 1) skewX(0deg); } 30% { transform: scale(0.92, 1.08) skewX(3deg); } 60% { transform: scale(1.05, 0.95) skewX(-2deg); } 100% { transform: scale(0.96, 1.04) skewX(1.5deg); } }
+@keyframes plGlow { from { opacity: 0.75; transform: scale(0.96); } to { opacity: 1; transform: scale(1.04); } }
+.pl-vig { inset: 0; background: radial-gradient(130% 100% at 50% 40%, transparent 55%, rgba(0, 0, 0, 0.75)); }
+@media (max-width: 699px) { .pl-candle { display: none; } .pl-val { height: 40px; } }
+/* the table: plum velvet, the zodiac in gilt under the cards, a crystal ball at its corner */
+body[data-page="projects"] .dk-felt { background: radial-gradient(120% 90% at 50% 32%, #4a1838 0%, #2c0c22 55%, #170510 100%); }
+.dk-felt .pl-zod { position: absolute; left: 50%; top: 46%; width: min(86%, 760px); aspect-ratio: 1; transform: translate(-50%, -50%); pointer-events: none; opacity: 0.22; color: #e9c27a; }
+.dk-felt .pl-zod svg { width: 100%; height: 100%; animation: plSpin 140s linear infinite; }
+.dk-felt .pl-zod text { font: 400 30px/1 var(--font-display); fill: currentColor; }
+@keyframes plSpin { to { transform: rotate(360deg); } }
+.dk-felt .pl-orb { position: absolute; right: 3.2%; top: 3.6%; width: clamp(48px, 6.4vw, 96px); aspect-ratio: 1 / 1.2; pointer-events: none; transform: translateZ(2px); }
+.pl-orb i { position: absolute; left: 0; right: 0; top: 0; aspect-ratio: 1; border-radius: 50%; overflow: hidden;
+  background: radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.85), rgba(220, 210, 255, 0.25) 14%, rgba(120, 90, 200, 0.22) 40%, rgba(30, 10, 60, 0.75) 78%, rgba(10, 4, 20, 0.95));
+  box-shadow: 0 0 34px rgba(170, 130, 255, 0.45), inset 0 -8px 18px rgba(0, 0, 0, 0.5); }
+.pl-orb i::before { content: ""; position: absolute; inset: 12%; border-radius: 50%; background: conic-gradient(from 0deg, rgba(190, 150, 255, 0), rgba(190, 150, 255, 0.55), rgba(120, 220, 255, 0.25), rgba(190, 150, 255, 0)); filter: blur(6px); animation: plSpin 6s linear infinite; mix-blend-mode: screen; }
+.pl-orb b { position: absolute; left: 12%; right: 12%; bottom: 0; height: 26%; border-radius: 40% 40% 12% 12%; background: linear-gradient(180deg, #e6c27a, #8a5d22 60%, #3a250c); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6); }
+/* arriving: the heading and the table come up out of the dark */
+body[data-page="projects"] #projects .part-head { opacity: 0; transform: translateY(14px); transition: opacity 1.6s ease 0.9s, transform 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.9s; }
+body[data-page="projects"] #projects .dk-table { opacity: 0; transition: opacity 2.2s ease 0.4s; }
+body.pj-lit[data-page="projects"] #projects .part-head { opacity: 1; transform: none; }
+body.pj-lit[data-page="projects"] #projects .dk-table { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .parlour, .pl-curt, .pl-beam, .pl-pool, .pl-candle, #projects .part-head, #projects .dk-table { transition: none !important; } .dk-felt .pl-zod svg, .pl-orb i::before, .pl-candle::before, .pl-candle::after { animation: none; } }
+@media print { .parlour { display: none; } }
 
 .hero .robot { position: absolute; transform: translateZ(0.7px); visibility: hidden; pointer-events: none; }
 .edge { position: absolute; backface-visibility: hidden; background: linear-gradient(180deg, #c99e5a, #8f6a33); }
@@ -10403,78 +10455,158 @@ const AMB = window.AMB = (() => {
 })();
 
 
-// v78: as the deck comes into view, a crow sweeps across the felt, glides past with a card's worth of patter
-// ("Pick a card, any card.") and beats away; a feather or two drifts down behind it. Once per visit to the page.
+// v79: the crow, redrawn feather by feather, crosses the parlour from left to right as the lamps come up; a line in
+// gilt smoke writes itself in its wake, "Pick a card… any card.", then drifts off. Once per visit to the page.
 (() => {
   const deck = document.getElementById("deck"); if (!deck) return;
-  const NS = "http://www.w3.org/2000/svg";
-  const wing = (id, cls) => `<g class="cw-wing ${cls}" id="${id}"><path d="M0,0 C-6,-22 6,-48 30,-70 L37,-64 L35,-57 L45,-56 L41,-47 L52,-45 L46,-36 L57,-33 L49,-24 L58,-19 L47,-13 C33,-6 18,0 10,6 Z"/><path class="cw-cov" d="M0,0 C-2,-14 6,-30 20,-44 C22,-30 18,-14 10,5 Z"/></g>`;
+  const blade = (x, y, len, a, w, cls = "cf") => {   // a feather: a tapered blade with its shaft
+    const r = a * Math.PI / 180, ux = Math.cos(r), uy = Math.sin(r), nx = -uy, ny = ux;
+    const P = (t, s) => `${(x + ux * len * t + nx * w * s).toFixed(1)},${(y + uy * len * t + ny * w * s).toFixed(1)}`;
+    return `<path class="${cls}" d="M${P(0, 0.35)} C${P(0.35, 0.62)} ${P(0.8, 0.55)} ${P(1, 0.08)} L${P(1.02, -0.05)} C${P(0.85, -0.5)} ${P(0.4, -0.55)} ${P(0, -0.35)} Z"/>` +
+      `<path class="cr" d="M${P(0.02, 0)} L${P(0.94, 0.02)}"/>`;
+  };
+  const wing = id => {
+    let arm = "", hand = "";
+    for (let i = 0; i < 8; i++) arm += blade(-2 + i * 1.2, -4 - i * 6.6, 54 - i * 2, 166 - i * 4, 10);
+    arm += `<path class="cv" d="M-8,6 C-14,-18 -6,-44 8,-58 L24,-50 C17,-32 15,-12 18,8 Z"/>`;
+    for (let i = 0; i < 3; i++) arm += `<path class="cv2" d="M${-4 + i * 3},${-6 - i * 16} c8,-3 16,-1 20,4 c-7,2 -14,3 -20,-4 Z"/>`;
+    for (let i = 0; i < 6; i++) hand += blade(0, 0, 94 - Math.abs(i - 1.5) * 8, -92 - i * 12, 11, "cf cp");
+    hand += `<path class="cv" d="M-6,6 C-4,-10 6,-22 18,-26 C22,-14 16,-2 6,8 Z"/>`;
+    return `<g id="${id}"><g class="cw-arm">${arm}</g><g class="cw-hand" transform="translate(8 -55)">${hand}</g></g>`;
+  };
+  let tail = ""; for (let i = 0; i < 7; i++) tail += blade(100, 112, 66 - Math.abs(i - 3) * 3, 172 + (i - 3) * 5.5, 12, "cf ct");
+  const BODY = "M98,104 C120,88 168,82 198,90 C214,94 222,104 218,116 C212,130 186,138 150,136 C124,134 104,126 96,118 Z";
   const wrap = document.createElement("div"); wrap.className = "crow-fly"; wrap.setAttribute("aria-hidden", "true");
-  wrap.innerHTML = `<div class="cw-shadow"></div><div class="cw-bird"><svg viewBox="-20 -90 240 190" class="cw-svg">
+  wrap.innerHTML = `<div class="cw-shadow"></div><div class="cw-bird"><svg viewBox="0 -60 300 260" class="cw-svg">
     <defs>
-      <linearGradient id="cwBody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2d3a"/><stop offset="0.35" stop-color="#121319"/><stop offset="1" stop-color="#040405"/></linearGradient>
-      <linearGradient id="cwSheen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="rgba(120,140,255,0)"/><stop offset="0.5" stop-color="rgba(120,150,255,0.38)"/><stop offset="1" stop-color="rgba(160,90,220,0)"/></linearGradient>
-      <linearGradient id="cwWing" x1="0" y1="1" x2="0.4" y2="0"><stop offset="0" stop-color="#16171e"/><stop offset="0.6" stop-color="#0a0a0d"/><stop offset="1" stop-color="#1d2030"/></linearGradient>
-      <linearGradient id="cwBeak" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3b40"/><stop offset="1" stop-color="#08080a"/></linearGradient>
+      <linearGradient id="cwF" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2b2f45"/><stop offset="0.45" stop-color="#0d0e14"/><stop offset="1" stop-color="#030305"/></linearGradient>
+      <linearGradient id="cwB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#262a3c"/><stop offset="0.4" stop-color="#101118"/><stop offset="1" stop-color="#020203"/></linearGradient>
+      <linearGradient id="cwSh" x1="0" y1="0" x2="1" y2="0.6"><stop offset="0" stop-color="rgba(110,130,255,0)"/><stop offset="0.5" stop-color="rgba(120,150,255,0.42)"/><stop offset="0.8" stop-color="rgba(170,90,230,0.22)"/><stop offset="1" stop-color="rgba(170,90,230,0)"/></linearGradient>
+      <linearGradient id="cwK" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a4c55"/><stop offset="0.5" stop-color="#15161a"/><stop offset="1" stop-color="#050506"/></linearGradient>
+      <radialGradient id="cwE" cx="0.4" cy="0.4"><stop offset="0" stop-color="#e3a43a"/><stop offset="0.6" stop-color="#7a4a10"/><stop offset="1" stop-color="#2a1806"/></radialGradient>
+      <pattern id="cwT" width="7" height="6" patternUnits="userSpaceOnUse"><path d="M0,6 Q3.5,0 7,6" fill="none" stroke="rgba(150,165,220,0.16)" stroke-width="0.7"/></pattern>
+      <clipPath id="cwBC"><path d="${BODY}"/></clipPath>
     </defs>
-    <g class="cw-far" transform="translate(92 52)">${wing("cwFar", "far")}</g>
-    <path class="cw-tail" d="M150,56 C170,50 190,46 212,44 L216,52 L206,56 L218,60 L210,66 L216,74 C192,72 170,70 150,70 Z"/>
-    <path class="cw-body" d="M40,58 C56,40 112,38 152,54 C162,59 162,68 152,72 C112,88 62,84 40,70 Z"/>
-    <path class="cw-sheen" d="M54,50 C80,40 118,42 146,54 C118,50 84,50 60,58 Z"/>
-    <path class="cw-legs" d="M96,78 L104,90 M108,78 L114,89"/>
-    <circle class="cw-head" cx="35" cy="56" r="15.5"/>
-    <path class="cw-beak" d="M25,48 C14,49 5,53 -2,58 C6,61 15,63 25,65 Z"/>
-    <path class="cw-beakline" d="M23,57 L3,58"/>
-    <circle class="cw-eye" cx="31" cy="52" r="2.6"/><circle cx="30.2" cy="51.2" r="0.9" fill="#fff"/>
-    <g class="cw-near" transform="translate(100 60)">${wing("cwNear", "near")}</g>
-  </svg><div class="cw-say"><span>Pick a card, any card.</span></div></div>`;
-  document.body.append(wrap);
-  const bird = wrap.querySelector(".cw-bird"), shadow = wrap.querySelector(".cw-shadow"), say = wrap.querySelector(".cw-say");
-  const far = wrap.querySelector("#cwFar"), near = wrap.querySelector("#cwNear");
-  const feather = () => { const f = document.createElement("i"); f.className = "cw-feather"; wrap.append(f); return f; };
+    <g class="cw-far" transform="translate(150 98)">${wing("cwFar")}</g>
+    <g class="cw-tail">${tail}</g>
+    <path class="cw-legs" d="M146,132 l-6,14 l-6,3 M146,132 l-6,14 l2,6 M160,132 l-5,13 l-6,3"/>
+    <path fill="url(#cwB)" d="${BODY}"/>
+    <g clip-path="url(#cwBC)"><rect x="90" y="80" width="140" height="60" fill="url(#cwT)"/><path d="M108,100 C136,88 176,86 206,96 C176,94 140,96 112,108 Z" fill="url(#cwSh)"/></g>
+    <path fill="url(#cwB)" d="M194,94 C198,80 212,74 225,75 C236,76 242,84 240,93 C238,103 226,109 213,109 C203,108 194,103 194,94 Z"/>
+    <path class="cw-nape" d="M214,106 l4,7 M220,105 l3,7 M226,103 l2,6"/>
+    <path fill="url(#cwK)" d="M236,80 C252,79 266,84 276,92 C266,95 252,97 238,98 Z"/>
+    <path d="M238,80 C254,80 266,85 274,91" fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="1.1"/>
+    <path d="M238,90 L272,93" stroke="rgba(0,0,0,0.6)" stroke-width="1"/>
+    <path class="cw-bris" d="M232,80 l9,-1 M233,83 l10,0 M232,86 l9,1"/>
+    <circle cx="227" cy="86" r="3.8" fill="url(#cwE)"/><circle cx="227.6" cy="86.2" r="1.8" fill="#050403"/><circle cx="226.1" cy="84.8" r="1" fill="#fff"/>
+    <g class="cw-near" transform="translate(156 100)">${wing("cwNear")}</g>
+  </svg></div>`;
+  const words = document.createElement("div"); words.className = "cw-words"; words.setAttribute("aria-hidden", "true");
+  words.innerHTML = [..."Pick a card… any card."].map(ch => `<span>${ch === " " ? "&nbsp;" : ch}</span>`).join("");
+  wrap.append(words); document.body.append(wrap);
+  const bird = wrap.querySelector(".cw-bird"), shadow = wrap.querySelector(".cw-shadow");
+  const parts = id => { const g = wrap.querySelector("#" + id); return { g, hand: g.querySelector(".cw-hand") }; };
+  const far = parts("cwFar"), near = parts("cwNear"), chars = [...words.children];
   const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
   let flying = false, lastFly = -1e9;
   const bez = (a, b, c, d, t) => { const m = 1 - t; return m * m * m * a + 3 * m * m * t * b + 3 * m * t * t * c + t * t * t * d; };
-  const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const ss = t => t * t * (3 - 2 * t);
+  const pose = (w, P, sx) => {   // w: -1 wings down … 1 wings up; the hand bends behind the arm
+    P.g.setAttribute("transform", `rotate(${(-6 + w * 10).toFixed(2)}) scale(${sx} ${(0.12 + 0.95 * w).toFixed(3)})`);
+    P.hand.setAttribute("transform", `translate(8 -55) rotate(${(18 - w * 26).toFixed(2)})`);
+  };
+  const end = () => { chars.forEach(c => c.classList.add("on")); setTimeout(() => { words.classList.add("gone"); setTimeout(() => { wrap.classList.remove("on"); flying = false; }, 2400); }, 2400); };
   function fly() {
     if (flying || document.hidden) return; flying = true; lastFly = performance.now();
-    const W = innerWidth, H = innerHeight, small = W < 700;
-    const r = deck.getBoundingClientRect(), tableY = Math.min(H * 0.86, Math.max(H * 0.45, r.top + r.height * 0.55));
-    const base = small ? 0.55 : 1;
+    const W = innerWidth, H = innerHeight, small = W < 700, base = small ? 0.48 : 0.95;
+    const r = deck.getBoundingClientRect(), tableY = Math.min(H * 0.9, Math.max(H * 0.5, r.top + r.height * 0.6));
+    const wy = Math.max(H * 0.18, Math.min(H * 0.4, r.top + r.height * 0.1));
+    words.style.top = wy + "px"; words.classList.remove("gone"); chars.forEach(c => c.classList.remove("on"));
     wrap.classList.add("on");
-    if (RM) { say.classList.add("show"); bird.style.transform = `translate(${W * 0.5 - 110}px, ${H * 0.22}px) scale(${base})`; setTimeout(() => { wrap.classList.remove("on"); say.classList.remove("show"); flying = false; }, 2600); return; }
-    // a path in from the right, dipping low over the table, then climbing away to the upper left
-    const P = { x: [W + 160, W * 0.72, W * 0.25, -320], y: [H * 0.2, H * 0.56, H * 0.42, H * 0.06], s: [0.8, 1.55, 1.75, 1.15] };
-    const DUR = small ? 5200 : 6200, t0 = performance.now(); let feathers = [], dropped = 0;
+    const cr = chars.map(c => { const b = c.getBoundingClientRect(); return b.left + b.width / 2; });
+    if (RM) return end();
+    const P = { x: [-360, W * 0.16, W * 0.74, W + 400], y: [H * 0.64, wy + H * 0.1, wy + H * 0.02, H * 0.04], s: [1.25, 1, 0.92, 0.6] };
+    const DUR = small ? 5400 : 6600, t0 = performance.now();
     const step = now => {
-      const k = Math.min(1, (now - t0) / DUR), p = k * 0.7 + ease(k) * 0.3;
-      const x = bez(...P.x, p), y = bez(...P.y, p), sc = bez(...P.s, p) * base;
+      const k = Math.min(1, (now - t0) / DUR), p = k * 0.75 + ss(k) * 0.25;
+      const x = bez(...P.x, p), y0 = bez(...P.y, p), sc = bez(...P.s, p) * base;
       const x2 = bez(...P.x, Math.min(1, p + 0.01)), y2 = bez(...P.y, Math.min(1, p + 0.01));
-      const ang = Math.atan2(y2 - y, x - x2) * 180 / Math.PI;   // facing left: tilt along the path
-      // wing beats: hard at the start and the end, a long glide through the middle while it talks
-      const glide = k > 0.3 && k < 0.66, ph = (now - t0) / (glide ? 900 : 230);
-      let w = glide ? 0.25 + Math.sin(ph) * 0.12 : Math.sin(ph * Math.PI * 2);
-      w = w > 0 ? Math.pow(w, 0.7) : -Math.pow(-w, 1.3);   // fast downstroke, slower recovery
-      near.setAttribute("transform", `rotate(${-8 + w * 10}) scale(1 ${(0.15 + 0.95 * w).toFixed(3)})`);
-      far.setAttribute("transform", `rotate(${-14 + w * 8}) scale(0.92 ${(0.1 + 0.8 * w).toFixed(3)})`);
-      bird.style.transform = `translate(${x - 110 * sc}px, ${y - 60 * sc}px) rotate(${(-ang * 0.6).toFixed(2)}deg) scale(${sc.toFixed(3)})`;
-      bird.style.filter = `blur(${(Math.max(0, 1 - Math.abs(k - 0.48) * 3) < 0.2 ? 0.6 : 0).toFixed(1)}px)`;
+      const ang = Math.atan2(y2 - y0, x2 - x) * 180 / Math.PI;
+      const glide = k > 0.32 && k < 0.62, tt = (now - t0) / 1000;
+      let w = glide ? 0.55 + Math.sin(tt * 2.2) * 0.08 : Math.sin(tt * Math.PI * 2 * 3.4);
+      w = w > 0 ? Math.pow(w, 0.75) : -Math.pow(-w, 1.25);
+      const y = y0 + (glide ? 0 : -w * 6 * sc);
+      pose(w, near, 1); pose(w * 0.92 - 0.05, far, 0.9);
+      bird.style.transform = `translate(${(x - 150 * sc).toFixed(1)}px, ${(y - 100 * sc).toFixed(1)}px) rotate(${(ang * 0.55).toFixed(2)}deg) scale(${sc.toFixed(3)})`;
       const hgt = Math.max(0, tableY - y);
-      shadow.style.transform = `translate(${x - 70 * sc}px, ${tableY}px) scale(${(sc * (1 + hgt / H)).toFixed(3)}, ${(sc * 0.5).toFixed(3)})`;
-      shadow.style.opacity = (0.32 * (1 - Math.min(1, hgt / (H * 0.9))) * Math.min(1, k * 6, (1 - k) * 6)).toFixed(3);
-      say.classList.toggle("show", k > 0.26 && k < 0.7); say.classList.toggle("rt", x < W * (small ? 0.62 : 0.4));
-      if (dropped < 2 && k > 0.2 + dropped * 0.3) { dropped++; const f = feather(); feathers.push({ f, x: x + 60 * sc, y: y + 20 * sc, t0: now, r: Math.random() * 360, dx: (Math.random() - 0.3) * 60 }); }
-      feathers = feathers.filter(o => { const a = (now - o.t0) / 2600; if (a >= 1) { o.f.remove(); return false; }
-        o.f.style.transform = `translate(${o.x + o.dx * a + Math.sin(a * 9) * 18}px, ${o.y + a * H * 0.35}px) rotate(${o.r + Math.sin(a * 7) * 50}deg) scale(${base})`; o.f.style.opacity = (Math.min(1, a * 5) * (1 - a)).toFixed(2); return true; });
-      if (k < 1 || feathers.length) requestAnimationFrame(step);
-      else { wrap.classList.remove("on"); say.classList.remove("show"); flying = false; }
+      shadow.style.transform = `translate(${(x - 80 * sc).toFixed(1)}px, ${tableY.toFixed(1)}px) scale(${(sc * (1 + hgt / H)).toFixed(3)}, ${(sc * 0.45).toFixed(3)})`;
+      shadow.style.opacity = (0.4 * (1 - Math.min(1, hgt / (H * 0.8))) * Math.min(1, k * 5, (1 - k) * 5)).toFixed(3);
+      for (let i = 0; i < chars.length; i++) if (cr[i] < x - 60 * sc) chars[i].classList.add("on");
+      if (k < 1) requestAnimationFrame(step); else end();
     };
     requestAnimationFrame(step);
   }
-  // when the deck comes into view on the projects page: once, and again after a while away
-  const io = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting && document.body.dataset.page === "projects" && performance.now() - lastFly > 45000) setTimeout(fly, 900); }, { threshold: 0.3 });
+  const io = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting && document.body.dataset.page === "projects" && performance.now() - lastFly > 45000) setTimeout(fly, 1600); }, { threshold: 0.3 });
   io.observe(deck);
   window.__crow = { fly, state: () => ({ flying }) };
+})();
+
+
+// v79: the parlour behind Projects, and its lights coming up as you arrive
+(() => {
+  const deck = document.getElementById("deck"); if (!deck) return;
+  const NS = "http://www.w3.org/2000/svg";
+  const curtain = side => `<svg class="pl-curt ${side}" viewBox="0 0 200 1000" preserveAspectRatio="none" aria-hidden="true"><defs>
+    <linearGradient id="plFold${side}" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="38" y2="0" spreadMethod="repeat"><stop offset="0" stop-color="#22040a"/><stop offset="0.3" stop-color="#5e101b"/><stop offset="0.5" stop-color="#93212d"/><stop offset="0.7" stop-color="#5e101b"/><stop offset="1" stop-color="#22040a"/></linearGradient>
+    <linearGradient id="plShade${side}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgba(0,0,0,0.55)"/><stop offset="0.6" stop-color="rgba(0,0,0,0)"/><stop offset="1" stop-color="rgba(0,0,0,0.5)"/></linearGradient>
+    <linearGradient id="plDown${side}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(255,190,120,0.12)"/><stop offset="0.5" stop-color="rgba(0,0,0,0)"/><stop offset="1" stop-color="rgba(0,0,0,0.6)"/></linearGradient></defs>
+    <path d="M0,0 H200 C186,240 128,470 78,560 C116,650 152,820 168,1000 H0 Z" fill="url(#plFold${side})"/>
+    <path d="M0,0 H200 C186,240 128,470 78,560 C116,650 152,820 168,1000 H0 Z" fill="url(#plShade${side})"/>
+    <path d="M0,0 H200 C186,240 128,470 78,560 C116,650 152,820 168,1000 H0 Z" fill="url(#plDown${side})"/>
+    <path d="M0,548 C30,540 66,548 86,560 C66,574 30,580 0,572 Z" fill="#c99a48"/><path d="M0,552 C30,546 62,552 80,560" fill="none" stroke="#f6d995" stroke-width="2"/>
+    <path d="M60,566 l-6,60 M68,566 l2,56 M64,566 l-2,62" stroke="#c99a48" stroke-width="3" stroke-linecap="round"/><circle cx="64" cy="566" r="9" fill="#e6bf6c"/></svg>`;
+  const P = document.createElement("div"); P.className = "parlour"; P.setAttribute("aria-hidden", "true");
+  P.innerHTML = `<div class="pl-wall"></div><div class="pl-pool"></div><div class="pl-beam"></div><canvas class="pl-smoke"></canvas>${curtain("l")}${curtain("r")}<div class="pl-val"></div>
+    <i class="pl-candle a"></i><i class="pl-candle b"></i><i class="pl-candle c"></i><div class="pl-vig"></div>`;
+  const amb = document.querySelector(".amb"); amb ? amb.after(P) : document.body.prepend(P);
+  // the zodiac and the crystal ball on the table
+  const felt = deck.querySelector(".dk-felt");
+  if (felt) {
+    const G = "♈♉♊♋♌♍♎♏♐♑♒♓";
+    let t = "";
+    for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2 - Math.PI / 2; t += `<text x="${(300 + Math.cos(a) * 248).toFixed(1)}" y="${(300 + Math.sin(a) * 248 + 10).toFixed(1)}" text-anchor="middle">${G[i]}︎</text>`; }
+    const z = document.createElement("div"); z.className = "pl-zod"; z.setAttribute("aria-hidden", "true");
+    z.innerHTML = `<svg viewBox="0 0 600 600"><g fill="none" stroke="currentColor"><circle cx="300" cy="300" r="290" stroke-width="2"/><circle cx="300" cy="300" r="282" stroke-width="0.8"/><circle cx="300" cy="300" r="212" stroke-width="1.4"/><circle cx="300" cy="300" r="204" stroke-width="0.6" stroke-dasharray="2 6"/>
+      ${Array.from({ length: 12 }, (_, i) => { const a = (i / 12) * Math.PI * 2 - Math.PI / 2 + Math.PI / 12; return `<path d="M${300 + Math.cos(a) * 212},${300 + Math.sin(a) * 212} L${300 + Math.cos(a) * 282},${300 + Math.sin(a) * 282}" stroke-width="1"/>`; }).join("")}
+      <path d="M300,120 L352,300 L300,480 L248,300 Z M120,300 L300,248 L480,300 L300,352 Z" stroke-width="0.8" opacity="0.7"/></g>${t}</svg>`;
+    const o = document.createElement("div"); o.className = "pl-orb"; o.setAttribute("aria-hidden", "true"); o.innerHTML = "<i></i><b></b>";
+    felt.prepend(z); felt.append(o);
+  }
+  // smoke and motes in the lamplight
+  const c = P.querySelector(".pl-smoke"), g = c.getContext("2d"), RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let W = 0, H = 0, raf = 0, last = 0, puffs = [], motes = [];
+  const rnd = (a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; })(79);
+  const size = () => { const d = Math.min(devicePixelRatio || 1, 1.25); W = innerWidth; H = innerHeight; c.width = Math.round(W * d); c.height = Math.round(H * d); g.setTransform(d, 0, 0, d, 0, 0);
+    puffs = Array.from({ length: W < 700 ? 7 : 13 }, () => ({ x: rnd() * W, y: rnd() * H, r: 120 + rnd() * 220, v: 6 + rnd() * 10, s: rnd() * 6.28, a: 0.03 + rnd() * 0.04 }));
+    motes = Array.from({ length: W < 700 ? 22 : 46 }, () => ({ x: W * (0.3 + rnd() * 0.4), y: rnd() * H, v: 3 + rnd() * 8, s: rnd() * 6.28, r: 0.6 + rnd() * 1.4 })); };
+  const frame = now => {
+    raf = 0; if (document.body.dataset.page !== "projects" || document.hidden) return;
+    raf = requestAnimationFrame(frame); if (now - last < 33) return; const dt = Math.min(0.1, (now - (last || now)) / 1000); last = now;
+    g.clearRect(0, 0, W, H);
+    for (const p of puffs) { if (!RM) { p.y -= p.v * dt; p.x += Math.sin(now / 4000 + p.s) * 6 * dt; } if (p.y < -p.r) { p.y = H + p.r; p.x = rnd() * W; }
+      const gr = g.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r); gr.addColorStop(0, `rgba(190,160,170,${p.a})`); gr.addColorStop(1, "rgba(190,160,170,0)"); g.fillStyle = gr; g.fillRect(p.x - p.r, p.y - p.r, p.r * 2, p.r * 2); }
+    for (const m of motes) { if (!RM) { m.y -= m.v * dt; m.x += Math.sin(now / 2000 + m.s) * 4 * dt; } if (m.y < 0) { m.y = H; m.x = W * (0.3 + rnd() * 0.4); }
+      const inBeam = 1 - Math.min(1, Math.abs(m.x - W / 2) / (W * 0.08 + m.y * 0.35)); g.fillStyle = `rgba(255,214,150,${(0.15 + 0.6 * inBeam * (0.6 + 0.4 * Math.sin(now / 600 + m.s))).toFixed(3)})`;
+      g.beginPath(); g.arc(m.x, m.y, m.r, 0, 6.283); g.fill(); }
+  };
+  const kick = () => { if (!raf && document.body.dataset.page === "projects") raf = requestAnimationFrame(frame); };
+  size(); addEventListener("resize", size);
+  // the lights come up when the table is in view on the projects page, and go down again when you leave
+  const sync = () => { if (document.body.dataset.page !== "projects") document.body.classList.remove("pj-lit"); kick(); };
+  new MutationObserver(sync).observe(document.body, { attributes: true, attributeFilter: ["data-page"] });
+  new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting && document.body.dataset.page === "projects") requestAnimationFrame(() => document.body.classList.add("pj-lit")); }, { threshold: 0.15 }).observe(deck);
+  document.addEventListener("visibilitychange", kick); sync();
+  window.__parlour = { state: () => ({ lit: document.body.classList.contains("pj-lit"), page: document.body.dataset.page }) };
 })();
 
 </script>
