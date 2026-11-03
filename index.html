@@ -164,6 +164,49 @@ body.pj-lit[data-page="projects"] #projects .dk-table { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .parlour, .pl-curt, .pl-beam, .pl-pool, .pl-candle, #projects .part-head, #projects .dk-table { transition: none !important; } .dk-felt .pl-zod svg, .pl-orb i::before, .pl-candle::before, .pl-candle::after { animation: none; } }
 @media print { .parlour { display: none; } }
 
+
+/* v80: the rest of the map, under the fog of war */
+.fin-poly .pm { margin-top: 6px; overflow: hidden; min-width: 0; max-width: 100%; }
+.fin-poly .fin-in > * { min-width: 0; }
+.pm-svg { display: block; width: 100%; max-width: 1000px; height: auto; margin: 0 auto; overflow: hidden; -webkit-tap-highlight-color: transparent; user-select: none; }
+.pm-t, .pm-fog, .pm-ban { cursor: pointer; }
+.pm-in { opacity: 0; transform: translateY(-60px); }
+.pm-svg.in .pm-in { animation: pmDrop 0.7s cubic-bezier(0.25, 1.4, 0.5, 1) both; animation-delay: var(--d); }
+@keyframes pmDrop { from { opacity: 0; transform: translateY(-60px); } 60% { opacity: 1; } to { opacity: 1; transform: none; } }
+.pm-art { transform-box: fill-box; transform-origin: 50% 100%; }
+.pm-t .pm-art { opacity: 0; transform: scale(0.5); transition: opacity 0.3s ease, transform 0.5s cubic-bezier(0.3, 1.6, 0.5, 1); }
+.pm-t.seen .pm-art { opacity: 1; transform: none; }
+.pm-t:hover .pm-top { filter: brightness(1.12); stroke: rgba(255, 255, 255, 0.85); stroke-width: 2; }
+.pm-fog { transition: opacity 0.7s ease; }
+.pm-cl { transform-box: fill-box; transform-origin: 50% 60%; opacity: 0; }
+.pm-svg.in .pm-cl { animation: pmCloudIn 0.8s ease both, pmBob 6s ease-in-out infinite; animation-delay: 0.5s, var(--b); }
+@keyframes pmCloudIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pmBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+.pm-fog.gone { pointer-events: none; }
+.pm-fog.gone .pm-cl { animation: pmPuff 0.75s ease-out forwards !important; }
+@keyframes pmPuff { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-18px) scale(1.45); } }
+.pm-fog:hover .pm-cl circle { filter: brightness(1.04); }
+.pm-q { font: 800 22px/1 var(--font-ui); fill: rgba(40, 70, 90, 0.45); }
+.pm-ban { opacity: 0; transform-box: fill-box; }
+.pm-ban.up { animation: pmBan 0.6s cubic-bezier(0.3, 1.6, 0.5, 1) 0.25s both; }
+@keyframes pmBan { from { opacity: 0; transform: translateY(12px) scale(0.6); } to { opacity: 1; transform: none; } }
+.pm-ban text { font: 800 12px/1 var(--font-ui); letter-spacing: 0.06em; fill: #fff; }
+.pm-ban .pm-here { font: 600 9.5px/1 var(--font-ui); letter-spacing: 0.16em; fill: #9fe7da; text-transform: uppercase; }
+.pm-ban .pm-star { font: 700 11px/1 var(--font-ui); fill: #4a3404; letter-spacing: 0; }
+.pm-ban:hover rect { fill: rgba(24, 52, 70, 0.95); }
+.pm-ban.next rect { stroke-width: 2.5; }
+.pm-t.city .pm-top { animation: pmGlow 1.2s ease 0.2s 1; }
+@keyframes pmGlow { 50% { filter: brightness(1.35) drop-shadow(0 0 8px #fff7c0); } }
+.pm-scout { pointer-events: none; filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.25)); }
+.pm-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 18px; margin: 14px 0 0; }
+.pm-hint { margin: 0; font: 500 14px/1.4 var(--font-ui); color: rgba(234, 246, 255, 0.8); }
+.pm-lift { padding: 9px 16px; border: 0; border-radius: 10px; background: #f7c948; color: #1b2a33; font: 800 12.5px/1 var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; box-shadow: 0 4px 0 #b8902a; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.pm-lift:hover { transform: translateY(-1px); box-shadow: 0 5px 0 #b8902a; } .pm-lift:active { transform: translateY(3px); box-shadow: 0 1px 0 #b8902a; }
+.pm-lift:disabled { opacity: 0.5; cursor: default; transform: none; }
+.pm-skip { margin: 12px 0 0; text-align: center; font: 500 13px/1.6 var(--font-ui); color: rgba(234, 246, 255, 0.6); }
+.pm-skip a { color: #eaf6ff; text-decoration: underline; text-decoration-color: rgba(127, 224, 208, 0.6); text-underline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .pm-in, .pm-cl, .pm-ban, .pm-t .pm-art { animation: none !important; opacity: 1; transform: none; transition: none; } .pm-fog.gone { opacity: 0; } }
+
 .hero .robot { position: absolute; transform: translateZ(0.7px); visibility: hidden; pointer-events: none; }
 .edge { position: absolute; backface-visibility: hidden; background: linear-gradient(180deg, #c99e5a, #8f6a33); }
 .edge.e-b { transform-origin: top; transform: rotateX(-90deg); background: linear-gradient(180deg, #b5884a, #7c5a2c); }
@@ -9444,7 +9487,7 @@ const FIN_THEMES = {
   fraguessr: { cls: "fin-frag", kicker: "The dry-down", title: "The rest of the shelf.", lede: "That was one bottle. Here's everything else, arranged like a perfume: what you notice first, what holds, and what stays with you.", next: "Next on the strip",
     groups: [["Top notes", "bright, and quick to say hello", ["home", "blog", "hello"]], ["Heart notes", "the body of it", ["projects"]], ["Base notes", "what lingers", ["resume"]]],
     deco: (it, i) => h("span", { class: "fin-ic bottle", style: "--liq:" + ["#d9a441", "#d77a8a", "#8fb37a", "#a491c9", "#e0b860", "#8a5a3c", "#f0c43c", "#6f8f5a", "#8a86c0", "#f2a65a", "#c9a58a"][i % 11] }, h("i")) },
-  polymind: { cls: "fin-poly", kicker: "Fog of war, lifted", title: "The rest of the map.", lede: "Every tile you haven't explored yet. Pick one and send a scout.", next: "Next tile",
+  polymind: { cls: "fin-poly", kicker: "Fog of war, lifted", title: "The rest of the map.", lede: "Every page is a city somewhere in the fog. Send your scout to find them.", next: "Next tile",
     deco: (it, i) => { const c = ["#e8524a", "#3d7be0", "#f2c230", "#43b05c", "#9b59d0", "#ef8a2f", "#2fb7b0", "#d94f9a", "#7c8a99", "#5bc0eb", "#c0392b"][i % 11], s = h("span", { class: "fin-ic tile", "aria-hidden": "true" });
       s.innerHTML = `<svg viewBox="0 0 44 40" width="44" height="40"><polygon points="22,6 41,15 22,24 3,15" fill="${c}"/><polygon points="3,15 22,24 22,33 3,24" fill="${finShade(c, 0.72)}"/><polygon points="41,15 22,24 22,33 41,24" fill="${finShade(c, 0.55)}"/><polygon points="17,10 27,10 27,16 22,19 17,16" fill="#fff8e6"/><polygon points="16,10 22,5 28,10" fill="${finShade(c, 0.45)}"/></svg>`; return s; } },
   muse: { cls: "fin-muse", kicker: "Coda", title: "Every note, a door.", lede: "The wheel has twelve notes. Here's where each of the others leads.", next: "Next movement",
@@ -9462,6 +9505,121 @@ const FIN_THEMES = {
 };
 FIN_THEMES.go = { ...FIN_THEMES.about, kicker: "Game over", title: "Where next? Play a stone." };
 FIN_THEMES.goglobal = { ...FIN_THEMES.about, kicker: "After the lesson", title: "Where next? Play a stone." };
+// v80: after PolyMind, the rest of the site is a map under the fog of war. A scout stands at the capital; tap any tile
+// and it hops there, clearing the fog around every tile it lands on. Each page is a city somewhere in the fog: find it
+// and its banner goes up, tap it and you're there. "Lift the fog" shows everything at once, and plain links stay below.
+function polyMap(sec, items, nx) {
+  const NS = "http://www.w3.org/2000/svg", N = 7, TW = 50, TH = 25, D = 16;
+  const MAP = ["wwFfmmf", "wfufFmF", "fFffFfu", "Ffmffuw", "fuFfmfw", "mFfffFw", "mfFwwff"];
+  const COLS = ["#e8524a", "#3d7be0", "#f2c230", "#43b05c", "#9b59d0", "#ef8a2f", "#2fb7b0", "#d94f9a"];
+  const SPOTS = [[5, 1], [1, 0], [0, 3], [2, 5], [5, 5], [6, 3], [3, 0]];
+  const dests = (nx ? [{ ...nx, next: true }] : []).concat(items.filter(it => !nx || it.id !== nx.id)).slice(0, SPOTS.length);
+  const T = [];   // tiles
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) T.push({ c, r, t: MAP[r][c], i: r * N + c, X: (c - r) * TW, Y: (c + r) * TH, seen: false });
+  const at = (c, r) => T[r * N + c];
+  const CAP = at(3, 3); CAP.t = "f"; CAP.cap = true;
+  dests.forEach((d, k) => { const t = at(...SPOTS[k]); t.t = "f"; t.city = d; t.col = d.next ? "#f2c230" : COLS[(k + 1) % COLS.length]; });
+  const shade = (hex, k) => { const n = parseInt(hex.slice(1), 16); return `rgb(${Math.round((n >> 16) * k)},${Math.round((n >> 8 & 255) * k)},${Math.round((n & 255) * k)})`; };
+  const TOP = { f: "#8bd36a", F: "#79c35b", m: "#8bd36a", u: "#8bd36a", w: "#4fb6e8" };
+  const svg = (tag, a, kids) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); if (kids) for (const x of [].concat(kids)) if (x) e.append(x); return e; };
+  const P = pts => pts.map(p => p.join(",")).join(" ");
+  const tree = (x, y, s = 1) => svg("g", { transform: `translate(${x} ${y}) scale(${s})` }, [svg("rect", { x: -1.6, y: -6, width: 3.2, height: 7, fill: "#7a4a24" }), svg("polygon", { points: "0,-30 -10,-6 10,-6", fill: "#2f8f46" }), svg("polygon", { points: "0,-30 0,-6 10,-6", fill: "#257a3a" }), svg("polygon", { points: "0,-38 -7,-20 7,-20", fill: "#3aa553" })]);
+  const peak = (x, y, s = 1) => svg("g", { transform: `translate(${x} ${y}) scale(${s})` }, [svg("polygon", { points: "0,-40 -22,4 22,4", fill: "#8e9aa6" }), svg("polygon", { points: "0,-40 0,4 22,4", fill: "#6d7884" }), svg("polygon", { points: "0,-40 -8,-24 0,-27 8,-24", fill: "#f4f8fb" })]);
+  const house = (x, y, col, s = 1) => svg("g", { transform: `translate(${x} ${y}) scale(${s})` }, [
+    svg("polygon", { points: P([[-9, -4], [0, 0], [0, 10], [-9, 6]]), fill: "#efe2c4" }), svg("polygon", { points: P([[9, -4], [0, 0], [0, 10], [9, 6]]), fill: "#cdbb93" }),
+    svg("polygon", { points: P([[-11, -4], [0, -15], [0, 1], [-11, -3]]), fill: col }), svg("polygon", { points: P([[11, -4], [0, -15], [0, 1], [11, -3]]), fill: shade(col, 0.7) }), svg("rect", { x: 2.5, y: 1, width: 3, height: 5, fill: "#5a3a1a" })]);
+  const root = svg("svg", { viewBox: `${-N * TW - 10} -90 ${N * TW * 2 + 20} ${N * TH * 2 + 130}`, class: "pm-svg", role: "img", "aria-label": "A map of the rest of the site under the fog of war" });
+  const LT = svg("g", { class: "pm-tiles" }), LU = svg("g", { class: "pm-units" }), LF = svg("g", { class: "pm-fogs" });
+  root.append(LT, LU, LF);
+  const order = T.slice().sort((a, b) => (a.c + a.r) - (b.c + b.r) || a.c - b.c);
+  const nav = href => { const a = document.createElement("a"); a.href = href; document.body.append(a); a.click(); a.remove(); };
+  for (const t of order) {
+    const top = TOP[t.t], dist = Math.max(Math.abs(t.c - 3), Math.abs(t.r - 3));
+    const inner = svg("g", { class: "pm-in", style: `--d:${(t.c + t.r) * 45}ms` });
+    const water = t.t === "w", dd = water ? 6 : D;
+    inner.append(
+      svg("polygon", { points: P([[-TW, 0], [0, TH], [0, TH + dd], [-TW, dd]]), fill: shade(water ? "#3a8fc0" : "#6b4a2e", water ? 0.85 : 1) }),
+      svg("polygon", { points: P([[TW, 0], [0, TH], [0, TH + dd], [TW, dd]]), fill: shade(water ? "#3a8fc0" : "#6b4a2e", water ? 0.65 : 0.75) }),
+      svg("polygon", { class: "pm-top", points: P([[0, -TH], [TW, 0], [0, TH], [-TW, 0]]), fill: water ? top : (t.city || t.cap ? "#9bdc76" : top) }));
+    const art = svg("g", { class: "pm-art" });
+    if (water) art.append(svg("path", { d: "M-22,-2 q6,-5 12,0 t12,0 M2,8 q6,-5 12,0 t12,0", fill: "none", stroke: "rgba(255,255,255,0.55)", "stroke-width": 2, "stroke-linecap": "round" }));
+    else if (t.t === "F") art.append(tree(-16, 4, 0.9), tree(8, -4, 1), tree(14, 10, 0.8));
+    else if (t.t === "m") art.append(peak(-6, 6, 1), peak(16, 10, 0.6));
+    else if (t.t === "u") art.append(svg("ellipse", { cx: 0, cy: 2, rx: 14, ry: 8, fill: "#3f9b4a" }), ...[[-6, 0], [4, -2], [0, 5], [8, 4]].map(([x, y]) => svg("circle", { cx: x, cy: y, r: 2.6, fill: "#e8524a" })));
+    if (t.cap) art.append(house(-16, 0, "#3d7be0", 1.1), house(14, -4, "#3d7be0", 1.25), house(0, 10, "#3d7be0", 1.05), svg("polygon", { points: "6,-34 10,-26 16,-32 15,-22 -3,-22 -4,-32 2,-26", fill: "#f2c230", stroke: "#a87b14", "stroke-width": 1 }));
+    if (t.city) art.append(house(-14, 2, t.col), house(12, -2, t.col, 1.15), house(-1, 10, t.col, 0.95));
+    inner.append(art);
+    const g = svg("g", { class: "pm-t" + (water ? " water" : ""), transform: `translate(${t.X} ${t.Y})` }, inner);
+    t.g = g; LT.append(g);
+    // its banner, raised when found
+    if (t.city || t.cap) {
+      const name = t.cap ? "PolyMind" : t.city.name, w = Math.max(70, name.length * 8.6 + 26);
+      const b = svg("g", { class: "pm-ban" + (t.cap ? " cap" : "") + (t.city && t.city.next ? " next" : "") }, [
+        svg("rect", { x: -w / 2, y: -15, width: w, height: 24, rx: 6, fill: "rgba(14,30,40,0.88)", stroke: t.cap ? "#3d7be0" : t.col, "stroke-width": 2 }),
+        svg("text", { x: 0, y: 2, "text-anchor": "middle" }, document.createTextNode(name.toUpperCase()))]);
+      if (t.city && t.city.next) b.append(svg("g", { transform: `translate(${w / 2 - 2} -15)` }, [svg("circle", { r: 9, fill: "#f2c230", stroke: "#8a6510", "stroke-width": 1.5 }), svg("text", { y: 3.5, "text-anchor": "middle", class: "pm-star" }, document.createTextNode("★"))]));
+      if (t.cap) b.append(svg("text", { x: 0, y: 22, "text-anchor": "middle", class: "pm-here" }, document.createTextNode("you are here")));
+      t.ban = b; LU.append(svg("g", { transform: `translate(${t.X} ${t.Y - 44})` }, b));
+    }
+    // its fog
+    const fog = svg("g", { class: "pm-fog", transform: `translate(${t.X} ${t.Y})` }, svg("g", { class: "pm-cl", style: `--b:${(t.i * 397 % 1000) / 1000 * -6}s` }, [
+      svg("polygon", { points: P([[0, -TH], [TW, 0], [0, TH], [-TW, 0]]), fill: "#d7e4ee" }),
+      svg("circle", { cx: -20, cy: -6, r: 20, fill: "#eef4f8" }), svg("circle", { cx: 6, cy: -16, r: 22, fill: "#f6f9fb" }), svg("circle", { cx: 24, cy: -2, r: 17, fill: "#e6eef4" }), svg("circle", { cx: 0, cy: 6, r: 20, fill: "#dfe9f1" }),
+      t.city ? svg("text", { x: 2, y: -2, "text-anchor": "middle", class: "pm-q" }, document.createTextNode("?")) : null]));
+    t.fog = fog; LF.append(fog);
+    g.addEventListener("click", () => go(t)); fog.addEventListener("click", () => go(t));
+    if (t.ban) t.ban.addEventListener("click", () => go(t));
+  }
+  // the scout
+  const scout = svg("g", { class: "pm-scout" }, [svg("ellipse", { cx: 0, cy: 2, rx: 13, ry: 6, fill: "rgba(0,0,0,0.25)" }), svg("circle", { cx: 0, cy: -2, r: 11, fill: "#3d7be0", stroke: "#fff", "stroke-width": 2.5 }),
+    svg("rect", { x: -6, y: -26, width: 12, height: 16, rx: 3, fill: "#2a5fb8" }), svg("circle", { cx: 0, cy: -31, r: 6.5, fill: "#f2c9a0" }), svg("polygon", { points: "-7,-34 7,-34 0,-44", fill: "#3d7be0" }),
+    svg("path", { d: "M8,-26 l3,-14", stroke: "#cfd6dc", "stroke-width": 2.2, "stroke-linecap": "round" }), svg("polygon", { points: "-12,-24 -4,-24 -4,-14 -8,-10 -12,-14", fill: "#f2c230", stroke: "#a87b14", "stroke-width": 1 })]);
+  LU.append(scout);
+  let here = CAP, busy = false, found = 0;
+  const place = (x, y) => scout.setAttribute("transform", `translate(${x} ${y})`);
+  place(CAP.X, CAP.Y);
+  const kick = sec.querySelector(".fin-k"), total = dests.length;
+  const count = () => { kick.textContent = found === total ? "Fog of war, lifted · every city found" : `Fog of war · ${found} of ${total} cities found`; };
+  const reveal = (t, delay = 0) => {
+    if (t.seen) return; t.seen = true;
+    setTimeout(() => { t.fog.classList.add("gone"); t.g.classList.add("seen"); if (t.ban) t.ban.classList.add("up"); if (t.city) { found++; count(); t.g.classList.add("city"); } }, delay);
+  };
+  const around = (t, d0 = 0) => { for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) { const c = t.c + dc, r = t.r + dr; if (c >= 0 && r >= 0 && c < N && r < N) reveal(at(c, r), d0 + (dr || dc ? 90 : 0)); } };
+  around(CAP); count();
+  const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const hop = (a, b) => new Promise(res => {
+    if (RM) { place(b.X, b.Y); return res(); }
+    const t0 = performance.now(), dur = b.t === "w" ? 380 : 300;
+    const f = now => { const k = Math.min(1, (now - t0) / dur), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      place(a.X + (b.X - a.X) * e, a.Y + (b.Y - a.Y) * e - Math.sin(Math.PI * k) * 26); k < 1 ? requestAnimationFrame(f) : res(); };
+    requestAnimationFrame(f);
+  });
+  async function go(t) {
+    if (t.seen && (t.city || (t.cap && false))) return nav(t.city.href);
+    if (busy || t === here) return; busy = true;
+    while (here !== t) {
+      const c = here.c + Math.sign(t.c - here.c), r = here.r + Math.sign(t.r - here.r), nxt = at(c, r);
+      await hop(here, nxt); here = nxt; around(here);
+      // the scout stays on the land side of the city it just found, so its banner can be read
+    }
+    busy = false;
+  }
+  // the board drops in, tile by tile, the first time it comes into view
+  const wrap = document.createElement("div"); wrap.className = "pm";
+  const bar = document.createElement("div"); bar.className = "pm-bar";
+  const lift = document.createElement("button"); lift.type = "button"; lift.className = "pm-lift"; lift.textContent = "Lift the fog";
+  lift.addEventListener("click", () => { T.slice().sort((a, b) => Math.hypot(a.c - here.c, a.r - here.r) - Math.hypot(b.c - here.c, b.r - here.r)).forEach((t, k) => reveal(t, k * 28)); lift.disabled = true; });
+  const hint = document.createElement("p"); hint.className = "pm-hint"; hint.textContent = "Tap anywhere on the map to send your scout.";
+  bar.append(hint, lift);
+  const skip = document.createElement("p"); skip.className = "pm-skip"; skip.append("Or go straight to ");
+  dests.forEach((d, k) => { const a = document.createElement("a"); a.href = d.href; a.textContent = d.name; skip.append(a); if (k < dests.length - 1) skip.append(" · "); });
+  wrap.append(root, bar, skip);
+  new IntersectionObserver((es, o) => { for (const e of es) if (e.isIntersecting) { root.classList.add("in"); o.disconnect(); } }, { threshold: 0.2 }).observe(root);
+  const list = sec.querySelector(".fin-list"), next = sec.querySelector(".fin-next");
+  if (next) next.remove();
+  if (list) list.replaceWith(wrap); else sec.querySelector(".fin-hd").after(wrap);
+  window.__pmap = { go: (c, r) => go(at(c, r)), state: () => ({ found, total, here: [here.c, here.r], seen: T.filter(t => t.seen).length }) };
+}
 function finBuild(page) {
   const th = FIN_THEMES[page], after = document.getElementById(FIN_AFTER[page]); if (!th || !after) return;
   let items = FIN_ITEMS.filter(it => it.page !== page && !it.deck);
@@ -9480,6 +9638,7 @@ function finBuild(page) {
       nx ? h("a", { class: "fin-next", href: nx.href }, h("span", { class: "fin-nk", text: th.next }), h("b", { text: nx.name }), h("span", { class: "fin-nl", text: nx.line }), h("i", { class: "fin-arr", "aria-hidden": "true", text: "→" })) : null,
       list));
   after.after(sec);
+  if (page === "polymind") polyMap(sec, items, nx);
 }
 for (const pg of Object.keys(FIN_THEMES)) finBuild(pg);
 
