@@ -211,7 +211,7 @@ body.pj-lit[data-page="projects"] #projects .dk-table { opacity: 1; }
 /* v81: the home screen as a desk under a lamp */
 .hub-stick > .hub-canvas, .hub-stick > .hub-ui { display: none !important; }
 .desk { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: auto; }
-.dk-wood, .dk-light, .dk-dark, .dk-scene { position: absolute; inset: 0; }
+.dk-wood, .dk-photo, .dk-light, .dk-dark, .dk-scene { position: absolute; inset: 0; }
 .dk-wood { background:
     repeating-linear-gradient(0deg, transparent 0 calc(20vh - 2px), rgba(0, 0, 0, 0.35) calc(20vh - 2px) 20vh),
     repeating-linear-gradient(91deg, rgba(0, 0, 0, 0.07) 0 2px, transparent 2px 11px),
@@ -251,6 +251,20 @@ body.pj-lit[data-page="projects"] #projects .dk-table { opacity: 1; }
 .desk.on .dk-o > g:first-child, .desk.on .dk-dec { opacity: 1; transition-delay: calc(0.4s + var(--i, 0) * 0.12s); }
 .desk .dk-tag { opacity: 0; transition: opacity 0.6s ease; } .desk.on .dk-tag { opacity: 1; transition-delay: calc(1.1s + var(--i, 0) * 0.1s); }
 @media (prefers-reduced-motion: reduce) { .dk-svg .dk-lift, .dk-tg, .desk * { transition: none !important; animation: none !important; } }
+
+/* v82: photographic wood, pencil over everything */
+.dk-photo { background: center / cover no-repeat; opacity: 0; transition: opacity 1.2s ease; }
+.dk-photo.in { opacity: 1; }
+.dk-photo::after { content: ""; position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.45)); }
+.dk-shade, .dk-pen { pointer-events: none; }
+.dk-shade * { fill: url(#dkHatch) !important; stroke: none !important; }
+.dk-shade.x * { fill: url(#dkHatch2) !important; }
+.dk-shade { opacity: 0.55; mix-blend-mode: multiply; }
+.dk-pen * { fill: none !important; stroke: #221d18 !important; stroke-width: 1.7px !important; stroke-dasharray: none !important; stroke-linejoin: round; }
+.dk-pen { opacity: 0.7; mix-blend-mode: multiply; }
+.dk-pen.b { opacity: 0.4; }
+.dk-pen.b * { stroke-width: 1.1px !important; }
+.dk-shade text, .dk-pen text, .dk-shade .glow, .dk-pen .glow, .dk-shade .steam, .dk-pen .steam { display: none; }
 
 .hero .robot { position: absolute; transform: translateZ(0.7px); visibility: hidden; pointer-events: none; }
 .edge { position: absolute; backface-visibility: hidden; background: linear-gradient(180deg, #c99e5a, #8f6a33); }
@@ -10885,6 +10899,14 @@ const AMB = window.AMB = (() => {
       lamp: [40, 40, 0, 0.8], mug: [790, 180, 0, 0.72], pencil: [450, 1560, 4, 0.8], note: [420, 190, -3, 0.95], plant: [940, 1640, 0, 1] },
   };
   const DEFS = `<defs>
+    <filter id="dkSk1" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="5" xChannelSelector="R" yChannelSelector="G"/></filter>
+    <filter id="dkSk2" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="11"/><feDisplacementMap in="SourceGraphic" scale="7" xChannelSelector="G" yChannelSelector="R"/></filter>
+    <pattern id="dkHatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(38)"><path d="M0,1 h7" stroke="#2b2620" stroke-width="1.1" opacity="0.8"/><path d="M0,4.6 h5" stroke="#2b2620" stroke-width="0.7" opacity="0.5"/></pattern>
+    <pattern id="dkHatch2" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(-52)"><path d="M0,2 h9" stroke="#2b2620" stroke-width="0.8" opacity="0.6"/></pattern>
+    <linearGradient id="dkShadeG" x1="0.1" y1="0.05" x2="0.9" y2="1"><stop offset="0.3" stop-color="#000"/><stop offset="0.75" stop-color="#777"/><stop offset="1" stop-color="#fff"/></linearGradient>
+    <linearGradient id="dkShadeG2" x1="0.1" y1="0.05" x2="0.9" y2="1"><stop offset="0.6" stop-color="#000"/><stop offset="1" stop-color="#fff"/></linearGradient>
+    <mask id="dkShadeM" maskContentUnits="objectBoundingBox"><rect width="1" height="1" fill="url(#dkShadeG)"/></mask>
+    <mask id="dkShadeM2" maskContentUnits="objectBoundingBox"><rect width="1" height="1" fill="url(#dkShadeG2)"/></mask>
     <linearGradient id="dkAlu" x1="0" y1="0" x2="0.3" y2="1"><stop offset="0" stop-color="#e3e5e9"/><stop offset="0.6" stop-color="#bfc3c9"/><stop offset="1" stop-color="#9da2a9"/></linearGradient>
     <linearGradient id="dkScreen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2a44"/><stop offset="1" stop-color="#0d1322"/></linearGradient>
     <radialGradient id="dkScreenGlow"><stop offset="0" stop-color="rgba(120,160,255,0.28)"/><stop offset="1" stop-color="rgba(120,160,255,0)"/></radialGradient>
@@ -10901,23 +10923,80 @@ const AMB = window.AMB = (() => {
   </defs>`;
   const desk = document.createElement("div"); desk.className = "desk"; desk.innerHTML = `<div class="dk-wood"></div><div class="dk-light"></div><div class="dk-scene"></div><div class="dk-dark"></div>`;
   const scene = desk.querySelector(".dk-scene");
+  // v82: each object is coloured in, then gone over in pencil: hatching on the side away from the lamp, and two
+  // loose graphite passes around every edge, each wobbled a little differently, like a sketch over a photo
+  const sk = art => `<g class="dk-art">${art}</g><g class="dk-shade" mask="url(#dkShadeM)">${art}</g><g class="dk-shade x" mask="url(#dkShadeM2)">${art}</g>` +
+    `<g class="dk-pen" filter="url(#dkSk1)">${art}</g><g class="dk-pen b" filter="url(#dkSk2)">${art}</g>`;
   const place = ([x, y, r, s]) => `translate(${x} ${y}) rotate(${r}) scale(${s})`;
   const build = () => {
     const tall = innerWidth / innerHeight < 0.9, Ly = tall ? L.tall : L.wide;
     let out = `<svg class="dk-svg" viewBox="${Ly.vb}" preserveAspectRatio="xMidYMid meet" role="group" aria-label="My desk: everything on it is a door to part of the site">${DEFS}`;
-    for (const k of ["plant", "lamp", "bowl", "mug", "pencil", "note"]) if (Ly[k]) out += `<g class="dk-dec dk-${k}" transform="${place(Ly[k])}"><g class="dk-lift">${DECOR[k]}</g></g>`;
+    for (const k of ["plant", "lamp", "bowl", "mug", "pencil", "note"]) if (Ly[k]) out += `<g class="dk-dec dk-${k}" transform="${place(Ly[k])}"><g class="dk-lift">${sk(DECOR[k])}</g></g>`;
     DOORS.forEach((d, i) => { const p = Ly[d.k];
-      out += `<a class="dk-o dk-${d.k}" href="${d.href}" aria-label="${d.name}" style="--i:${i}"><g transform="${place(p)}"><g class="dk-lift">${ART[d.k]}</g></g>` +
+      out += `<a class="dk-o dk-${d.k}" href="${d.href}" aria-label="${d.name}" style="--i:${i}"><g transform="${place(p)}"><g class="dk-lift">${sk(ART[d.k])}</g></g>` +
         `<g class="dk-tag" transform="translate(${p[0]} ${p[1]})"><g class="dk-tg"><rect x="${-(d.name.length * 9.5 + 34) / 2}" y="-22" width="${d.name.length * 9.5 + 34}" height="40" rx="6"/><text y="7" text-anchor="middle">${d.name}</text></g></g></a>`; });
     scene.innerHTML = out + "</svg>";
     // tags sit just off each object, toward the middle of the desk
-    for (const d of DOORS) { const g = scene.querySelector(`.dk-${d.k} .dk-tag`), b = scene.querySelector(`.dk-${d.k} .dk-lift`).getBBox(), p = Ly[d.k];
+    for (const d of DOORS) { const g = scene.querySelector(`.dk-${d.k} .dk-tag`), b = scene.querySelector(`.dk-${d.k} .dk-art`).getBBox(), p = Ly[d.k];
       const dy = d.k === "laptop" ? 210 * p[3] + 70 : (b.height / 2) * p[3] + 34; g.setAttribute("transform", `translate(${p[0]} ${p[1] + dy})`); }
     fit();
   };
   // size each paper tag to its handwriting, once the font is in
   const fit = () => { for (const t of scene.querySelectorAll(".dk-tg")) { const tx = t.querySelector("text"), r = t.querySelector("rect"); let w = 0; try { w = tx.getComputedTextLength(); } catch (e) {} if (w > 0) { r.setAttribute("width", w + 30); r.setAttribute("x", -(w + 30) / 2); } } };
   if (document.fonts) { document.fonts.ready.then(fit); document.fonts.addEventListener && document.fonts.addEventListener("loadingdone", fit); }
+  // v82: a photographic walnut top, painted pixel by pixel once, a few rows per frame so nothing stalls: planks with
+  // butt joints, warped flat-sawn grain with dark late-wood edges, open pores, figure, bevelled seams, then varnish
+  const paintWood = () => {
+    const W = 1800, H = 1200, PH = 240, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+    const g = cv.getContext("2d"), img = g.createImageData(W, 16), D = img.data;
+    let sd = 7; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+    const P = new Uint8Array(512), R = new Float32Array(256);
+    { const q = [...Array(256).keys()]; for (let i = 255; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [q[i], q[j]] = [q[j], q[i]]; } for (let i = 0; i < 512; i++) P[i] = q[i & 255]; for (let i = 0; i < 256; i++) R[i] = rnd(); }
+    const vn = (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+      const X0 = xi & 255, X1 = (xi + 1) & 255, Y0 = P[yi & 255], Y1 = P[(yi + 1) & 255];
+      const a = R[P[X0 + Y0]], b = R[P[X1 + Y0]], c = R[P[X0 + Y1]], d = R[P[X1 + Y1]];
+      return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v; };
+    const fbm = (x, y) => vn(x, y) * 0.55 + vn(x * 2.13, y * 2.13) * 0.3 + vn(x * 4.37, y * 4.37) * 0.15;
+    const planks = []; for (let k = 0; k * PH < H; k++) planks.push({ tone: 0.7 + R[(k * 13 + 5) & 255] * 0.32, hue: R[(k * 7 + 1) & 255], cx: W * (0.1 + R[(k * 17 + 2) & 255] * 0.8), cy: PH * (0.2 + R[(k * 23 + 6) & 255] * 0.6), taper: 0.05 + R[(k * 31 + 8) & 255] * 0.08, freq: 0.07 + R[(k * 41 + 4) & 255] * 0.05, joint: Math.round(W * (0.12 + R[(k * 29 + 3) & 255] * 0.76)) });
+    let y0 = 0;
+    return new Promise(done => {
+      const rows = () => {
+        const n = Math.min(16, H - y0);
+        for (let yy = 0; yy < n; yy++) { const y = y0 + yy, k = Math.floor(y / PH), ly = y - k * PH, pk = planks[k];
+          for (let x = 0; x < W; x++) {
+            const after = x > pk.joint, s2 = k * 37.7 + (after ? 91.3 : 0), sx = x + (after ? 640 : 0);
+            // the board was sawn flat across the log: rings are nested arches around the heart, warped by the tree
+            const warp = fbm(sx * 0.0018 + s2, ly * 0.012 + s2) * 26 + (vn(sx * 0.0006 + s2, s2) - 0.5) * 60;
+            const dep = 14 + Math.abs(sx - pk.cx) * pk.taper + fbm(sx * 0.003 + s2, s2 + 9) * 30;
+            const dy = ly - pk.cy + warp, rr = Math.sqrt(dy * dy + dep * dep);
+            const dd = rr * pk.freq + vn(sx * 0.004, ly * 0.04 + s2) * 0.9;
+            const f = dd - Math.floor(dd), sm = f < 0.45 ? 0 : f > 0.92 ? 1 - (f - 0.92) * 6 : (f - 0.45) / 0.47, ring = (sm * sm * (3 - 2 * sm) * 0.75 + f * 0.2) * (0.55 + 0.45 * R[Math.floor(dd) & 255]) + (vn(sx * 0.03 + s2, ly * 0.9) - 0.5) * 0.18;
+            const pore = vn(sx * 0.16 + s2, ly * 1.7 + s2), pr = pore > 0.74 ? (pore - 0.74) * 3.8 : 0;
+            const fig = fbm(sx * 0.0045 + s2, ly * 0.028 + s2);
+            const t = 0.5 * ring + 0.32 * fig + 0.34 * pr + vn(x * 0.6, y * 0.6) * 0.06;
+            let m = pk.tone; const e = Math.min(ly, PH - 1 - ly), ej = Math.abs(x - pk.joint);
+            if (e < 2 || ej < 1.2) m *= 0.22; else if (e < 7) m *= 0.72 + e * 0.04; else if (ej < 4) m *= 0.8 + ej * 0.05;
+            if (ly === 2 || (ej >= 1.2 && ej < 2.2 && after)) m *= 1.25;   // the catch of light on the bevel
+            const i = (yy * W + x) * 4;
+            D[i] = (120 - t * 84 + pk.hue * 14) * m; D[i + 1] = (73 - t * 54 + pk.hue * 5) * m; D[i + 2] = (42 - t * 33) * m; D[i + 3] = 255;
+          } }
+        g.putImageData(img, 0, y0, 0, 0, W, n); y0 += n;
+        if (y0 < H) return setTimeout(rows, 0);
+        // varnish: a broad soft sheen and a few faint scuffs in the finish
+        const sh = g.createRadialGradient(W * 0.3, H * 0.25, 0, W * 0.3, H * 0.25, W * 0.7); sh.addColorStop(0, "rgba(255,226,180,0.10)"); sh.addColorStop(1, "rgba(255,226,180,0)");
+        g.fillStyle = sh; g.fillRect(0, 0, W, H);
+        g.globalCompositeOperation = "screen"; g.strokeStyle = "rgba(255,235,200,0.05)"; g.lineCap = "round";
+        for (let i = 0; i < 26; i++) { const x = rnd() * W, y = rnd() * H, a = rnd() * Math.PI, l = 40 + rnd() * 160; g.lineWidth = 0.6 + rnd() * 1.2; g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + Math.cos(a) * l * 0.5 + rnd() * 20, y + Math.sin(a) * l * 0.5 + rnd() * 20, x + Math.cos(a) * l, y + Math.sin(a) * l); g.stroke(); }
+        g.globalCompositeOperation = "source-over";
+        done(cv.toDataURL("image/jpeg", 0.9));
+      };
+      rows();
+    });
+  };
+  const photo = document.createElement("div"); photo.className = "dk-photo"; desk.querySelector(".dk-wood").after(photo);
+  { let u = null; try { u = localStorage.getItem("dkWood2"); } catch (e) {}
+    const show = u => { photo.style.backgroundImage = `url(${u})`; photo.classList.add("in"); };
+    if (u) show(u); else setTimeout(() => paintWood().then(u => { show(u); try { localStorage.setItem("dkWood2", u); } catch (e) {} }), 120); }
   stick.insertBefore(desk, stick.querySelector(".hub-lumos"));
   build(); let lastTall = innerWidth / innerHeight < 0.9;
   addEventListener("resize", () => { const t = innerWidth / innerHeight < 0.9; if (t !== lastTall) { lastTall = t; build(); } });
