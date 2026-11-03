@@ -277,6 +277,39 @@ body.pj-lit[data-page="projects"] #projects .dk-table { opacity: 1; }
 .desk.dk-dive .dk-svg .dk-lift { filter: none; transition: none; }
 .desk.dk-dive .dk-pen, .desk.dk-dive .dk-o:not(.dk-pick), .desk.dk-dive .dk-dec, .desk.dk-dive .dk-tag, .desk.dk-dive .dk-grain { display: none; }
 
+/* v87: an unlit desk (the opening still showing) must not catch clicks meant for the opening */
+.hub-stick.off .desk, .desk:not(.on) { pointer-events: none; }
+
+/* v87: bold plaques, and a desk with real depth */
+.dk-tg .pl { fill: url(#dkPlq); stroke: rgba(60, 38, 10, 0.55); stroke-width: 1.2; filter: none; }
+.dk-tg .pl-sh { fill: rgba(8, 4, 0, 0.55); stroke: none; filter: blur(3px); }
+.dk-tg .pl-hi { fill: url(#dkPlqHi); stroke: none; filter: none; }
+.dk-tg .pl-bar { fill: #b8862b; stroke: none; filter: none; }
+.dk-o:focus-visible .dk-tg .pl { stroke: #d9b36c; stroke-width: 3; }
+.dk-tg text.t1 { font: 900 27px/1 var(--font-ui); letter-spacing: 0.1em; text-transform: uppercase; fill: #120e0a; paint-order: stroke; stroke: rgba(255, 250, 238, 0.6); stroke-width: 0.8px; }
+.dk-tg text.t2 { font: 600 14px/1 var(--font-ui); letter-spacing: 0.06em; fill: #5d4a33; }
+.dk-svg.tall .dk-tg text.t1 { font-size: 34px; }
+.dk-svg.tall .dk-tg text.t2 { font-size: 19px; }
+.dk-o:hover .dk-tg .pl-bar, .dk-o:focus-visible .dk-tg .pl-bar { fill: #e2a63a; }
+/* each object's contact edge: a tight, dark line where it meets the wood, so it sits on the desk rather than floats */
+.dk-svg .dk-lift { filter: drop-shadow(calc(var(--sx, 0.3) * 1.2px) calc(var(--sy, 0.5) * 1.2px + 1.6px) 0.7px rgba(10, 5, 1, 0.85)) drop-shadow(calc(var(--sx, 0.3) * 14px) calc(var(--sy, 0.5) * 14px) 10px rgba(10, 4, 0, 0.45)) drop-shadow(calc(var(--sx, 0.3) * 38px) calc(var(--sy, 0.5) * 38px) 34px rgba(10, 4, 0, 0.3)); }
+/* the whole desk tilts a little toward the pointer, like leaning over a real one; the lamp's sheen slides across */
+.desk { transform-origin: 50% 55%; will-change: transform; }
+.desk.on.dk-3d { transform: perspective(1500px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(1.05); transition: transform 1.1s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.desk.dk-dive, .desk.dk-reset { transform: none !important; transition: none !important; }
+.dk-sheen { position: absolute; left: -50%; top: -50%; width: 200%; height: 200%; pointer-events: none; mix-blend-mode: soft-light; opacity: 0; transition: opacity 1.4s ease 0.6s;
+  background: radial-gradient(22% 18% at 50% 50%, rgba(255, 236, 200, 0.55), rgba(255, 214, 160, 0.16) 55%, rgba(255, 200, 140, 0) 100%);
+  transform: translate3d(var(--shx, -18%), var(--shy, -22%), 0); will-change: transform; }
+.desk.on .dk-sheen { opacity: 1; }
+.dk-sheen { transition: opacity 1.4s ease 0.6s, transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.desk.dk-dive .dk-sheen { display: none; }
+@media (prefers-reduced-motion: reduce) { .desk.on.dk-3d { transform: none; } }
+/* every surface catches the lamp: lit on the side toward it, falling into shadow away from it, so each object has volume */
+.dk-lit { pointer-events: none; mix-blend-mode: soft-light; opacity: 0.85; }
+.dk-lit * { fill: url(#dkLitG) !important; stroke: none !important; }
+.dk-lit text, .dk-lit .glow, .dk-lit .steam { display: none; }
+.desk.dk-dive .dk-lit { display: none; }
+
 
 /* v83: the desk's thread through the site */
 .pc-has { position: relative; padding-right: clamp(0px, 16vw, 210px); }
@@ -10907,11 +10940,11 @@ const AMB = window.AMB = (() => {
   const stick = document.getElementById("hubStick"); if (!stick) return;
   const fl = document.createElement("link"); fl.rel = "stylesheet"; fl.href = "https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap"; document.head.append(fl);
   const DOORS = [
-    { k: "laptop", href: "#projects", name: "Projects" },
-    { k: "manga", href: "#manga", name: "More about AlphaGo" },
-    { k: "folder", href: "#resume", name: "Résumé" },
-    { k: "notebook", href: "#blog", name: "Blog" },
-    { k: "letter", href: "#hello", name: "Contact me" },
+    { k: "laptop", href: "#projects", name: "Projects", sub: "Things I've built" },
+    { k: "manga", href: "#manga", name: "More about AlphaGo", sub: "Move 37, in pencil" },
+    { k: "folder", href: "#resume", name: "Résumé", sub: "Experience & skills" },
+    { k: "notebook", href: "#blog", name: "Blog", sub: "Notes & writing" },
+    { k: "letter", href: "#hello", name: "Contact me", sub: "Say hello" },
   ];
   // the art, each centred on (0,0)
   const keys = () => { let s = ""; for (let r = 0; r < 5; r++) for (let c = 0; c < 13; c++) { const w = r === 4 && c === 6 ? 0 : 30; if (r === 4 && c > 3 && c < 9) { if (c === 4) s += `<rect x="${-221 + c * 34}" y="${18 + r * 33}" width="166" height="27" rx="5"/>`; continue; } s += `<rect x="${-221 + c * 34}" y="${18 + r * 33}" width="${w}" height="27" rx="5"/>`; } return s; };
@@ -10999,7 +11032,7 @@ const AMB = window.AMB = (() => {
   const scene = desk.querySelector(".dk-scene");
   // v82: each object is coloured in, then gone over in pencil: hatching on the side away from the lamp, and two
   // loose graphite passes around every edge, each wobbled a little differently, like a sketch over a photo
-  const sk = art => `<g class="dk-art">${art}</g><g class="dk-shade" mask="url(#dkShadeM)">${art}</g><g class="dk-shade x" mask="url(#dkShadeM2)">${art}</g>` +
+  const sk = art => `<g class="dk-art">${art}</g><g class="dk-lit">${art}</g><g class="dk-shade" mask="url(#dkShadeM)">${art}</g><g class="dk-shade x" mask="url(#dkShadeM2)">${art}</g>` +
     `<g class="dk-pen" filter="url(#dkSk1)">${art}</g><g class="dk-pen b" filter="url(#dkSk2)">${art}</g>`;
   { const d = document.createElementNS("http://www.w3.org/2000/svg", "svg"); d.setAttribute("class", "dk-defs"); d.setAttribute("aria-hidden", "true"); d.setAttribute("width", "0"); d.setAttribute("height", "0"); d.innerHTML = DEFS; document.body.prepend(d); }
   // v83: shadows fall away from the lamp, longer the farther a thing is from it
@@ -11008,19 +11041,28 @@ const AMB = window.AMB = (() => {
   const place = ([x, y, r, s]) => `translate(${x} ${y}) rotate(${r}) scale(${s})`;
   const build = () => {
     const tall = innerWidth / innerHeight < 0.9, Ly = tall ? L.tall : L.wide;
-    let out = `<svg class="dk-svg" viewBox="${Ly.vb}" preserveAspectRatio="xMidYMid meet" role="group" aria-label="My desk: everything on it is a door to part of the site">`;
+    let out = `<svg class="dk-svg${tall ? " tall" : ""}" viewBox="${Ly.vb}" preserveAspectRatio="xMidYMid meet" role="group" aria-label="My desk: everything on it is a door to part of the site">`;
     for (const k of ["plant", "lamp", "bowl", "mug", "pencil", "note"]) if (Ly[k]) out += `<g class="dk-dec dk-${k}" transform="${place(Ly[k])}"><g class="dk-lift" style="${shade(Ly, Ly[k])}">${sk(DECOR[k])}</g></g>`;
     DOORS.forEach((d, i) => { const p = Ly[d.k];
       out += `<a class="dk-o dk-${d.k}" href="${d.href}" aria-label="${d.name}" style="--i:${i}"><g transform="${place(p)}"><g class="dk-lift" style="${shade(Ly, p)}">${sk(ART[d.k])}</g></g>` +
-        `<g class="dk-tag" transform="translate(${p[0]} ${p[1]})"><g class="dk-tg"><rect x="${-(d.name.length * 9.5 + 34) / 2}" y="-22" width="${d.name.length * 9.5 + 34}" height="40" rx="6"/><text y="7" text-anchor="middle">${d.name}</text></g></g></a>`; });
+        `<g class="dk-tag" transform="translate(${p[0]} ${p[1]})"><g class="dk-tg"><rect class="pl-sh"/><rect class="pl"/><rect class="pl-hi"/><rect class="pl-bar"/><text class="t1" text-anchor="middle">${d.name}</text><text class="t2" text-anchor="middle">${d.sub}</text></g></g></a>`; });
     scene.innerHTML = out + "</svg>";
     // tags sit just off each object, toward the middle of the desk
     for (const d of DOORS) { const g = scene.querySelector(`.dk-${d.k} .dk-tag`), b = scene.querySelector(`.dk-${d.k} .dk-art`).getBBox(), p = Ly[d.k];
-      const dy = d.k === "laptop" ? 210 * p[3] + 70 : (b.height / 2) * p[3] + 34; g.setAttribute("transform", `translate(${p[0]} ${p[1] + dy})`); }
+      const dy = d.k === "laptop" ? 210 * p[3] + 74 : (b.height / 2) * p[3] + (tall ? 52 : 40); g.setAttribute("transform", `translate(${p[0]} ${p[1] + dy})`); }
     fit();
   };
   // size each paper tag to its handwriting, once the font is in
-  const fit = () => { for (const t of scene.querySelectorAll(".dk-tg")) { const tx = t.querySelector("text"), r = t.querySelector("rect"); let w = 0; try { w = tx.getComputedTextLength(); } catch (e) {} if (w > 0) { r.setAttribute("width", w + 30); r.setAttribute("x", -(w + 30) / 2); } } };
+  // v87: a bold two-line plaque: the name big and heavy, what is behind it underneath
+  const fit = () => { for (const t of scene.querySelectorAll(".dk-tg")) { const tall = !!t.closest(".tall"), a = t.querySelector(".t1"), b = t.querySelector(".t2"); let w = 0;
+      try { w = Math.max(a.getBBox().width, b.getBBox().width); } catch (e) {} if (!(w > 0)) w = Math.max(a.textContent.length * (tall ? 30 : 20), 120);
+      const fs1 = tall ? 34 : 27, fs2 = tall ? 19 : 14, pad = tall ? 20 : 18, h = fs1 + fs2 + pad * 1.35, W = w + pad * 2 + 8, x = -W / 2, y = -h / 2, set = (el, o) => { for (const k in o) el.setAttribute(k, o[k]); };
+      set(t.querySelector(".pl"), { x, y, width: W, height: h, rx: 7 }); set(t.querySelector(".pl-sh"), { x: x + 2, y: y + 5, width: W, height: h, rx: 7 });
+      set(t.querySelector(".pl-hi"), { x: x + 2, y: y + 2, width: W - 4, height: h * 0.45, rx: 5 }); set(t.querySelector(".pl-bar"), { x: x + 2, y: y + h - (tall ? 9 : 7), width: W - 4, height: tall ? 7 : 5, rx: 2 });
+      a.setAttribute("y", y + pad * 0.55 + fs1 * 0.82); b.setAttribute("y", y + pad * 0.55 + fs1 + fs2 * 0.95 + 2);
+      // keep the whole plaque on the desk
+      const tg = t.parentNode, m = /translate\(([-\d.]+) ([-\d.]+)\)/.exec(tg.getAttribute("transform") || ""), vb = (t.ownerSVGElement.getAttribute("viewBox") || "0 0 1600 1000").split(/\s+/).map(Number);
+      if (m) { if (tg.dataset.x == null) tg.dataset.x = m[1]; const cx = Math.max(W / 2 + 12, Math.min(vb[2] - W / 2 - 12, +tg.dataset.x)); tg.setAttribute("transform", `translate(${cx} ${m[2]})`); } } };
   if (document.fonts) { document.fonts.ready.then(fit); document.fonts.addEventListener && document.fonts.addEventListener("loadingdone", fit); }
   // v82: a photographic walnut top, painted pixel by pixel once, a few rows per frame so nothing stalls: planks with
   // butt joints, warped flat-sawn grain with dark late-wood edges, open pores, figure, bevelled seams, then varnish
@@ -11105,6 +11147,26 @@ const AMB = window.AMB = (() => {
   if (ui) new MutationObserver(sync).observe(ui, { attributes: true, attributeFilter: ["class"] });
   new MutationObserver(sync).observe(stick, { attributes: true, attributeFilter: ["style"] }); sync();
   window.__desk = { art: k => sk(ART[k] || DECOR[k] || ""), state: () => ({ on: desk.classList.contains("on"), doors: [...scene.querySelectorAll(".dk-o")].map(a => a.getAttribute("href")) }) };
+})();
+
+// v87: plaque gradients, the lamp's sheen and a gentle tilt toward the pointer
+(() => {
+  const desk = document.querySelector(".desk"); if (!desk) return;
+  const defs = document.querySelector(".dk-defs defs") || document.querySelector(".dk-defs");
+  if (defs && !document.getElementById("dkPlq")) defs.insertAdjacentHTML("beforeend",
+    `<linearGradient id="dkPlq" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffaf0"/><stop offset="0.55" stop-color="#f3e9d4"/><stop offset="1" stop-color="#ddcdae"/></linearGradient>` +
+    `<linearGradient id="dkLitG" x1="0.1" y1="0" x2="0.9" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.9"/><stop offset="0.38" stop-color="#fff" stop-opacity="0.12"/><stop offset="0.62" stop-color="#000" stop-opacity="0.1"/><stop offset="1" stop-color="#000" stop-opacity="0.75"/></linearGradient>` +
+    `<linearGradient id="dkPlqHi" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>`);
+  const scene = desk.querySelector(".dk-scene");
+  if (scene && !desk.querySelector(".dk-sheen")) { scene.insertAdjacentHTML("afterend", `<div class="dk-sheen" aria-hidden="true"></div>`); }
+  const fine = matchMedia("(hover: hover) and (pointer: fine)").matches, RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!fine || RM) return;
+  desk.classList.add("dk-3d");
+  let raf = 0, nx = 0, ny = 0;
+  const apply = () => { raf = 0; desk.style.setProperty("--ry", (nx * 2.4).toFixed(2) + "deg"); desk.style.setProperty("--rx", (-ny * 1.8).toFixed(2) + "deg");
+    desk.style.setProperty("--shx", (-25 + nx * 14).toFixed(1) + "%"); desk.style.setProperty("--shy", (-25 + ny * 14).toFixed(1) + "%"); };
+  addEventListener("pointermove", e => { if (!desk.classList.contains("on")) return; nx = e.clientX / innerWidth * 2 - 1; ny = e.clientY / innerHeight * 2 - 1; if (!raf) raf = requestAnimationFrame(apply); }, { passive: true });
+  document.addEventListener("mouseleave", () => { nx = ny = 0; if (!raf) raf = requestAnimationFrame(apply); });
 })();
 
 
@@ -11511,7 +11573,7 @@ const AMB = window.AMB = (() => {
     if (ran || busy) return; ran = busy = true;
     const first = (force || !seen()) && H5 && H5.able(); if (H5) H5.claim();
     const W = innerWidth, H = innerHeight, k = clamp(Math.min(W, H) / 820, 0.62, 1.25), y0 = scrollY, land = window.__hub.landing(), lead = (window.__hub.state().lead || H), D = Math.max(y0, Math.min(y0 + H * 0.2, lead * 0.16));   // stay short of where the Lumos starts by itself
-    const cr = reveal.querySelector(".cue").getBoundingClientRect(), cx = cr.left + cr.width / 2, cy = cr.top + cr.height / 2 + y0;
+    const cr = reveal.querySelector(".cue").getBoundingClientRect(), shown = revealed() && cr.width > 0 && cr.top > 0 && cr.top < H, cx = shown ? cr.left + cr.width / 2 : W / 2, cy = (shown ? cr.top + cr.height / 2 : H * 0.8) + y0;   // the opening may not have finished: start where the arrow will be
     const wrap = document.createElement("div"); wrap.className = "trn"; wrap.innerHTML = `<canvas></canvas><button class="hs-skip" type="button">Skip <span aria-hidden="true">›</span></button>`; document.body.append(wrap);
     const cv = wrap.querySelector("canvas"), g = cv.getContext("2d"), dpr = Math.min(devicePixelRatio || 1, 2); cv.width = W * dpr; cv.height = H * dpr;
     // the bridge, in page coordinates, so it is fixed to the page as the page moves
@@ -11534,13 +11596,18 @@ const AMB = window.AMB = (() => {
     const stopKeys = e => { if (["ArrowDown", "ArrowUp", "PageDown", "PageUp", " ", "Home", "End"].includes(e.key)) e.preventDefault(); if (e.key === "Escape") skip(); };
     const stopScroll = e => e.preventDefault();
     addEventListener("wheel", stopScroll, { passive: false }); addEventListener("touchmove", stopScroll, { passive: false }); addEventListener("keydown", stopKeys);
-    const unlock = () => { removeEventListener("wheel", stopScroll); removeEventListener("touchmove", stopScroll); removeEventListener("keydown", stopKeys); busy = false; };
+    const unlock = () => { if (typeof off === "function") off(); removeEventListener("wheel", stopScroll); removeEventListener("touchmove", stopScroll); removeEventListener("keydown", stopKeys); busy = false; };
     let t0 = 0, raf = 0, phase = "walk", done = false;
     const glide = (from, toY, ms, after) => { const s0 = performance.now(); const st = now => { const f = Math.min(1, (now - s0) / ms), e = f < 0.5 ? 2 * f * f : 1 - Math.pow(-2 * f + 2, 2) / 2; to(from + (toY - from) * e); if (f < 1) requestAnimationFrame(st); else after && after(); }; requestAnimationFrame(st); };
     const toHouse = () => { to(land); if (first) { H5.play(); setTimeout(() => wrap.remove(), 900); addEventListener("house:done", unlock, { once: true }); } else { wrap.remove(); unlock(); } };
     const toLumos = () => { to(land); unlock(); requestAnimationFrame(() => wrap.classList.add("out")); setTimeout(() => wrap.remove(), 1800); };
     const skip = () => { if (done) return; done = true; cancelAnimationFrame(raf); if (first) { g.fillStyle = "#000"; g.fillRect(0, 0, cv.width, cv.height); toHouse(); } else { wrap.remove(); to(land); unlock(); } };
     wrap.querySelector(".hs-skip").addEventListener("click", skip);
+    // leaving mid-walk (a link, back/forward) or the window changing shape: stop cleanly, never leave the page locked
+    const abort = () => { if (done) return; done = true; cancelAnimationFrame(raf); wrap.remove(); unlock(); off(); };
+    const onHash = () => { if (!home()) abort(); else if (!done) skip(); }, w0 = innerWidth, onSize = () => { if (Math.abs(innerWidth - w0) > 40) skip(); };
+    const off = () => { removeEventListener("hashchange", onHash); removeEventListener("resize", onSize); };
+    addEventListener("hashchange", onHash); addEventListener("resize", onSize); addEventListener("pagehide", abort, { once: true });
     const E = ctrl[3], Dr = door(E);
     const frame = now => {
       if (!t0) t0 = now; const t = window.__trnT != null ? window.__trnT : (now - t0) / 1000; if (now - boil > 90) { boil = now; seed = 1 + ((now / 90) | 0) % 7 * 977; }
@@ -11584,11 +11651,15 @@ const AMB = window.AMB = (() => {
     window.__trn = { first, D, LEN, WALK };
   }
   // leaving the opening: a scroll down from it, or the arrow/tagline under it
-  addEventListener("wheel", e => { if (!ran && !busy && home() && e.deltaY > 0 && scrollY < 40 && revealed()) { e.preventDefault(); run(); } }, { passive: false });
+  const inPanel = t => { for (let n = t; n && n !== document.body && n.nodeType === 1; n = n.parentElement) { const o = getComputedStyle(n).overflowY; if ((o === "auto" || o === "scroll") && n.scrollHeight > n.clientHeight + 2) return true; if (n.getAttribute("role") === "dialog" || n.getAttribute("aria-modal") === "true") return true; } return false; };
+  addEventListener("wheel", e => { if (!ran && !busy && home() && e.deltaY > 0 && scrollY < 40 && !inPanel(e.target)) { e.preventDefault(); run(); } }, { passive: false });
   let ty = null; addEventListener("touchstart", e => { ty = e.touches[0].clientY; }, { passive: true });
-  addEventListener("touchmove", e => { if (!ran && !busy && ty != null && home() && ty - e.touches[0].clientY > 12 && scrollY < 40 && revealed()) { e.preventDefault(); run(); } }, { passive: false });
-  addEventListener("keydown", e => { if (!ran && !busy && home() && ["ArrowDown", "PageDown", " "].includes(e.key) && scrollY < 40 && revealed() && !e.target.closest("input, textarea")) { e.preventDefault(); run(); } });
-  addEventListener("click", e => { const a = e.target.closest && e.target.closest('#reveal a[href="#hub"]'); if (a && !ran && !busy && revealed()) { e.preventDefault(); e.stopImmediatePropagation(); run(); } }, true);
+  addEventListener("touchmove", e => { if (!ran && !busy && ty != null && home() && !inPanel(e.target) && ty - e.touches[0].clientY > 12 && scrollY < 40) { e.preventDefault(); run(); } }, { passive: false });
+  addEventListener("keydown", e => { if (!ran && !busy && home() && ["ArrowDown", "PageDown", " "].includes(e.key) && scrollY < 40 && !(e.target.closest && e.target.closest("input, textarea, select, [contenteditable]")) && !e.altKey && !e.ctrlKey && !e.metaKey) { e.preventDefault(); run(); } });
+  addEventListener("click", e => { const a = e.target.closest && e.target.closest('#reveal a[href="#hub"]'); if (a && !ran && !busy && home()) { e.preventDefault(); e.stopImmediatePropagation(); run(); } }, true);
+  // dragging the scrollbar (or a middle-click autoscroll) away from the top counts too
+  let held = false; addEventListener("pointerdown", () => { held = true; }, true); addEventListener("pointerup", () => { held = false; }, true);
+  addEventListener("scroll", () => { if (held && !ran && !busy && home() && scrollY > 0 && scrollY < window.__hub.landing() * 0.6) { to(0); run(); } }, { passive: true });
   window.__transit = { run, state: () => ({ ran, busy }) };
 })();
 
