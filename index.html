@@ -211,7 +211,7 @@ body.pj-lit[data-page="projects"] #projects .dk-table { opacity: 1; }
 /* v81: the home screen as a desk under a lamp */
 .hub-stick > .hub-canvas, .hub-stick > .hub-ui { display: none !important; }
 .desk { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: auto; }
-.dk-wood, .dk-photo, .dk-light, .dk-dark, .dk-scene { position: absolute; inset: 0; }
+.dk-wood, .dk-photo, .dk-light, .dk-dark, .dk-scene, .dk-fall, .dk-grain { position: absolute; inset: 0; }
 .dk-wood { background:
     repeating-linear-gradient(0deg, transparent 0 calc(20vh - 2px), rgba(0, 0, 0, 0.35) calc(20vh - 2px) 20vh),
     repeating-linear-gradient(91deg, rgba(0, 0, 0, 0.07) 0 2px, transparent 2px 11px),
@@ -223,9 +223,9 @@ body.pj-lit[data-page="projects"] #projects .dk-table { opacity: 1; }
 .dk-dark { background: #050403; opacity: 0.9; pointer-events: none; transition: opacity 1.6s ease; }
 .desk.on .dk-dark { opacity: 0; }
 .dk-svg { width: 100%; height: 100%; display: block; overflow: visible; }
-.dk-svg .dk-lift { transform-box: fill-box; transform-origin: center; transition: transform 0.45s cubic-bezier(0.25, 1.4, 0.5, 1), filter 0.45s ease; filter: drop-shadow(-6px 10px 6px rgba(0, 0, 0, 0.45)) drop-shadow(-14px 22px 18px rgba(0, 0, 0, 0.3)); }
+.dk-svg .dk-lift { transform-box: fill-box; transform-origin: center; transition: transform 0.45s cubic-bezier(0.25, 1.4, 0.5, 1), filter 0.45s ease; filter: drop-shadow(calc(var(--sx, 0.3) * 3px) calc(var(--sy, 0.5) * 3px) 1.5px rgba(0, 0, 0, 0.55)) drop-shadow(calc(var(--sx, 0.3) * 14px) calc(var(--sy, 0.5) * 14px) 10px rgba(10, 4, 0, 0.42)) drop-shadow(calc(var(--sx, 0.3) * 34px) calc(var(--sy, 0.5) * 34px) 30px rgba(10, 4, 0, 0.26)); }
 .dk-o { cursor: pointer; outline: none; }
-.dk-o:hover .dk-lift, .dk-o:focus-visible .dk-lift { transform: translate(4px, -10px) scale(1.035); filter: drop-shadow(-12px 22px 10px rgba(0, 0, 0, 0.4)) drop-shadow(-26px 44px 30px rgba(0, 0, 0, 0.32)); }
+.dk-o:hover .dk-lift, .dk-o:focus-visible .dk-lift { transform: translate(4px, -10px) scale(1.035); filter: drop-shadow(calc(var(--sx, 0.3) * 8px) calc(var(--sy, 0.5) * 8px) 4px rgba(0, 0, 0, 0.4)) drop-shadow(calc(var(--sx, 0.3) * 30px) calc(var(--sy, 0.5) * 30px) 18px rgba(10, 4, 0, 0.36)) drop-shadow(calc(var(--sx, 0.3) * 64px) calc(var(--sy, 0.5) * 64px) 42px rgba(10, 4, 0, 0.24)); }
 .dk-svg text.scr { font: 800 22px/1 var(--font-ui); letter-spacing: 0.3em; fill: rgba(220, 230, 255, 0.85); }
 .dk-svg text.mtitle { font: 900 44px/1 var(--font-ui); letter-spacing: 0.02em; fill: #141210; }
 .dk-svg text.msub { font: 700 11px/1 var(--font-ui); letter-spacing: 0.2em; fill: #6b6258; }
@@ -265,6 +265,48 @@ body.pj-lit[data-page="projects"] #projects .dk-table { opacity: 1; }
 .dk-pen.b { opacity: 0.4; }
 .dk-pen.b * { stroke-width: 1.1px !important; }
 .dk-shade text, .dk-pen text, .dk-shade .glow, .dk-pen .glow, .dk-shade .steam, .dk-pen .steam { display: none; }
+
+/* v83: lamp falloff, film grain, and the dive into whatever you pick */
+.dk-fall { pointer-events: none; background: radial-gradient(95% 105% at 6% 4%, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 30%, rgba(14, 6, 0, 0.22) 72%, rgba(6, 2, 0, 0.48) 100%); mix-blend-mode: multiply; }
+.dk-grain { pointer-events: none; background-size: 192px 192px; mix-blend-mode: overlay; opacity: 0.07; }
+.dk-defs { position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none; }
+.dk-photo { transition: opacity 1.2s ease; }
+.desk.dk-dive .dk-o:not(.dk-pick), .desk.dk-dive .dk-dec, .desk.dk-dive .dk-tag { opacity: 0 !important; transition: opacity 0.4s ease !important; }
+.desk.dk-dive .dk-dark { opacity: 0.55; transition: opacity 0.5s ease 0.25s; }
+.desk.dk-reset .dk-wood, .desk.dk-reset .dk-photo, .desk.dk-reset .dk-scene, .desk.dk-reset .dk-o, .desk.dk-reset .dk-dec, .desk.dk-reset .dk-tag, .desk.dk-reset .dk-dark { transition: none !important; }
+.desk.dk-dive .dk-svg .dk-lift { filter: none; transition: none; }
+.desk.dk-dive .dk-pen, .desk.dk-dive .dk-o:not(.dk-pick), .desk.dk-dive .dk-dec, .desk.dk-dive .dk-tag, .desk.dk-dive .dk-grain { display: none; }
+
+
+/* v83: the desk's thread through the site */
+.pc-has { position: relative; padding-right: clamp(0px, 16vw, 210px); }
+.pc-obj { position: absolute; z-index: 3; right: 0; top: 66px; width: clamp(110px, 12vw, 170px); transform: rotate(6deg); display: grid; justify-items: center; gap: 6px; text-decoration: none; transition: transform 0.45s cubic-bezier(0.25, 1.4, 0.5, 1); }
+.pc-obj .pc-svg { width: 100%; height: auto; aspect-ratio: auto; filter: drop-shadow(6px 10px 8px rgba(0, 0, 0, 0.45)); overflow: visible; }
+.pc-obj.pc-laptop { width: clamp(120px, 13vw, 190px); }
+.pc-cap { font: 700 20px/1 "Caveat", "Segoe Print", "Bradley Hand", cursive; color: var(--ink-2, #bdb6a8); opacity: 0.85; transform: rotate(-6deg); white-space: nowrap; }
+.pc-obj:hover, .pc-obj:focus-visible { transform: translateY(-8px) rotate(3deg) scale(1.05); }
+.pc-obj:hover .pc-cap::after { content: " ↩"; }
+@media (max-width: 700px) {
+  .pc-has { padding-right: 86px; }
+  .pc-obj, .pc-obj.pc-laptop { width: 74px; top: 64px; transform: rotate(6deg); }
+  .pc-obj:hover, .pc-obj:focus-visible { transform: rotate(3deg) scale(1.05); }
+  .pc-cap { font-size: 15px; }
+}
+.fin-next.fin-has-obj { position: relative; }
+.fin-obj { position: absolute; right: 54px; top: 50%; width: 92px; transform: translateY(-50%) rotate(-5deg); pointer-events: none; transition: transform 0.45s cubic-bezier(0.25, 1.4, 0.5, 1); }
+.fin-obj .fin-svg { width: 100%; height: auto; filter: drop-shadow(4px 8px 6px rgba(0, 0, 0, 0.4)); overflow: visible; }
+.fin-next:hover .fin-obj { transform: translateY(calc(-50% - 6px)) rotate(-2deg) scale(1.06); }
+@media (max-width: 700px) { .fin-obj { width: 60px; right: 40px; } }
+.pt { position: fixed; left: 0; top: 0; height: 100vh; z-index: 40; pointer-events: none; opacity: 0; transition: opacity 0.8s ease; overflow: visible; }
+.pt.on { opacity: 1; }
+.pt-ghost { fill: none; stroke: rgba(200, 192, 178, 0.08); stroke-width: 1; stroke-dasharray: 2 5; }
+.pt-line { fill: none; stroke: rgba(214, 206, 192, 0.62); stroke-width: 1.5; stroke-linecap: round; filter: url(#dkSk1); }
+.pt-line.b { stroke: rgba(214, 206, 192, 0.3); stroke-width: 0.9; filter: url(#dkSk2); }
+.pt-ticks path { fill: none; stroke: rgba(214, 206, 192, 0); stroke-width: 1.2; stroke-linecap: round; transition: stroke 0.5s ease; }
+.pt-ticks path.on { stroke: rgba(230, 200, 140, 0.75); }
+.pt-pencil { filter: drop-shadow(3px 5px 3px rgba(0, 0, 0, 0.5)); }
+.pt-pencil .dk-pen, .pt-pencil .dk-shade { display: none; }
+@media (prefers-reduced-motion: reduce) { .pc-obj, .fin-obj { transition: none; } }
 
 .hero .robot { position: absolute; transform: translateZ(0.7px); visibility: hidden; pointer-events: none; }
 .edge { position: absolute; backface-visibility: hidden; background: linear-gradient(180deg, #c99e5a, #8f6a33); }
@@ -10850,6 +10892,7 @@ const AMB = window.AMB = (() => {
       <path d="M-234,-22 L-246,-198 L246,-198 L234,-22 Z" fill="url(#dkScreen)"/>
       <g transform="translate(0 -112) scale(0.9)">${card(-120, -18, "#3a64a8")}${card(-60, -9, "#2b2521")}${card(0, 0, "#4f7a46")}${card(60, 9, "#a43f72")}${card(120, 18, "#b07a22")}</g>
       <text x="0" y="-168" text-anchor="middle" class="scr">PROJECTS</text>
+      <path class="glass" d="M-234,-22 L-246,-198 L-40,-198 L-200,-22 Z" fill="url(#dkGlass)"/><path class="glass" d="M-150,-22 L-20,-198 L30,-198 L-100,-22 Z" fill="url(#dkGlass)" opacity="0.5"/>
       <rect x="-262" y="-12" width="524" height="322" rx="20" fill="url(#dkAlu)"/>
       <rect x="-262" y="-12" width="524" height="322" rx="20" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
       <rect x="-250" y="-4" width="500" height="10" rx="4" fill="rgba(0,0,0,0.18)"/>
@@ -10899,6 +10942,7 @@ const AMB = window.AMB = (() => {
       lamp: [40, 40, 0, 0.8], mug: [790, 180, 0, 0.72], pencil: [450, 1560, 4, 0.8], note: [420, 190, -3, 0.95], plant: [940, 1640, 0, 1] },
   };
   const DEFS = `<defs>
+    <linearGradient id="dkGlass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="rgba(255,255,255,0.13)"/><stop offset="1" stop-color="rgba(255,255,255,0.02)"/></linearGradient>
     <filter id="dkSk1" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="5" xChannelSelector="R" yChannelSelector="G"/></filter>
     <filter id="dkSk2" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="11"/><feDisplacementMap in="SourceGraphic" scale="7" xChannelSelector="G" yChannelSelector="R"/></filter>
     <pattern id="dkHatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(38)"><path d="M0,1 h7" stroke="#2b2620" stroke-width="1.1" opacity="0.8"/><path d="M0,4.6 h5" stroke="#2b2620" stroke-width="0.7" opacity="0.5"/></pattern>
@@ -10921,19 +10965,23 @@ const AMB = window.AMB = (() => {
     <radialGradient id="dkCoffee" cx="0.4" cy="0.35"><stop offset="0" stop-color="#7a4a26"/><stop offset="1" stop-color="#2a1608"/></radialGradient>
     <radialGradient id="dkBowl" cx="0.35" cy="0.3"><stop offset="0" stop-color="#e2b77a"/><stop offset="1" stop-color="#8a5a2a"/></radialGradient>
   </defs>`;
-  const desk = document.createElement("div"); desk.className = "desk"; desk.innerHTML = `<div class="dk-wood"></div><div class="dk-light"></div><div class="dk-scene"></div><div class="dk-dark"></div>`;
+  const desk = document.createElement("div"); desk.className = "desk"; desk.innerHTML = `<div class="dk-wood"></div><div class="dk-light"></div><div class="dk-scene"></div><div class="dk-fall"></div><div class="dk-grain"></div><div class="dk-dark"></div>`;
   const scene = desk.querySelector(".dk-scene");
   // v82: each object is coloured in, then gone over in pencil: hatching on the side away from the lamp, and two
   // loose graphite passes around every edge, each wobbled a little differently, like a sketch over a photo
   const sk = art => `<g class="dk-art">${art}</g><g class="dk-shade" mask="url(#dkShadeM)">${art}</g><g class="dk-shade x" mask="url(#dkShadeM2)">${art}</g>` +
     `<g class="dk-pen" filter="url(#dkSk1)">${art}</g><g class="dk-pen b" filter="url(#dkSk2)">${art}</g>`;
+  { const d = document.createElementNS("http://www.w3.org/2000/svg", "svg"); d.setAttribute("class", "dk-defs"); d.setAttribute("aria-hidden", "true"); d.setAttribute("width", "0"); d.setAttribute("height", "0"); d.innerHTML = DEFS; document.body.prepend(d); }
+  // v83: shadows fall away from the lamp, longer the farther a thing is from it
+  const shade = (Ly, p) => { const lx = Ly.lamp ? Ly.lamp[0] : 0, ly = Ly.lamp ? Ly.lamp[1] : 0, dx = p[0] - lx, dy = p[1] - ly, d = Math.hypot(dx, dy) || 1, f = 0.55 + 0.75 * Math.min(1, d / 1300);
+    return `--sx:${(dx / d * f).toFixed(3)};--sy:${(dy / d * f + 0.15).toFixed(3)}`; };
   const place = ([x, y, r, s]) => `translate(${x} ${y}) rotate(${r}) scale(${s})`;
   const build = () => {
     const tall = innerWidth / innerHeight < 0.9, Ly = tall ? L.tall : L.wide;
-    let out = `<svg class="dk-svg" viewBox="${Ly.vb}" preserveAspectRatio="xMidYMid meet" role="group" aria-label="My desk: everything on it is a door to part of the site">${DEFS}`;
-    for (const k of ["plant", "lamp", "bowl", "mug", "pencil", "note"]) if (Ly[k]) out += `<g class="dk-dec dk-${k}" transform="${place(Ly[k])}"><g class="dk-lift">${sk(DECOR[k])}</g></g>`;
+    let out = `<svg class="dk-svg" viewBox="${Ly.vb}" preserveAspectRatio="xMidYMid meet" role="group" aria-label="My desk: everything on it is a door to part of the site">`;
+    for (const k of ["plant", "lamp", "bowl", "mug", "pencil", "note"]) if (Ly[k]) out += `<g class="dk-dec dk-${k}" transform="${place(Ly[k])}"><g class="dk-lift" style="${shade(Ly, Ly[k])}">${sk(DECOR[k])}</g></g>`;
     DOORS.forEach((d, i) => { const p = Ly[d.k];
-      out += `<a class="dk-o dk-${d.k}" href="${d.href}" aria-label="${d.name}" style="--i:${i}"><g transform="${place(p)}"><g class="dk-lift">${sk(ART[d.k])}</g></g>` +
+      out += `<a class="dk-o dk-${d.k}" href="${d.href}" aria-label="${d.name}" style="--i:${i}"><g transform="${place(p)}"><g class="dk-lift" style="${shade(Ly, p)}">${sk(ART[d.k])}</g></g>` +
         `<g class="dk-tag" transform="translate(${p[0]} ${p[1]})"><g class="dk-tg"><rect x="${-(d.name.length * 9.5 + 34) / 2}" y="-22" width="${d.name.length * 9.5 + 34}" height="40" rx="6"/><text y="7" text-anchor="middle">${d.name}</text></g></g></a>`; });
     scene.innerHTML = out + "</svg>";
     // tags sit just off each object, toward the middle of the desk
@@ -10997,6 +11045,27 @@ const AMB = window.AMB = (() => {
   { let u = null; try { u = localStorage.getItem("dkWood2"); } catch (e) {}
     const show = u => { photo.style.backgroundImage = `url(${u})`; photo.classList.add("in"); };
     if (u) show(u); else setTimeout(() => paintWood().then(u => { show(u); try { localStorage.setItem("dkWood2", u); } catch (e) {} }), 120); }
+  // film grain, as if this were a photograph: one tile of noise, painted once
+  { const c = document.createElement("canvas"); c.width = c.height = 192; const g = c.getContext("2d"), im = g.createImageData(192, 192); let q = 99;
+    for (let i = 0; i < im.data.length; i += 4) { q = (q * 16807) % 2147483647; const v = 128 + ((q / 2147483647) - 0.5) * 160; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255; }
+    g.putImageData(im, 0, 0); desk.querySelector(".dk-grain").style.backgroundImage = `url(${c.toDataURL()})`; }
+  // the camera dives into whatever you pick, then the page opens
+  let diving = false;
+  addEventListener("click", e => {
+    const a = e.target.closest && scene.contains(e.target) && e.target.closest("a.dk-o"); if (a && a.dataset.dove) return; if (!a || diving || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    e.preventDefault(); e.stopImmediatePropagation(); diving = true;
+    const r = a.querySelector(".dk-art").getBoundingClientRect(), dr = desk.getBoundingClientRect();
+    const ox = r.left + r.width / 2 - dr.left, oy = r.top + r.height / 2 - dr.top, z = Math.min(4, Math.max(1.8, Math.min(dr.width / r.width, dr.height / r.height) * 0.9));
+    desk.style.setProperty("--ox", ox + "px"); desk.style.setProperty("--oy", oy + "px"); desk.style.setProperty("--z", z.toFixed(2));
+    desk.style.setProperty("--tx", (dr.width / 2 - ox) + "px"); desk.style.setProperty("--ty", (dr.height / 2 - oy) + "px");
+    a.classList.add("dk-pick"); desk.classList.add("dk-dive");
+    const anims = [".dk-wood", ".dk-photo", ".dk-scene"].map(q => { const el = desk.querySelector(q); el.style.transformOrigin = `${ox}px ${oy}px`;
+      return el.animate([{ transform: "none" }, { transform: `translate(${dr.width / 2 - ox}px, ${dr.height / 2 - oy}px) scale(${z.toFixed(2)})` }], { duration: 750, easing: "cubic-bezier(0.55, 0, 0.3, 1)", fill: "forwards" }); });
+    let gone = false; const go = () => { if (gone) return; gone = true; a.dataset.dove = "1"; a.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true })); setTimeout(reset, 900); };
+    anims[2].finished.then(() => setTimeout(go, 40), () => {}); setTimeout(go, 1300);
+    const reset = () => { desk.classList.add("dk-reset"); desk.classList.remove("dk-dive"); anims.forEach(x => x.cancel()); a.classList.remove("dk-pick"); delete a.dataset.dove; requestAnimationFrame(() => requestAnimationFrame(() => desk.classList.remove("dk-reset"))); diving = false; };
+  }, true);
+  addEventListener("click", e => { const a = e.target.closest && scene.contains(e.target) && e.target.closest("a.dk-o"); if (a && diving && !a.dataset.dove) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
   stick.insertBefore(desk, stick.querySelector(".hub-lumos"));
   build(); let lastTall = innerWidth / innerHeight < 0.9;
   addEventListener("resize", () => { const t = innerWidth / innerHeight < 0.9; if (t !== lastTall) { lastTall = t; build(); } });
@@ -11005,7 +11074,77 @@ const AMB = window.AMB = (() => {
   const sync = () => desk.classList.toggle("on", !ui || ui.classList.contains("lit") || stick.style.opacity === "1");
   if (ui) new MutationObserver(sync).observe(ui, { attributes: true, attributeFilter: ["class"] });
   new MutationObserver(sync).observe(stick, { attributes: true, attributeFilter: ["style"] }); sync();
-  window.__desk = { state: () => ({ on: desk.classList.contains("on"), doors: [...scene.querySelectorAll(".dk-o")].map(a => a.getAttribute("href")) }) };
+  window.__desk = { art: k => sk(ART[k] || DECOR[k] || ""), state: () => ({ on: desk.classList.contains("on"), doors: [...scene.querySelectorAll(".dk-o")].map(a => a.getAttribute("href")) }) };
+})();
+
+
+// v83: one thread through the whole site. The desk is the map: every page is something lying on it, so each page
+// keeps a small sketch of the thing it came from (tap it to go back to the desk), each page ending shows the next
+// thing you'll pick up, and the pencil from the desk follows you down every page, drawing the path you've read.
+(() => {
+  const D = window.__desk; if (!D || !D.art) return;
+  const NS = "http://www.w3.org/2000/svg";
+  const OBJ = { projects: "laptop", polymind: "laptop", go: "laptop", fraguessr: "laptop", muse: "laptop", goglobal: "laptop", story: "manga", resume: "folder", blog: "notebook", hello: "letter", home: "note" };
+  const VB = { laptop: "-285 -235 570 570", manga: "-140 -180 280 360", folder: "-175 -180 350 315", notebook: "-140 -185 350 410", letter: "-165 -112 330 224", note: "-100 -100 200 200" };
+  const CAP = { laptop: "on my laptop", manga: "on my desk", folder: "in the folder", notebook: "in my notebook", letter: "a letter to me", note: "back to my desk" };
+  const sketch = (k, cls) => `<svg class="dk-svg ${cls}" viewBox="${VB[k]}" aria-hidden="true">${D.art(k)}</svg>`;
+  // 1. the object each page came from, pinned beside its heading
+  const HEADS = { projects: "projects", polymind: "polymind", gofilm: "go", fraguessr: "fraguessr", muse: "muse", goglobal: "goglobal", resume: "resume", blog: "blog", hello: "hello" };
+  for (const [id, pg] of Object.entries(HEADS)) {
+    const sec = document.getElementById(id), head = sec && sec.querySelector(".part-head"); if (!head || head.querySelector(".pc-obj")) continue;
+    const k = OBJ[pg], a = document.createElement("a"); a.className = "pc-obj pc-" + k; a.href = "#hub"; a.setAttribute("aria-label", "Back to my desk");
+    a.innerHTML = sketch(k, "pc-svg") + `<span class="pc-cap">${CAP[k]}</span>`; head.classList.add("pc-has"); head.prepend(a);
+  }
+  // 2. each page ending shows the next thing you'll pick up off the desk
+  const pageOfHref = href => { const id = (href || "").slice(1), el = id && document.getElementById(id); return el ? (el.dataset.page || (el.closest("[data-page]") || {}).dataset?.page) : null; };
+  for (const a of document.querySelectorAll(".fin-next")) { if (a.querySelector(".fin-obj")) continue;
+    const pg = pageOfHref(a.getAttribute("href")) || "home", k = OBJ[pg] || "note";
+    const s = document.createElement("span"); s.className = "fin-obj fin-obj-" + k; s.innerHTML = sketch(k, "fin-svg"); a.prepend(s); a.classList.add("fin-has-obj"); }
+  // 3. the pencil: it leaves the desk with you and sketches a line down the margin as you read
+  const pt = document.createElementNS(NS, "svg"); pt.setAttribute("class", "pt"); pt.setAttribute("aria-hidden", "true");
+  pt.innerHTML = `<path class="pt-ghost"/><path class="pt-line"/><path class="pt-line b"/><g class="pt-ticks"></g><g class="pt-pencil">${D.art("pencil")}</g>`;
+  document.body.append(pt);
+  const ghost = pt.querySelector(".pt-ghost"), lines = [...pt.querySelectorAll(".pt-line")], ticks = pt.querySelector(".pt-ticks"), pencil = pt.querySelector(".pt-pencil");
+  let W = 0, H = 0, len = 0, top0 = 90, bot0 = 40, X = 22, ps = 0.4, cur = "", span = null, raf = 0, seed = 1;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const layout = () => {
+    W = innerWidth; H = innerHeight; const small = W < 700; X = small ? 9 : 24; ps = small ? 0.26 : 0.38; top0 = small ? 84 : 120; bot0 = small ? 26 : 44;
+    pt.setAttribute("viewBox", `0 0 ${small ? 20 : 48} ${H}`); pt.style.width = (small ? 20 : 48) + "px";
+    seed = 7 + cur.length * 13; let d = `M${X},${top0}`, y = top0; const pts = [];
+    while (y < H - bot0) { const ny = Math.min(H - bot0, y + 26 + rnd() * 30), nx = X + (rnd() - 0.5) * (small ? 2.4 : 5); d += ` Q${(X + (rnd() - 0.5) * (small ? 3 : 7)).toFixed(1)},${((y + ny) / 2).toFixed(1)} ${nx.toFixed(1)},${ny.toFixed(1)}`; y = ny; }
+    for (const p of [ghost, ...lines]) p.setAttribute("d", d);
+    lines[1].setAttribute("transform", "translate(0.9 0.6)");
+    len = lines[0].getTotalLength(); for (const l of lines) l.style.strokeDasharray = `${len} ${len}`;
+  };
+  const measure = () => {
+    const els = [...document.querySelectorAll(`body [data-page="${cur}"]`)].filter(e => e.getClientRects().length && !e.parentElement.closest(`body [data-page="${cur}"]`));
+    if (!els.length) { span = null; return; }
+    let t = Infinity, b = -Infinity; for (const e of els) { const r = e.getBoundingClientRect(); t = Math.min(t, r.top + scrollY); b = Math.max(b, r.bottom + scrollY); }
+    span = { t, b, heads: [...document.querySelectorAll(`body [data-page="${cur}"] .part-head, body [data-page="${cur}"] .fin-hd`)].filter(e => e.getClientRects().length).map(e => e.getBoundingClientRect().top + scrollY) };
+    ticks.innerHTML = span.heads.map(y => { const f = Math.max(0, Math.min(1, (y - span.t) / Math.max(1, span.b - span.t - H * 0.5))), py = top0 + f * (H - top0 - bot0);
+      return `<path data-f="${f.toFixed(3)}" d="M${X - 6},${(py - 2).toFixed(1)} q6,4 12,-1 M${X - 5},${(py + 3).toFixed(1)} q5,3 11,-1"/>`; }).join("");
+  };
+  const draw = () => {
+    raf = 0; if (!span) return;
+    const f = Math.max(0, Math.min(1, (scrollY - span.t + H * 0.25) / Math.max(1, span.b - span.t - H * 0.5)));
+    for (const l of lines) l.style.strokeDashoffset = (len * (1 - f)).toFixed(1);
+    const p = lines[0].getPointAtLength(len * f);
+    pencil.setAttribute("transform", `translate(${p.x.toFixed(1)} ${(p.y - 150 * ps).toFixed(1)}) rotate(-90) scale(${ps})`);
+    for (const t of ticks.children) t.classList.toggle("on", +t.dataset.f <= f + 0.002);
+  };
+  const kick = () => { if (!raf) raf = requestAnimationFrame(draw); };
+  const setPage = () => {
+    const pg = document.body.dataset.page || "home"; const on = pg !== "home" && pg !== "intro";
+    pt.classList.toggle("on", on); if (pg !== "projects") { const cw = document.querySelector(".crow-fly"); if (cw) cw.classList.remove("on"); }
+    if (pg === cur && span) return; cur = pg;
+    if (on) { layout(); setTimeout(() => { measure(); draw(); }, 60); setTimeout(() => { measure(); draw(); }, 900); }
+  };
+  new MutationObserver(setPage).observe(document.body, { attributes: true, attributeFilter: ["data-page"] });
+  addEventListener("scroll", kick, { passive: true });
+  addEventListener("resize", () => { if (pt.classList.contains("on")) { layout(); measure(); draw(); } });
+  addEventListener("load", () => { if (pt.classList.contains("on")) { measure(); draw(); } });
+  setPage();
+  window.__thread = { state: () => ({ on: pt.classList.contains("on"), page: cur, span, objs: document.querySelectorAll(".pc-obj").length, next: document.querySelectorAll(".fin-obj").length }) };
 })();
 
 </script>
