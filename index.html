@@ -308,6 +308,17 @@ body.pj-lit[data-page="projects"] #projects .dk-table { opacity: 1; }
 .pt-pencil .dk-pen, .pt-pencil .dk-shade { display: none; }
 @media (prefers-reduced-motion: reduce) { .pc-obj, .fin-obj { transition: none; } }
 
+
+/* v84: the walk in */
+.house { position: fixed; inset: 0; z-index: 95; background: #000; opacity: 0; transition: opacity 0.6s ease; }
+.house.in { opacity: 1; }
+.house.out { opacity: 0; transition: opacity 1s ease; pointer-events: none; }
+.house canvas { width: 100%; height: 100%; display: block; }
+.hs-cap { position: absolute; left: 0; right: 0; bottom: 18vh; margin: 0; text-align: center; font: 700 clamp(30px, 4vw, 52px)/1 "Caveat", "Segoe Print", cursive; color: #f3e3c0; text-shadow: 0 2px 18px rgba(0, 0, 0, 0.8); opacity: 0; transform: translateY(8px); transition: opacity 0.8s ease, transform 1s ease; pointer-events: none; }
+.hs-cap.on { opacity: 1; transform: none; }
+.hs-skip { position: absolute; right: 18px; bottom: 18px; font: 600 13px/1 var(--font-ui); letter-spacing: 0.14em; text-transform: uppercase; color: #e8dcc4; background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(232, 220, 196, 0.35); border-radius: 999px; padding: 10px 16px; cursor: pointer; backdrop-filter: blur(4px); }
+.hs-skip:hover, .hs-skip:focus-visible { background: rgba(0, 0, 0, 0.55); border-color: #d9b36c; outline: none; }
+
 .hero .robot { position: absolute; transform: translateZ(0.7px); visibility: hidden; pointer-events: none; }
 .edge { position: absolute; backface-visibility: hidden; background: linear-gradient(180deg, #c99e5a, #8f6a33); }
 .edge.e-b { transform-origin: top; transform: rotateX(-90deg); background: linear-gradient(180deg, #b5884a, #7c5a2c); }
@@ -11145,6 +11156,180 @@ const AMB = window.AMB = (() => {
   addEventListener("load", () => { if (pt.classList.contains("on")) { measure(); draw(); } });
   setPage();
   window.__thread = { state: () => ({ on: pt.classList.contains("on"), page: cur, span, objs: document.querySelectorAll(".pc-obj").length, next: document.querySelectorAll(".fin-obj").length }) };
+})();
+
+
+// v84: coming home. The first time the desk comes up in a visit, you walk to my front door at night, it swings open,
+// you step in and look around the room, and the camera settles over my desk, which then becomes the real one.
+// A small three.js scene; the desk top is painted with the actual desk (its wood and everything on it), so the
+// last frame of the film and the first frame of the page are the same picture.
+(() => {
+  const desk = document.querySelector(".desk"); if (!desk) return;
+  const force = /[?&]house\b/.test(location.search), RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let played = false; try { played = !force && sessionStorage.getItem("bgHouse") === "1"; } catch (e) {}
+  if (RM && !force) return;
+  const loadThree = () => new Promise((ok, no) => {
+    if (window.THREE) return ok(window.THREE);
+    let s = document.querySelector('script[src="lib/three.min.js"]');
+    if (!s) { s = document.createElement("script"); s.src = "lib/three.min.js"; s.async = true; document.head.append(s); }
+    s.addEventListener("load", () => ok(window.THREE)); s.addEventListener("error", no); setTimeout(() => window.THREE ? ok(window.THREE) : no(), 8000);
+  });
+  // the desk, flattened into one picture: the wood, then every object as drawn, styles and all
+  const paintDesk = async (tall) => {
+    const W = tall ? 1152 : 2048, H = tall ? 2048 : 1280, c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
+    g.fillStyle = "#5a361d"; g.fillRect(0, 0, W, H);
+    const bg = (desk.querySelector(".dk-photo").style.backgroundImage || "").match(/url\("?(.*?)"?\)$/);
+    const img = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; });
+    if (bg) { const w = await img(bg[1]); if (w) { const s = Math.max(W / w.width, H / w.height); g.drawImage(w, (W - w.width * s) / 2, (H - w.height * s) / 2, w.width * s, w.height * s); } }
+    const src = desk.querySelector(".dk-svg"); if (src) {
+      const cl = src.cloneNode(true); cl.querySelectorAll(".dk-lamp, .dk-plant, .dk-tag").forEach(n => n.remove());
+      const css = [...document.styleSheets].flatMap(s => { try { return [...s.cssRules]; } catch (e) { return []; } }).filter(r => r.selectorText && /dk-/.test(r.selectorText) && !/\.desk\b|:hover|:focus/.test(r.selectorText)).map(r => r.cssText).join("\n");
+      cl.setAttribute("xmlns", "http://www.w3.org/2000/svg"); cl.setAttribute("width", W); cl.setAttribute("height", H); cl.setAttribute("preserveAspectRatio", "xMidYMid slice");
+      cl.insertAdjacentHTML("afterbegin", `<style>svg{--font-ui:Helvetica,Arial,sans-serif;--font-display:Georgia,serif}${css}</style>${(document.querySelector(".dk-defs") || {}).innerHTML || ""}`);
+      const u = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(cl)], { type: "image/svg+xml" }));
+      const w = await img(u); if (w) g.drawImage(w, 0, 0, W, H); URL.revokeObjectURL(u);
+    }
+    return c;
+  };
+  const noise = (w, h, f) => { const c = document.createElement("canvas"); c.width = w; c.height = h; const g = c.getContext("2d"); f(g, w, h); return c; };
+  async function play() {
+    const T3 = await loadThree(); if (!T3) return;
+    const tall = innerWidth / innerHeight < 0.9, dW = tall ? 0.9 : 1.6, dD = tall ? 1.6 : 1.0, dX = 0.9, dZ = -2.5 + dD / 2 + 0.02, top = 0.77;
+    const deskPic = await paintDesk(tall);
+    // the stage
+    const wrap = document.createElement("div"); wrap.className = "house"; wrap.setAttribute("aria-hidden", "true");
+    wrap.innerHTML = `<canvas></canvas><p class="hs-cap">Come in.</p><button class="hs-skip" type="button" aria-label="Skip the walk in">Skip <span aria-hidden="true">›</span></button>`;
+    document.body.append(wrap); const cv = wrap.querySelector("canvas");
+    const R = new T3.WebGLRenderer({ canvas: cv, antialias: true }); R.setPixelRatio(Math.min(devicePixelRatio, 1.75)); R.setSize(innerWidth, innerHeight, false);
+    R.outputEncoding = T3.sRGBEncoding; R.toneMapping = T3.ACESFilmicToneMapping; R.toneMappingExposure = 1.1; R.shadowMap.enabled = true; R.shadowMap.type = T3.PCFSoftShadowMap;
+    const S = new T3.Scene(); S.background = new T3.Color(0x070a14); S.fog = new T3.Fog(0x070a14, 9, 22);
+    const FOV = tall ? 66 : 48, cam = new T3.PerspectiveCamera(FOV, innerWidth / innerHeight, 0.03, 60);
+    const tex = (c, rx = 1, ry = 1) => { const t = new T3.CanvasTexture(c); t.encoding = T3.sRGBEncoding; t.wrapS = t.wrapT = T3.RepeatWrapping; t.repeat.set(rx, ry); t.anisotropy = 8; return t; };
+    const M = (o) => new T3.MeshStandardMaterial(o);
+    const box = (w, h, d, m, x, y, z, ry = 0, cast = true) => { const b = new T3.Mesh(new T3.BoxGeometry(w, h, d), m); b.position.set(x, y, z); b.rotation.y = ry; b.castShadow = cast; b.receiveShadow = true; S.add(b); return b; };
+    // materials, painted
+    const oak = tex(noise(512, 512, (g, w, h) => { for (let i = 0; i < 8; i++) { const y = i * h / 8; g.fillStyle = `hsl(${28 + (i * 37 % 7)},${38 + (i * 13 % 10)}%,${30 + (i * 17 % 9)}%)`; g.fillRect(0, y, w, h / 8);
+      for (let k = 0; k < 40; k++) { g.strokeStyle = `rgba(30,15,5,${0.05 + Math.random() * 0.12})`; g.lineWidth = Math.random() * 1.5; g.beginPath(); const yy = y + Math.random() * h / 8; g.moveTo(0, yy); g.bezierCurveTo(w * 0.3, yy + Math.random() * 6 - 3, w * 0.6, yy + Math.random() * 6 - 3, w, yy); g.stroke(); }
+      g.fillStyle = "rgba(0,0,0,0.5)"; g.fillRect(0, y, w, 2); g.fillRect((i * 173) % w, y, 2, h / 8); } }), 3, 3);
+    const plaster = tex(noise(256, 256, (g, w, h) => { g.fillStyle = "#cbbca4"; g.fillRect(0, 0, w, h); for (let i = 0; i < 2600; i++) { g.fillStyle = `rgba(${Math.random() < 0.5 ? "255,250,240" : "90,70,50"},${Math.random() * 0.06})`; g.fillRect(Math.random() * w, Math.random() * h, 2 + Math.random() * 3, 2 + Math.random() * 3); } }), 4, 2);
+    const rugT = tex(noise(512, 512, (g, w, h) => { g.fillStyle = "#5b2a2a"; g.fillRect(0, 0, w, h); g.strokeStyle = "#c9a46a"; g.lineWidth = 10; g.strokeRect(24, 24, w - 48, h - 48); g.lineWidth = 3; g.strokeRect(50, 50, w - 100, h - 100);
+      g.fillStyle = "#2d3f5c"; for (let i = 0; i < 6; i++) for (let j = 0; j < 6; j++) { g.save(); g.translate(96 + i * 64, 96 + j * 64); g.rotate(Math.PI / 4); g.fillRect(-14, -14, 28, 28); g.restore(); }
+      for (let i = 0; i < 9000; i++) { g.fillStyle = `rgba(0,0,0,${Math.random() * 0.12})`; g.fillRect(Math.random() * w, Math.random() * h, 1, 2); } }));
+    const goT = tex(noise(256, 256, (g, w, h) => { g.fillStyle = "#d9b26a"; g.fillRect(0, 0, w, h); g.strokeStyle = "#3a2a14"; g.lineWidth = 1.2; for (let i = 0; i < 13; i++) { g.beginPath(); g.moveTo(20 + i * 18, 20); g.lineTo(20 + i * 18, 236); g.stroke(); g.beginPath(); g.moveTo(20, 20 + i * 18); g.lineTo(236, 20 + i * 18); g.stroke(); }
+      [[3, 3, 0], [9, 3, 1], [3, 9, 1], [9, 9, 0], [6, 4, 0], [5, 6, 1], [7, 7, 0], [4, 5, 1], [8, 5, 0], [10, 2, 1]].forEach(([x, y, c]) => { g.beginPath(); g.arc(20 + x * 18, 20 + y * 18, 8, 0, 7); g.fillStyle = c ? "#f2efe6" : "#111"; g.fill(); }); }));
+    const night = tex(noise(256, 256, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, "#1b2a4a"); gr.addColorStop(1, "#3d4f72"); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+      g.fillStyle = "#fff"; for (let i = 0; i < 60; i++) g.fillRect(Math.random() * w, Math.random() * h * 0.6, 1, 1); g.beginPath(); g.arc(w * 0.7, h * 0.25, 16, 0, 7); g.fillStyle = "#f4f1dc"; g.fill();
+      g.fillStyle = "#0c1222"; g.beginPath(); g.moveTo(0, h); for (let x = 0; x <= w; x += 16) g.lineTo(x, h * 0.78 - Math.sin(x * 0.05) * 12 - Math.random() * 14); g.lineTo(w, h); g.fill(); }));
+    const wallM = M({ map: plaster, color: 0xcfc2ad, roughness: 0.95 }), trimM = M({ color: 0xefe8da, roughness: 0.6 }), woodM = M({ map: oak, roughness: 0.55 });
+    const darkWood = M({ color: 0x3b2416, roughness: 0.6 }), fabric = M({ color: 0x47566b, roughness: 1 }), brass = M({ color: 0xc9a253, metalness: 0.9, roughness: 0.3 });
+    // the room: 6 x 5 m, 2.7 m high; the front door in the near wall, my desk against the far wall
+    const floor = new T3.Mesh(new T3.PlaneGeometry(6, 5), woodM); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; S.add(floor);
+    const ceil = new T3.Mesh(new T3.PlaneGeometry(6, 5), M({ color: 0xd8cfbf, roughness: 1 })); ceil.rotation.x = Math.PI / 2; ceil.position.y = 2.7; S.add(ceil);
+    box(6, 2.7, 0.12, wallM, 0, 1.35, -2.56, 0, false); box(0.12, 2.7, 5, wallM, -3.06, 1.35, 0, 0, false); box(0.12, 2.7, 5, wallM, 3.06, 1.35, 0, 0, false);
+    box(2.55, 2.7, 0.15, wallM, -1.725, 1.35, 2.575, 0, false); box(2.55, 2.7, 0.15, wallM, 1.725, 1.35, 2.575, 0, false); box(0.9, 0.6, 0.15, wallM, 0, 2.4, 2.575, 0, false);
+    for (const [w, x, z, ry] of [[6, 0, -2.49, 0], [5, -2.99, 0, Math.PI / 2], [5, 2.99, 0, Math.PI / 2]]) box(w, 0.1, 0.02, trimM, x, 0.05, z, ry, false);
+    // the door, hinged on its left, and its frame
+    const hinge = new T3.Group(); hinge.position.set(-0.45, 0, 2.575); S.add(hinge);
+    const door = new T3.Mesh(new T3.BoxGeometry(0.9, 2.1, 0.05), M({ color: 0x23324a, roughness: 0.5 })); door.position.set(0.45, 1.05, 0); door.castShadow = true; hinge.add(door);
+    for (const [x, y] of [[0.22, 0.6], [0.22, 1.5], [-0.22, 0.6], [-0.22, 1.5]]) { const p = new T3.Mesh(new T3.BoxGeometry(0.32, 0.7, 0.06), M({ color: 0x2b3d5a, roughness: 0.5 })); p.position.set(0.45 + x, y, 0); hinge.add(p); }
+    const knob = new T3.Mesh(new T3.SphereGeometry(0.035, 16, 12), brass); knob.position.set(0.8, 1.0, 0.05); hinge.add(knob); const knob2 = knob.clone(); knob2.position.z = -0.05; hinge.add(knob2);
+    box(0.08, 2.2, 0.2, trimM, -0.49, 1.1, 2.575, 0, false); box(0.08, 2.2, 0.2, trimM, 0.49, 1.1, 2.575, 0, false); box(1.06, 0.08, 0.2, trimM, 0, 2.14, 2.575, 0, false);
+    // outside: a stone step, the path, a porch lamp, a house number
+    const ground = new T3.Mesh(new T3.PlaneGeometry(30, 20), M({ color: 0x101410, roughness: 1 })); ground.rotation.x = -Math.PI / 2; ground.position.set(0, -0.02, 12.6); ground.receiveShadow = true; S.add(ground);
+    box(1.6, 0.12, 0.8, M({ color: 0x55524c, roughness: 0.9 }), 0, 0.04, 3.05); box(1.1, 0.02, 6, M({ color: 0x3a3833, roughness: 1 }), 0, 0, 6.4, 0, false);
+    const siding = tex(noise(256, 256, (g, w, h) => { g.fillStyle = "#3b4658"; g.fillRect(0, 0, w, h); for (let y = 0; y < h; y += 16) { g.fillStyle = "rgba(255,255,255,0.06)"; g.fillRect(0, y, w, 2); g.fillStyle = "rgba(0,0,0,0.35)"; g.fillRect(0, y + 14, w, 2); } }), 6, 3);
+    const sideM = M({ map: siding, roughness: 0.85 });
+    box(3.05, 3.3, 0.04, sideM, -1.975, 1.65, 2.67, 0, false); box(3.05, 3.3, 0.04, sideM, 1.975, 1.65, 2.67, 0, false); box(0.9, 1.2, 0.04, sideM, 0, 2.7, 2.67, 0, false);
+    box(7.2, 0.18, 0.7, M({ color: 0x1d2330, roughness: 0.8 }), 0, 3.35, 2.9, 0, false);
+    for (const [x, r] of [[-1.3, 0.42], [-1.85, 0.34], [1.35, 0.4], [1.9, 0.3]]) { const b = new T3.Mesh(new T3.SphereGeometry(r, 18, 12), M({ color: 0x1f3a22, roughness: 1 })); b.scale.y = 0.8; b.position.set(x, r * 0.7, 3.05); S.add(b); }
+    box(0.9, 0.04, 0.05, trimM, 0, 0.02, 2.66, 0, false);
+    const porch = new T3.PointLight(0xffc27a, 1.6, 7, 2); porch.position.set(0.85, 2.15, 2.95); S.add(porch);
+    const porchG = new T3.Mesh(new T3.SphereGeometry(0.07, 16, 12), new T3.MeshBasicMaterial({ color: 0xffe2a8 })); porchG.position.copy(porch.position); S.add(porchG);
+    box(0.16, 0.24, 0.12, M({ color: 0x1a1a1a, metalness: 0.6, roughness: 0.4 }), 0.85, 2.15, 2.88, 0, false);
+    const num = noise(128, 64, (g) => { g.fillStyle = "#1c1c1c"; g.fillRect(0, 0, 128, 64); g.fillStyle = "#d9b36c"; g.font = "bold 44px Georgia"; g.textAlign = "center"; g.fillText("37", 64, 48); });
+    const plate = new T3.Mesh(new T3.PlaneGeometry(0.24, 0.12), M({ map: tex(num), roughness: 0.5 })); plate.position.set(-0.85, 1.75, 2.66); S.add(plate);
+    // inside: bookshelf on the left, the window and sofa on the right, a rug, a Go board on the wall, a ceiling lamp
+    box(0.36, 2.2, 1.9, darkWood, -2.8, 1.1, -0.6); for (let i = 0; i < 5; i++) box(0.34, 0.03, 1.84, darkWood, -2.77, 0.25 + i * 0.45, -0.6, 0, false);
+    const bookCols = [0x7a2e2e, 0x2e4a7a, 0xc9a253, 0x3d6b4a, 0xe8e0cf, 0x5a3d6b, 0x8a5a2a, 0x1f1f1f];
+    for (let s = 0; s < 5; s++) { let z = -1.48; while (z < 0.28) { const t = 0.03 + Math.random() * 0.05, h = 0.26 + Math.random() * 0.12; if (Math.random() < 0.08) { z += 0.12; continue; }
+      box(0.24, h, t, M({ color: bookCols[(Math.random() * bookCols.length) | 0], roughness: 0.8 }), -2.74, 0.265 + s * 0.45 + h / 2, z + t / 2, 0, false); z += t + 0.004; } }
+    const win = new T3.Mesh(new T3.PlaneGeometry(1.5, 1.3), new T3.MeshBasicMaterial({ map: night })); win.position.set(2.99, 1.55, -0.4); win.rotation.y = -Math.PI / 2; S.add(win);
+    box(0.06, 1.4, 0.06, trimM, 2.97, 1.55, -0.4, 0, false); box(0.06, 0.06, 1.6, trimM, 2.97, 1.55, -0.4, 0, false); box(0.1, 1.46, 1.62, M({ color: 0xefe8da, roughness: 0.6, transparent: true, opacity: 0 }), 2.99, 1.55, -0.4, 0, false);
+    for (const z of [-1.35, 0.55]) { const g = new T3.PlaneGeometry(0.5, 2.3, 24, 1), pa = g.attributes.position; for (let i = 0; i < pa.count; i++) pa.setZ(i, Math.sin(pa.getX(i) * 38) * 0.035); g.computeVertexNormals();
+      const c = new T3.Mesh(g, M({ color: 0x7a3434, roughness: 1, side: T3.DoubleSide })); c.rotation.y = -Math.PI / 2; c.position.set(2.9, 1.4, z); c.castShadow = true; S.add(c); }
+    box(0.04, 0.04, 2.4, brass, 2.92, 2.58, -0.4, 0, false);
+    box(0.9, 0.42, 2, fabric, 2.45, 0.21, 1.2); box(0.22, 0.82, 2, fabric, 2.86, 0.41, 1.2); box(0.9, 0.6, 0.2, fabric, 2.45, 0.3, 0.2); box(0.9, 0.6, 0.2, fabric, 2.45, 0.3, 2.2);
+    for (const z of [0.72, 1.68]) { const c = box(0.78, 0.14, 0.92, M({ color: 0x51627a, roughness: 1 }), 2.42, 0.48, z); }
+    for (const z of [0.2, 2.2]) { const a = new T3.Mesh(new T3.CylinderGeometry(0.12, 0.12, 0.9, 20), fabric); a.rotation.z = Math.PI / 2; a.position.set(2.45, 0.62, z); S.add(a); }
+    box(0.4, 0.4, 0.14, M({ color: 0xc9a253, roughness: 1 }), 2.6, 0.62, 0.7, 0.3); box(0.4, 0.4, 0.14, M({ color: 0x7a2e2e, roughness: 1 }), 2.6, 0.62, 1.7, -0.2);
+    const rug = new T3.Mesh(new T3.PlaneGeometry(2.6, 1.8), M({ map: rugT, roughness: 1 })); rug.rotation.x = -Math.PI / 2; rug.position.set(0.2, 0.005, 0.4); rug.receiveShadow = true; S.add(rug);
+    const pic = box(0.9, 0.9, 0.04, darkWood, -0.9, 1.65, -2.48, 0, false); const art = new T3.Mesh(new T3.PlaneGeometry(0.76, 0.76), M({ map: goT, roughness: 0.7 })); art.position.set(-0.9, 1.65, -2.455); S.add(art);
+    const pot = new T3.Mesh(new T3.CylinderGeometry(0.18, 0.14, 0.36, 20), M({ color: 0xb5643c, roughness: 0.8 })); pot.position.set(2.5, 0.18, -2.1); pot.castShadow = true; S.add(pot);
+    for (let i = 0; i < 9; i++) { const l = new T3.Mesh(new T3.SphereGeometry(0.22, 10, 8), M({ color: i % 2 ? 0x2f6b3a : 0x3a7d46, roughness: 0.8 })); l.scale.set(0.5, 1.4, 0.25); l.position.set(2.5 + Math.cos(i * 0.7) * 0.18, 0.62 + (i % 3) * 0.2, -2.1 + Math.sin(i * 0.7) * 0.18); l.rotation.set(Math.sin(i) * 0.6, i * 0.7, Math.cos(i) * 0.5); l.castShadow = true; S.add(l); }
+    const shade = new T3.Mesh(new T3.CylinderGeometry(0.16, 0.32, 0.26, 24, 1, true), M({ color: 0xf0e2c4, roughness: 0.9, side: T3.DoubleSide, emissive: 0x5a4020 })); shade.position.set(0.2, 2.25, 0.3); S.add(shade);
+    box(0.01, 0.32, 0.01, M({ color: 0x222222 }), 0.2, 2.54, 0.3, 0, false);
+    const room = new T3.PointLight(0xffd6a0, 0.38, 8, 2); room.position.set(0.2, 2.15, 0.3); S.add(room);
+    S.add(new T3.HemisphereLight(0x6a7aa0, 0x2a1c10, 0.2));
+    const moon = new T3.DirectionalLight(0x8aa6ff, 0.35); moon.position.set(6, 3, -1); moon.target.position.set(0, 0, -0.5); S.add(moon); S.add(moon.target);
+    // the desk: the top is the real desk, painted on
+    const topT = new T3.CanvasTexture(deskPic); topT.encoding = T3.sRGBEncoding; topT.anisotropy = 8;
+    const topMats = [darkWood, darkWood, M({ map: topT, roughness: 0.42, metalness: 0 }), darkWood, darkWood, darkWood];
+    const dtop = new T3.Mesh(new T3.BoxGeometry(dW, 0.04, dD), topMats); dtop.position.set(dX, top - 0.02, dZ); dtop.receiveShadow = true; dtop.castShadow = true; S.add(dtop);
+    for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) box(0.05, top - 0.04, 0.05, darkWood, dX + sx * (dW / 2 - 0.06), (top - 0.04) / 2, dZ + sz * (dD / 2 - 0.06));
+    const chZ = dZ + dD / 2 + 0.38; box(0.46, 0.05, 0.44, darkWood, dX, 0.46, chZ); box(0.46, 0.5, 0.04, darkWood, dX, 0.74, chZ + 0.2); for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) box(0.03, 0.46, 0.03, darkWood, dX + sx * 0.2, 0.23, chZ + sz * 0.19);
+    // its lamp, where the drawn one sits, and lit for real
+    const L = window.__desk && window.__desk.layout ? window.__desk.layout(tall) : null;
+    const lp = (px, py) => { const vb = tall ? [900, 1600] : [1600, 1000]; return [dX + (px / vb[0] - 0.5) * dW, dZ + (py / vb[1] - 0.5) * dD]; };
+    const [lx, lz] = lp(tall ? 40 : 70, tall ? 40 : 60), [bx, bz] = lp(tall ? 230 : 300, tall ? 210 : 270);
+    const lb = new T3.Mesh(new T3.CylinderGeometry(0.07, 0.08, 0.02, 24), brass); lb.position.set(bx, top + 0.01, bz); lb.castShadow = true; S.add(lb);
+    const arm = new T3.Vector3(lx, top + 0.42, lz).sub(lb.position); const armM = new T3.Mesh(new T3.CylinderGeometry(0.012, 0.012, arm.length(), 10), M({ color: 0x3a2a18, roughness: 0.5 }));
+    armM.position.copy(lb.position).addScaledVector(arm, 0.5); armM.quaternion.setFromUnitVectors(new T3.Vector3(0, 1, 0), arm.clone().normalize()); armM.castShadow = true; S.add(armM);
+    const lsh = new T3.Mesh(new T3.ConeGeometry(0.11, 0.14, 28, 1, true), M({ color: 0xb8893a, metalness: 0.8, roughness: 0.35, side: T3.DoubleSide })); lsh.position.set(lx, top + 0.44, lz); lsh.castShadow = true; S.add(lsh);
+    const bulb = new T3.Mesh(new T3.SphereGeometry(0.04, 16, 12), new T3.MeshBasicMaterial({ color: 0xfff2d0 })); bulb.position.set(lx, top + 0.39, lz); S.add(bulb);
+    const lampL = new T3.SpotLight(0xffd59a, 2.6, 5, 1.0, 0.6, 1.6); lampL.position.set(lx, top + 0.4, lz); lampL.target.position.set(dX, top, dZ); lampL.castShadow = true; lampL.shadow.mapSize.set(1024, 1024); lampL.shadow.bias = -0.0005; S.add(lampL); S.add(lampL.target);
+    // the walk: outside the door, through it, a look left and right, then over the desk and down onto it
+    const fov = FOV * Math.PI / 180, asp = innerWidth / innerHeight, t2 = Math.tan(fov / 2), dist = Math.min(dD / 2 / t2, dW / 2 / (t2 * asp));
+    const K = [
+      [0, [0, 1.5, 6.6], [0, 1.6, 2.5]],
+      [1.4, [0, 1.58, 4.6], [0, 1.45, 2.0]],
+      [2.6, [0, 1.62, 2.4], [-0.6, 1.4, 0]],
+      [3.9, [-0.4, 1.62, 1.1], [-2.8, 1.25, -0.8]],
+      [5.2, [0.2, 1.6, 0.6], [2.9, 1.3, -0.3]],
+      [6.5, [dX, 1.55, dZ + dD / 2 + 0.9], [dX, top + 0.05, dZ - 0.1]],
+      [8.1, [dX, top + dist, dZ + 0.002], [dX, top, dZ]],
+    ];
+    const V = a => new T3.Vector3(...a), pos = new T3.CatmullRomCurve3(K.map(k => V(k[1])), false, "centripetal"), look = new T3.CatmullRomCurve3(K.map(k => V(k[2])), false, "centripetal");
+    const END = K[K.length - 1][0], n = K.length - 1, upA = new T3.Vector3(0, 1, 0), upB = new T3.Vector3(0, 0, -1);
+    const uAt = t => { let i = 0; while (i < n - 1 && t > K[i + 1][0]) i++; let f = Math.min(1, Math.max(0, (t - K[i][0]) / (K[i + 1][0] - K[i][0])));
+      if (i === 0) f = f * f; if (i === n - 1) f = 1 - (1 - f) * (1 - f) * (1 - f); return (i + f) / n; };
+    const cap = wrap.querySelector(".hs-cap");
+    let t0 = 0, raf = 0, done = false;
+    const stopKeys = e => { if (["ArrowDown", "ArrowUp", "PageDown", "PageUp", " ", "Home", "End"].includes(e.key)) e.preventDefault(); if (e.key === "Escape") finish(); };
+    const stopScroll = e => e.preventDefault();
+    addEventListener("wheel", stopScroll, { passive: false }); addEventListener("touchmove", stopScroll, { passive: false }); addEventListener("keydown", stopKeys);
+    const finish = () => { if (done) return; done = true; cancelAnimationFrame(raf); wrap.classList.add("out");
+      removeEventListener("wheel", stopScroll); removeEventListener("touchmove", stopScroll); removeEventListener("keydown", stopKeys);
+      setTimeout(() => { R.dispose(); wrap.remove(); }, 1100); };
+    wrap.querySelector(".hs-skip").addEventListener("click", finish);
+    const frame = now => {
+      if (!t0) t0 = now; const t = window.__houseT != null ? window.__houseT : (now - t0) / 1000;
+      hinge.rotation.y = 1.85 * (t < 0.7 ? 0 : t > 2.3 ? 1 : (s => s * s * (3 - 2 * s))((t - 0.7) / 1.6));
+      const u = uAt(Math.min(t, END)); cam.position.copy(pos.getPoint(u)); const lk = look.getPoint(u);
+      const k = Math.max(0, Math.min(1, (t - K[n - 1][0]) / (END - K[n - 1][0]))); cam.up.copy(upA).lerp(upB, k * k * (3 - 2 * k)).normalize(); cam.lookAt(lk);
+      cap.classList.toggle("on", t > 0.25 && t < 2.2);
+      R.render(S, cam);
+      if (t > END + 0.35 && window.__houseT == null) return finish();
+      raf = requestAnimationFrame(frame);
+    };
+    R.compile(S, cam); requestAnimationFrame(() => { wrap.classList.add("in"); raf = requestAnimationFrame(frame); });
+    window.__house.running = () => !done;
+  }
+  window.__house = { play: () => play().catch(() => {}), running: () => false };
+  if (played) return;
+  if (window.__lite && !force) return;
+  const go = () => { if (played) return; played = true; try { sessionStorage.setItem("bgHouse", "1"); } catch (e) {} play().catch(() => {}); };
+  const check = () => { if (desk.classList.contains("on") && (document.body.dataset.page || "home") === "home") go(); };
+  new MutationObserver(check).observe(desk, { attributes: true, attributeFilter: ["class"] }); check();
 })();
 
 </script>
