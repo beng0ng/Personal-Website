@@ -11289,6 +11289,9 @@ const AMB = window.AMB = (() => {
     if (Math.abs(st.yawT - st.yaw) + Math.abs(st.pitT - st.pit) + Math.abs(st.openT - st.open) > 0.0005) kick(); };
   const go = async () => { let T3; try { T3 = await load(); } catch (e) { return; } if (!T3 || st) return;
     try { build(T3); } catch (e) { st = null; return; }
+    // if the browser ever drops the 3D context, fall back to the drawn laptop rather than an empty patch
+    st.cv.addEventListener("webglcontextlost", e => { e.preventDefault(); desk.classList.remove("dk-3dl"); st.cv.style.display = "none"; });
+    st.cv.addEventListener("webglcontextrestored", () => { st.cv.style.display = ""; desk.classList.add("dk-3dl"); kick(); });
     desk.classList.add("dk-3dl"); place(); requestAnimationFrame(() => st.cv.classList.add("in"));
     // the desk rebuilds itself on resize; put the model back each time
     new MutationObserver(() => { if (st && !st.cv.isConnected) place(); }).observe(desk, { childList: true, subtree: true });
@@ -11671,30 +11674,60 @@ const AMB = window.AMB = (() => {
     // v90: no floating tour. The stick figure from the bridge walks in through the open door and across the room to the
     // desk, and the camera follows a step behind him, then rises over his shoulder and looks straight down onto the desk.
     const V = a => new T3.Vector3(...a);
-    const chZ0 = dZ + dD / 2 + 0.36, STOP = [dX - 0.8, chZ0 - 0.05];
-    const path = new T3.CatmullRomCurve3([V([0, 0, 3.45]), V([0, 0, 2.3]), V([0.25, 0, 1.05]), V([0.55, 0, -0.05]), V([STOP[0], 0, STOP[1]])], false, "centripetal", 0.5), PL = path.getLength();
-    const T_W0 = 0.5, T_W1 = T_W0 + PL / 1.05, TB = T_W1 + 1.6, END = TB + 2.4;
+    const chZ0 = dZ + dD / 2 + 0.36, STOP = [dX - dW / 2 - 0.28, dZ + 0.12];
+    const path = new T3.CatmullRomCurve3([V([0, 0, 3.45]), V([0, 0, 2.3]), V([0.25, 0, 1.05]), V([0.2, 0, -0.35]), V([STOP[0], 0, STOP[1]])], false, "centripetal", 0.5), PL = path.getLength();
+    const T_W0 = 0.5, T_W1 = T_W0 + PL / 0.92, TB = T_W1 + 1.7, END = TB + 2.5;
     const ss3 = x => x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x), ease = x => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
     const manAt = t => { const f = Math.max(0, Math.min(1, (t - T_W0) / (T_W1 - T_W0))), uu = Math.max(0, Math.min(1, f - Math.sin(2 * Math.PI * f) / (2 * Math.PI))), p = path.getPointAt(uu), d = path.getTangentAt(Math.min(0.999, uu)); return { p, d, moving: f > 0 && f < 1 }; };
-    // the figure: graphite tubes and a round head, like the pencil one outside
-    const man = new T3.Group(); S.add(man); const manM = M({ color: 0x26221e, roughness: 0.75, transparent: true });
-    const tube = r => { const m = new T3.Mesh(new T3.CylinderGeometry(r, r, 1, 10), manM); m.castShadow = true; man.add(m); return m; };
-    const segs = { tor: tube(0.024), ul: tube(0.021), ll: tube(0.019), ur: tube(0.021), lr: tube(0.019), ual: tube(0.017), lal: tube(0.015), uar: tube(0.017), lar: tube(0.015) };
-    const mHead = new T3.Mesh(new T3.SphereGeometry(0.105, 24, 18), manM); mHead.castShadow = true; man.add(mHead);
+    // the figure: the same little character as on the bridge outside. Cream limbs with rounded joints, a round head with
+    // two eyes and a smile, brown shoes, and the red scarf, its tail swinging as he walks.
+    const man = new T3.Group(); S.add(man);
+    const manM = M({ color: 0xf1ebe0, roughness: 0.55, transparent: true }), farM = manM, eyeM = M({ color: 0x1c140e, roughness: 0.3, transparent: true }), scarfM = M({ color: 0xd2492f, roughness: 0.8, transparent: true }), shoeM = M({ color: 0x7a4a2e, roughness: 0.6, transparent: true });
+    const all = [manM, eyeM, scarfM, shoeM];
+    const tube = (r, m = manM) => { const g = new T3.Mesh(new T3.CylinderGeometry(r, r, 1, 14), m); g.castShadow = true; man.add(g); return g; };
+    const ball = (r, m = manM) => { const g = new T3.Mesh(new T3.SphereGeometry(r, 16, 12), m); g.castShadow = true; man.add(g); return g; };
+    const R1 = 0.036, R2 = 0.032;
+    const segs = { tor: tube(0.045), ul: tube(R1), ll: tube(R1), ur: tube(R1), lr: tube(R1), ual: tube(R2), lal: tube(R2), uar: tube(R2), lar: tube(R2) };
+    const jt = {}; for (const k2 of ["hip", "nk", "kl", "kr", "el", "er", "hl", "hr", "sl", "sr", "pl", "pr"]) jt[k2] = ball(k2 === "hip" || k2 === "nk" ? 0.045 : k2[0] === "h" ? 0.036 : R1);
+    const shoes = [0, 1].map(() => { const g = new T3.Mesh(rbox(0.075, 0.05, 0.13, 0.022, 2), shoeM); g.castShadow = true; man.add(g); return g; });
+    const mHead = new T3.Group(); man.add(mHead);
+    { const h = new T3.Mesh(new T3.SphereGeometry(0.125, 32, 24), manM); h.castShadow = true; mHead.add(h);
+      for (const sx2 of [-1, 1]) { const e = new T3.Mesh(new T3.SphereGeometry(0.014, 12, 10), eyeM); e.scale.set(1, 1.45, 0.6); e.position.set(sx2 * 0.038, 0.012, 0.118); mHead.add(e); }
+      const sm = new T3.Mesh(new T3.TorusGeometry(0.026, 0.005, 6, 16, Math.PI * 0.7), eyeM); sm.rotation.z = Math.PI + Math.PI * 0.15; sm.position.set(0, -0.032, 0.116); mHead.add(sm); }
+    const scarf = new T3.Mesh(new T3.TorusGeometry(0.055, 0.024, 10, 24), scarfM); scarf.rotation.x = Math.PI / 2; scarf.castShadow = true; man.add(scarf);
+    const tail = [0, 1, 2].map(q => { const g = new T3.Mesh(rbox(0.062, 0.014, 0.12, 0.006, 1), scarfM); g.castShadow = true; man.add(g); return g; });
     const yA = new T3.Vector3(0, 1, 0), tmp = new T3.Vector3();
     const bone = (m, a, b) => { tmp.subVectors(b, a); const L = tmp.length(); m.position.addVectors(a, b).multiplyScalar(0.5); m.scale.set(1, L, 1); m.quaternion.setFromUnitVectors(yA, tmp.normalize()); };
-    const pose = (ph, amp) => { const bob = Math.abs(Math.sin(ph)) * 0.025 * amp, hip = V([0, 0.86 + bob, 0]), nk = V([0, 1.36 + bob, 0.02]);
-      bone(segs.tor, hip, nk); mHead.position.set(0, 1.49 + bob, 0.03);
-      const leg = (q, a, b, side) => { const sw = Math.sin(ph + q) * 0.42 * amp, kb = Math.max(0, Math.sin(ph + q + 1.3)) * 0.8 * amp, h = V([side * 0.07, hip.y, 0]), k = V([side * 0.075, hip.y - Math.cos(sw) * 0.43, Math.sin(sw) * 0.43]), f = V([side * 0.08, k.y - Math.cos(sw - kb) * 0.43, k.z + Math.sin(sw - kb) * 0.43]); bone(a, h, k); bone(b, k, f); };
-      const arm = (q, a, b, side) => { const sw = Math.sin(ph + q) * 0.45 * amp, s0 = V([side * 0.13, nk.y - 0.04, 0.02]), e = V([side * 0.16, s0.y - Math.cos(sw) * 0.27, Math.sin(sw) * 0.27]), h = V([side * 0.17, e.y - Math.cos(sw + 0.35) * 0.25, e.z + Math.sin(sw + 0.35) * 0.25]); bone(a, s0, e); bone(b, e, h); };
-      leg(0, segs.ul, segs.ll, -1); leg(Math.PI, segs.ur, segs.lr, 1); arm(Math.PI, segs.ual, segs.lal, -1); arm(0, segs.uar, segs.lar, 1); };
+    const pose = (ph, amp, tt) => { const bob = Math.abs(Math.sin(ph)) * 0.03 * amp, lean = 0.07 * amp, hip = V([0, 0.84 + bob * 0.6, 0]), nk = V([0, hip.y + 0.5 * Math.cos(lean), 0.5 * Math.sin(lean)]);
+      bone(segs.tor, hip, nk); jt.hip.position.copy(hip); jt.nk.position.copy(nk); mHead.position.set(0, nk.y + 0.16, nk.z + 0.03); mHead.rotation.x = -lean * 0.5;
+      scarf.position.set(0, nk.y + 0.005, nk.z);
+      for (let q = 0; q < 3; q++) { const sw = Math.sin(tt * 7 - q * 0.9) * 0.25 * (0.4 + amp); const lift = 0.35 + 0.45 * amp; tail[q].position.set(0.04, nk.y - 0.04 - q * 0.07 * Math.cos(lift + sw * 0.5), nk.z - 0.065 - q * 0.07 * Math.sin(lift + sw * 0.5)); tail[q].rotation.set(Math.PI / 2 - lift - sw * 0.5, 0.15, 0.05 * q); }
+      const leg = (q, a, b, side, kn, ft, sh2) => { const sw = Math.sin(ph + q) * 0.46 * amp, kb = Math.max(0, Math.sin(ph + q - 1.5)) * 0.95 * amp, h = V([side * 0.075, hip.y, 0]), k3 = V([side * 0.08, hip.y - Math.cos(sw) * 0.42, Math.sin(sw) * 0.42]), f = V([side * 0.085, k3.y - Math.cos(sw - kb) * 0.42, k3.z + Math.sin(sw - kb) * 0.42]);
+        bone(a, h, k3); bone(b, k3, f); kn.position.copy(k3); jt[side < 0 ? "pl" : "pr"].position.copy(f); sh2.position.set(f.x, Math.max(0.025, f.y - 0.01), f.z + 0.035); sh2.rotation.x = -(sw - kb) * 0.6; };
+      const arm = (q, a, b, side, el, hn, shj) => { const sw = Math.sin(ph + q) * 0.5 * amp, s0 = V([side * 0.11, nk.y - 0.06, nk.z]), e = V([side * 0.15, s0.y - Math.cos(sw) * 0.27, s0.z + Math.sin(sw) * 0.27]), h = V([side * 0.16, e.y - Math.cos(sw + 0.5) * 0.25, e.z + Math.sin(sw + 0.5) * 0.25]);
+        bone(a, s0, e); bone(b, e, h); el.position.copy(e); hn.position.copy(h); shj.position.copy(s0); };
+      leg(0, segs.ul, segs.ll, -1, jt.kl, null, shoes[0]); leg(Math.PI, segs.ur, segs.lr, 1, jt.kr, null, shoes[1]);
+      arm(Math.PI, segs.ual, segs.lal, -1, jt.el, jt.hl, jt.sl); arm(0, segs.uar, segs.lar, 1, jt.er, jt.hr, jt.sr); };
     const camAt = t => { const { p, d } = manAt(t), dir = V([d.x, 0, d.z]).normalize(), side = V([-dir.z, 0, dir.x]), c = p.clone().addScaledVector(dir, -2.15).addScaledVector(side, -0.3).add(V([0, 1.95, 0])), l = p.clone().addScaledVector(dir, 1.6).addScaledVector(side, 0.1).add(V([0, 0.95, 0]));
       { const g = Math.max(0, 1 - Math.abs(c.z - 2.575) / 0.85); c.x += (Math.max(-0.04, Math.min(0.04, c.x)) - c.x) * Math.min(1, g * 1.8); }   // through the doorway, not the wall
       return [c, l]; };
     const K7 = [V([dX, 1.5, dZ + dD / 2 + 1.05]), V([dX, top + 0.05, dZ - 0.05])], K8 = [V([dX, top + dist, dZ + 0.002]), V([dX, top, dZ])];
-    const shot = t => { if (t < T_W1 - 0.2) return [...camAt(t), 0]; const [c1, l1] = camAt(T_W1 - 0.2);
+    // v91: the camera is a slow, steady operator: a step behind him and to the side, it takes in the room as he crosses
+    // it (a long look right across the sofa, the candles and the fairy lights, then back to the desk ahead), and every
+    // move is smoothed so nothing jerks; then it settles in front of the desk and rises to look straight down.
+    const gauss = (t, c, w) => Math.exp(-((t - c) * (t - c)) / (2 * w * w));
+    const POI = V([2.25, 0.85, 1.45]);
+    const raw = t => { if (t < T_W1 - 0.2) { const [c, l] = camAt(t), w = gauss(t, T_W0 + (T_W1 - T_W0) * 0.42, (T_W1 - T_W0) * 0.17) * 0.62; return [c, l.lerp(POI, w), 0]; }
+      const [c1, l1] = camAt(T_W1 - 0.2);
       if (t < TB) { const f = ease((t - T_W1 + 0.2) / (TB - T_W1 + 0.2)); return [c1.clone().lerp(K7[0], f), l1.clone().lerp(K7[1], f), 0]; }
       const f = ease(Math.min(1, (t - TB) / (END - TB))); return [K7[0].clone().lerp(K8[0], f), K7[1].clone().lerp(K8[1], f), f]; };
+    const DT = 1 / 30, NS = Math.ceil((END + 1) / DT), rawP = [], rawL = [];
+    for (let q = 0; q <= NS; q++) { const [c, l] = raw(q * DT); rawP.push(c); rawL.push(l); }
+    const blur = (arr, sig) => { const r = Math.ceil(sig * 3 / DT), wts = []; for (let q = -r; q <= r; q++) wts.push(Math.exp(-(q * DT) * (q * DT) / (2 * sig * sig)));
+      return arr.map((_, q) => { const o = V([0, 0, 0]); let ws = 0; for (let d2 = -r; d2 <= r; d2++) { const w = wts[d2 + r], v = arr[Math.max(0, Math.min(arr.length - 1, q + d2))]; o.addScaledVector(v, w); ws += w; } return o.multiplyScalar(1 / ws); }); };
+    const smP = blur(rawP, 0.32), smL = blur(rawL, 0.42);
+    const at2 = (arr, t) => { const x = Math.max(0, Math.min(NS, t / DT)), a = Math.floor(x), b = Math.min(NS, a + 1); return arr[a].clone().lerp(arr[b], x - a); };
+    const shot = t => { const [rc, rl, f] = raw(t), k2 = ss3((t - TB + 0.3) / 0.6); return [at2(smP, t).lerp(rc, k2), at2(smL, t).lerp(rl, k2), f]; };
     const upA = new T3.Vector3(0, 1, 0), upB = new T3.Vector3(0, 0, -1), hand = new T3.Vector3();
     const cap = wrap.querySelector(".hs-cap");
     let t0 = 0, raf = 0, done = false;
@@ -11704,15 +11737,15 @@ const AMB = window.AMB = (() => {
     const finish = () => { if (done) return; done = true; cancelAnimationFrame(raf); wrap.classList.add("out");
       removeEventListener("wheel", stopScroll); removeEventListener("touchmove", stopScroll); removeEventListener("keydown", stopKeys);
       try { localStorage.setItem("bgSeenHouse", "1"); } catch (e) {} dispatchEvent(new Event("house:done"));
-      setTimeout(() => { R.dispose(); wrap.remove(); }, 1300); };
+      setTimeout(() => { R.dispose(); try { R.forceContextLoss(); } catch (e) {} wrap.remove(); }, 1300); };   // v91: give the GPU back
     wrap.querySelector(".hs-skip").addEventListener("click", finish);
     const frame = now => {
       if (!t0) t0 = now; const t = window.__houseT != null ? window.__houseT : (now - t0) / 1000;
       R.toneMappingExposure = 1.35 * Math.min(1, t / 1.2);
       if (flick.light) { const q = Math.sin(now * 0.023) * 0.5 + Math.sin(now * 0.061) * 0.3 + Math.sin(now * 0.11) * 0.2; flick.light.intensity = 0.8 + q * 0.18; for (const [f, sp] of flick) { f.scale.y = 2.2 + q * 0.35; sp.material.opacity = 0.62 + q * 0.12; } }
       const [p, lk, endK] = shot(t), calm = 1 - endK;
-      { const m = manAt(t), wph = (t - T_W0) * 6.2; man.position.copy(m.p); man.rotation.y = Math.atan2(m.d.x, m.d.z); if (!m.moving && t > T_W1) man.rotation.y += (Math.atan2(0, -1) - man.rotation.y) * Math.min(1, (t - T_W1) * 1.5);
-        pose(wph, m.moving ? 1 : Math.max(0, 1 - (t - T_W1) * 3)); manM.opacity = 1 - ss3((t - T_W1 - 0.5) / 1.1); man.visible = manM.opacity > 0.01; }
+      { const m = manAt(t), wph = (t - T_W0) * 6.2; man.position.copy(m.p); man.rotation.y = Math.atan2(m.d.x, m.d.z); if (!m.moving && t > T_W1) man.rotation.y += (Math.PI / 2 - man.rotation.y) * Math.min(1, (t - T_W1) * 1.5);
+        pose(wph, m.moving ? 1 : Math.max(0, 1 - (t - T_W1) * 3), t); const op = 1 - ss3((t - TB - 0.2) / 0.9); for (const mm of all) mm.opacity = op; man.visible = op > 0.01; }
       hand.set(Math.sin(t * 0.7) * 0.012 + Math.sin(t * 1.9) * 0.004, Math.sin(t * 0.9 + 1) * 0.008 + Math.sin(t * 2.3) * 0.003, Math.sin(t * 0.5 + 2) * 0.01).multiplyScalar(calm);
       cam.position.copy(p).add(hand);
       hinge.rotation.y = 1.9;
@@ -11770,12 +11803,40 @@ const AMB = window.AMB = (() => {
     let inkC = "236,229,214"; const ink = (a = 0.9) => `rgba(${inkC},${a})`;
     const line = (pa, w = 1.4, a = 0.85, j = 0.8) => { for (let pass = 0; pass < 2; pass++) { g.strokeStyle = ink(pass ? a * 0.45 : a); g.lineWidth = pass ? w * 0.6 : w; g.beginPath(); pa.forEach(([x, y], i) => { const X = x + jr() * j * k, Y = y + jr() * j * k; i ? g.lineTo(X, Y) : g.moveTo(X, Y); }); g.stroke(); } };
     const door = E => { const [ex, ey] = E, dw = 44 * k, dh = 86 * k, x0 = ex + 42 * k, y1 = ey; return { x0, y0: y1 - dh, dw, dh }; };
-    const stick = (x, y, ph, dir, a = 1, reach = null, lean = 0) => {   // a walking stick figure, feet at (x, y)
-      const s = k, bob = Math.abs(Math.sin(ph)) * 2.2 * s, hip = [x, y - 30 * s - bob], sh = [x + dir * (1.5 - lean * 4) * s, y - 52 * s - bob], hd = [x + dir * (3 - lean * 6) * s, y - 61 * s - bob];
-      const leg = q => { const sw = Math.sin(ph + q) * 0.5, knee = [hip[0] + Math.sin(sw) * 15 * s, hip[1] + Math.cos(sw) * 15 * s], kb = Math.max(0, Math.sin(ph + q + 1.3)) * 0.7, foot = [knee[0] + Math.sin(sw - kb * dir) * 15 * s, knee[1] + Math.cos(sw - kb) * 15 * s]; return [hip, knee, foot]; };
-      const arm = q => { const sw = Math.sin(ph + q) * 0.55, el = [sh[0] + Math.sin(sw) * 11 * s, sh[1] + Math.cos(sw) * 11 * s], hn = [el[0] + Math.sin(sw + 0.4 * dir) * 10 * s, el[1] + Math.cos(sw + 0.4) * 10 * s]; return [sh, el, hn]; };
-      g.globalAlpha = a; line(leg(Math.PI), 2, 0.55); line(arm(0), 1.8, 0.55); line([hip, sh], 2.2, 0.95); line(leg(0), 2.2, 0.95); if (reach) { const L1 = 11 * s, L2 = 10 * s, dx = reach[0] - sh[0], dy = reach[1] - sh[1], d = Math.min(Math.hypot(dx, dy), L1 + L2 - 0.01), a0 = Math.atan2(dy, dx), c = Math.acos(clamp((L1 * L1 + d * d - L2 * L2) / (2 * L1 * d), -1, 1)), el = [sh[0] + Math.cos(a0 + c) * L1, sh[1] + Math.sin(a0 + c) * L1], hn = [sh[0] + Math.cos(a0) * d, sh[1] + Math.sin(a0) * d]; line([sh, el, hn], 2, 0.95); } else line(arm(Math.PI), 2, 0.95);
-      g.strokeStyle = ink(0.95); g.lineWidth = 2; g.beginPath(); g.arc(hd[0] + jr() * 0.6, hd[1] + jr() * 0.6, 7.5 * s, 0, 7); g.stroke(); g.globalAlpha = 1; };
+    // v91: the character. The same little figure walks into the house in 3D: cream limbs with rounded ends and real
+    // knees and elbows, a round head with two eyes looking where he goes, and a red scarf that trails as he walks.
+    const BODY = "#f1ebe0", FAR = "#bdb4a6", EDGE = "rgba(20,14,10,0.9)", SCARF = "#d2492f", SCARF2 = "#9e3221", SHOE = "#8a5a3c";
+    let silh = false;   // against the light of the open door he is a dark silhouette
+    const stick = (x, y, ph, dir, a = 1, reach = null, lean = 0) => {   // feet at (x, y)
+      const s = k * 1.08, now = performance.now() / 1000, walk = Math.abs(Math.sin(ph)) > 0 || ph !== 0, bob = Math.abs(Math.cos(ph)) * 2.4 * s;
+      const tilt = (walk ? 0.07 : 0) - lean * 0.18, hip = [x, y - 30 * s + Math.abs(Math.sin(ph)) * 1.7 * s], nk = [hip[0] + dir * Math.sin(tilt) * 22 * s, hip[1] - Math.cos(tilt) * 22 * s], hd = [nk[0] + dir * (2 + Math.sin(tilt) * 10) * s, nk[1] - 10.5 * s];
+      const body = silh ? "#1e160f" : BODY, far = silh ? "#2a1f16" : FAR;
+      const limb = (pts, col, w) => { g.lineCap = "round"; g.lineJoin = "round"; g.beginPath(); pts.forEach(([px, py], q) => q ? g.lineTo(px, py) : g.moveTo(px, py));
+        if (!silh) { g.strokeStyle = EDGE; g.lineWidth = w + 2.2 * s; g.stroke(); } g.strokeStyle = col; g.lineWidth = w; g.stroke(); };
+      const leg = q => { const sw = Math.sin(ph + q) * 0.48, kb = Math.max(0, Math.sin(ph + q - 1.5)) * 0.95 * (ph === 0 ? 0 : 1), knee = [hip[0] + dir * Math.sin(sw) * 15 * s, hip[1] + Math.cos(sw) * 15 * s], foot = [knee[0] + dir * Math.sin(sw - kb) * 15 * s, knee[1] + Math.cos(sw - kb) * 15 * s]; return [hip, knee, foot]; };
+      const sh = [nk[0], nk[1] + 3 * s];
+      const arm = q => { const sw = Math.sin(ph + q) * 0.5, el = [sh[0] + dir * Math.sin(sw) * 10.5 * s, sh[1] + Math.cos(sw) * 10.5 * s], hn = [el[0] + dir * Math.sin(sw + 0.55) * 9.5 * s, el[1] + Math.cos(sw + 0.55) * 9.5 * s]; return [sh, el, hn]; };
+      const reachArm = () => { const L1 = 10.5 * s, L2 = 9.5 * s, dx = reach[0] - sh[0], dy = reach[1] - sh[1], d = Math.min(Math.hypot(dx, dy), L1 + L2 - 0.01), a0 = Math.atan2(dy, dx), c = Math.acos(clamp((L1 * L1 + d * d - L2 * L2) / (2 * L1 * d), -1, 1)); return [sh, [sh[0] + Math.cos(a0 + c) * L1, sh[1] + Math.sin(a0 + c) * L1], [sh[0] + Math.cos(a0) * d, sh[1] + Math.sin(a0) * d]]; };
+      const shoe = (f, col) => { g.fillStyle = silh ? "#140e09" : col; g.beginPath(); g.ellipse(f[0] + dir * 2 * s, f[1] - 0.6 * s, 3.6 * s, 2 * s, 0, 0, 7); g.fill(); };
+      g.globalAlpha = a;
+      // a soft shadow on the boards
+      g.fillStyle = "rgba(0,0,0,0.28)"; g.beginPath(); g.ellipse(x, y + 1.5 * s, 11 * s, 2.4 * s, 0, 0, 7); g.fill();
+      // far side first, a shade darker, then the scarf tail behind him, the body, the near side
+      const lb = leg(Math.PI), ab = arm(0); limb(lb, far, 3.6 * s); shoe(lb[2], "#5e3d29"); limb(ab, far, 3.1 * s);
+      { const wv = Math.sin(now * 7) * 2.2 * s, wv2 = Math.sin(now * 7 + 1.4) * 3 * s, base = [nk[0] - dir * 1 * s, nk[1] + 1.5 * s];
+        g.fillStyle = silh ? "#2a1f16" : SCARF2; g.beginPath(); g.moveTo(base[0], base[1] - 1.5 * s); g.quadraticCurveTo(base[0] - dir * 8 * s, base[1] + wv, base[0] - dir * 15 * s, base[1] + 3 * s + wv2);
+        g.lineTo(base[0] - dir * 14 * s, base[1] + 7 * s + wv2); g.quadraticCurveTo(base[0] - dir * 7 * s, base[1] + 4 * s + wv, base[0], base[1] + 2.5 * s); g.closePath(); g.fill(); }
+      limb([hip, nk], body, 4.6 * s);
+      const lf = leg(0); limb(lf, body, 3.9 * s); shoe(lf[2], SHOE);
+      limb(reach ? reachArm() : arm(Math.PI), body, 3.4 * s);
+      // the scarf wrapped at his neck
+      g.fillStyle = silh ? "#2a1f16" : SCARF; g.beginPath(); g.ellipse(nk[0], nk[1] + 1 * s, 4.6 * s, 2.6 * s, dir * 0.15, 0, 7); g.fill();
+      // head: a full circle, outlined, two eyes toward where he is going
+      g.beginPath(); g.arc(hd[0], hd[1], 8.4 * s, 0, 7); g.fillStyle = body; g.fill(); if (!silh) { g.strokeStyle = EDGE; g.lineWidth = 1.6 * s; g.stroke();
+        g.fillStyle = "rgba(255,255,255,0.35)"; g.beginPath(); g.arc(hd[0] - dir * 3 * s, hd[1] - 3.2 * s, 2.4 * s, 0, 7); g.fill();
+        g.fillStyle = "#1c140e"; for (const e of [1.6, 5.4]) { g.beginPath(); g.ellipse(hd[0] + dir * e * s, hd[1] - 0.8 * s, 1.05 * s, 1.5 * s, 0, 0, 7); g.fill(); }
+        g.strokeStyle = "rgba(28,20,14,0.7)"; g.lineWidth = 1 * s; g.beginPath(); g.arc(hd[0] + dir * 3.6 * s, hd[1] + 2.6 * s, 1.8 * s, 0.2 * Math.PI, 0.8 * Math.PI); g.stroke(); }
+      g.globalAlpha = 1; };
     const stopKeys = e => { if (["ArrowDown", "ArrowUp", "PageDown", "PageUp", " ", "Home", "End"].includes(e.key)) e.preventDefault(); if (e.key === "Escape") skip(); };
     const stopScroll = e => e.preventDefault();
     addEventListener("wheel", stopScroll, { passive: false }); addEventListener("touchmove", stopScroll, { passive: false }); addEventListener("keydown", stopKeys);
@@ -11805,8 +11866,8 @@ const AMB = window.AMB = (() => {
         const tgt = [rest[0] + (hold[0] - rest[0]) * r, rest[1] + (hold[1] - rest[1]) * r]; return stick(x, E[1], 0, 1, 1, tgt, ss(pull) * 0.8); }
       // lets go and walks in, getting smaller and fainter into the doorway
       const f = clamp((t - T_PULL - 0.05) / (T_IN - T_PULL - 0.05), 0, 1), x0 = STAND - 7 * k, x = x0 + (Dr.x0 + Dr.dw * 0.5 - x0) * ss(f);
-      if (f < 1) { if (first && x > Dr.x0 - 6 * k) inkC = "30,22,14";   // a silhouette against the light inside
-        stick(x, E[1] - 2 * k * ss(f), (t - T_PULL) * 7.5, 1, 1 - ss(clamp((f - 0.6) / 0.4, 0, 1))); inkC = "236,229,214"; }
+      if (f < 1) { if (first && x > Dr.x0 - 6 * k) silh = true;   // a silhouette against the light inside
+        stick(x, E[1] - 2 * k * ss(f), (t - T_PULL) * 7.5, 1, 1 - ss(clamp((f - 0.6) / 0.4, 0, 1))); silh = false; }
     };
     const frame = now => {
       if (!t0) t0 = now; const t = window.__trnT != null ? window.__trnT : (now - t0) / 1000; if (now - boil > 90) { boil = now; seed = 1 + ((now / 90) | 0) % 7 * 977; }
