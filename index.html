@@ -310,6 +310,13 @@ body.pj-lit[data-page="projects"] #projects .dk-table { opacity: 1; }
 .dk-lit text, .dk-lit .glow, .dk-lit .steam { display: none; }
 .desk.dk-dive .dk-lit { display: none; }
 
+/* v90: the 3D laptop over the drawn one */
+.dk-l3 { position: absolute; pointer-events: none; opacity: 0; transition: opacity 0.9s ease 0.3s; z-index: 1; }
+.dk-l3.in { opacity: 1; }
+.desk:not(.on) .dk-l3 { opacity: 0; }
+.desk.dk-3dl .dk-laptop .dk-lift, .desk.dk-3dl .dk-laptop .glow { opacity: 0; }
+.dk-scene { position: absolute; }
+
 
 /* v83: the desk's thread through the site */
 .pc-has { position: relative; padding-right: clamp(0px, 16vw, 210px); }
@@ -11192,6 +11199,110 @@ const AMB = window.AMB = (() => {
   document.addEventListener("mouseleave", () => { nx = ny = 0; if (!raf) raf = requestAnimationFrame(apply); });
 })();
 
+// v90: the laptop on the desk is a real 3D model now: a matte graphite body (not steel), an open lid leaning back,
+// keycaps in a sunken well, a glass trackpad, the Projects screen glowing; lit by the desk lamp, with its own soft
+// shadow on the wood. It turns a little toward the pointer and lifts its lid a touch when you hover it. The drawn one
+// stays underneath as the click target (and as the fallback without WebGL).
+(() => {
+  const desk = document.querySelector(".desk"); if (!desk) return;
+  const RM = matchMedia("(prefers-reduced-motion: reduce)").matches, fine = matchMedia("(hover: hover) and (pointer: fine)").matches;
+  const load = () => new Promise((ok, no) => {
+    if (window.THREE) return ok(window.THREE);
+    let s = document.querySelector('script[src="lib/three.min.js"]');
+    if (!s) { s = document.createElement("script"); s.src = "lib/three.min.js"; s.async = true; document.head.append(s); }
+    s.addEventListener("load", () => ok(window.THREE)); s.addEventListener("error", no); setTimeout(() => window.THREE ? ok(window.THREE) : no(), 15000);
+  });
+  const glOK = (() => { try { const c = document.createElement("canvas"); return !!(c.getContext("webgl") || c.getContext("experimental-webgl")); } catch (e) { return false; } })();
+  if (!glOK) return;
+
+  // the screen: the same Projects screen as the drawing, painted for the glass
+  const screenPic = () => { const c = document.createElement("canvas"); c.width = 1024; c.height = 680; const g = c.getContext("2d");
+    const bg = g.createLinearGradient(0, 0, 0, 680); bg.addColorStop(0, "#22325a"); bg.addColorStop(1, "#0c1222"); g.fillStyle = bg; g.fillRect(0, 0, 1024, 680);
+    const v = g.createRadialGradient(512, 360, 40, 512, 360, 620); v.addColorStop(0, "rgba(120,160,255,0.18)"); v.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = v; g.fillRect(0, 0, 1024, 680);
+    g.fillStyle = "rgba(225,232,255,0.92)"; g.font = "800 46px Helvetica, Arial, sans-serif"; g.textAlign = "center"; if ("letterSpacing" in g) g.letterSpacing = "14px"; g.fillText("PROJECTS", 519, 130);
+    const cols = ["#3a64a8", "#2b2521", "#4f7a46", "#a43f72", "#b07a22"];
+    cols.forEach((col, i) => { g.save(); g.translate(512 + (i - 2) * 118, 360 + Math.abs(i - 2) * 10); g.rotate((i - 2) * 0.13);
+      g.shadowColor = "rgba(0,0,0,0.5)"; g.shadowBlur = 24; g.shadowOffsetY = 10; g.fillStyle = col; g.beginPath(); g.roundRect ? g.roundRect(-80, -115, 160, 230, 14) : g.rect(-80, -115, 160, 230); g.fill();
+      g.shadowColor = "transparent"; g.strokeStyle = "rgba(255,255,255,0.35)"; g.lineWidth = 3; g.stroke(); g.strokeStyle = "rgba(217,179,108,0.85)"; g.lineWidth = 4; g.beginPath(); g.arc(0, 0, 36, 0, 7); g.stroke(); g.restore(); });
+    g.fillStyle = "rgba(255,255,255,0.05)"; g.beginPath(); g.moveTo(0, 680); g.lineTo(0, 0); g.lineTo(380, 0); g.lineTo(120, 680); g.fill();
+    return c; };
+
+  let st = null;
+  const build = T3 => {
+    const cv = document.createElement("canvas"); cv.className = "dk-l3"; cv.setAttribute("aria-hidden", "true");
+    const R = new T3.WebGLRenderer({ canvas: cv, antialias: true, alpha: true, powerPreference: "low-power", preserveDrawingBuffer: false });
+    R.outputEncoding = T3.sRGBEncoding; R.toneMapping = T3.ACESFilmicToneMapping; R.toneMappingExposure = 1.15; R.shadowMap.enabled = true; R.shadowMap.type = T3.PCFSoftShadowMap;
+    const S = new T3.Scene(), cam = new T3.PerspectiveCamera(26, 1, 0.05, 10);
+    const lin = m => { if (m.color) m.color.convertSRGBToLinear(); if (m.emissive) m.emissive.convertSRGBToLinear(); return m; }, M = o => lin(new T3.MeshStandardMaterial(o)), Ph = o => lin(new T3.MeshPhysicalMaterial(o));
+    const rbox = (w, h, d, r, seg = 3) => { const g = new T3.BoxGeometry(w, h, d, seg * 2, seg * 2, seg * 2), p = g.attributes.position, v = new T3.Vector3(), hw = w / 2 - r, hh = h / 2 - r, hd = d / 2 - r;
+      for (let i = 0; i < p.count; i++) { v.fromBufferAttribute(p, i); const c = new T3.Vector3(Math.max(-hw, Math.min(hw, v.x)), Math.max(-hh, Math.min(hh, v.y)), Math.max(-hd, Math.min(hd, v.z))); const n = v.clone().sub(c); if (n.lengthSq() > 0) n.setLength(r); p.setXYZ(i, c.x + n.x, c.y + n.y, c.z + n.z); }
+      g.computeVertexNormals(); return g; };
+    const L = new T3.Group(); S.add(L);
+    // body: matte graphite aluminium, soft rounded edges
+    const body = M({ color: 0x2b2e36, roughness: 0.62, metalness: 0.18 }), dark = M({ color: 0x15161a, roughness: 0.7 }), keyM = M({ color: 0x1b1c20, roughness: 0.62 });
+    const W = 0.31, D = 0.215, Hb = 0.016;
+    const base = new T3.Mesh(rbox(W, Hb, D, 0.006, 3), body); base.position.y = Hb / 2; base.castShadow = base.receiveShadow = true; L.add(base);
+    const well = new T3.Mesh(new T3.PlaneGeometry(0.27, 0.105), dark); well.rotation.x = -Math.PI / 2; well.position.set(0, Hb + 0.0004, -0.035); L.add(well);
+    // keycaps, each its own little block
+    { const kg = rbox(0.0158, 0.0035, 0.0152, 0.0012, 1), cols = 14, rows = 6, n = cols * rows, im = new T3.InstancedMesh(kg, keyM, n), o = new T3.Object3D(); let i = 0;
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) { const space = r === 5 && c >= 4 && c <= 9; if (r === 5 && c > 4 && c <= 9) { o.scale.set(0.0001, 0.0001, 0.0001); }
+          else { o.scale.set(space ? 6.3 : 1, r === 0 ? 0.8 : 1, r === 0 ? 0.6 : 1); }
+          o.position.set(-0.1235 + c * 0.019 + (space ? 0.0475 : 0), Hb + 0.0016, -0.08 + r * 0.0182 - (r === 0 ? 0.002 : 0)); o.updateMatrix(); im.setMatrixAt(i++, o.matrix); }
+      im.castShadow = true; L.add(im); }
+    const pad = new T3.Mesh(rbox(0.11, 0.0006, 0.07, 0.0003, 1), Ph({ color: 0x33363e, roughness: 0.6, metalness: 0.05, clearcoat: 0.15 })); pad.position.set(0, Hb + 0.0001, 0.058); L.add(pad);
+    for (const sx of [-1, 1]) { const gr = new T3.Mesh(new T3.PlaneGeometry(0.008, 0.1), M({ color: 0x24262b, roughness: 0.9 })); gr.rotation.x = -Math.PI / 2; gr.position.set(sx * 0.143, Hb + 0.0004, -0.035); L.add(gr); }
+    const hinge = new T3.Mesh(new T3.CylinderGeometry(0.0055, 0.0055, 0.25, 20), M({ color: 0x2a2c31, roughness: 0.5, metalness: 0.4 })); hinge.rotation.z = Math.PI / 2; hinge.position.set(0, Hb + 0.002, -D / 2 + 0.006); L.add(hinge);
+    // the lid on its hinge
+    const lid = new T3.Group(); lid.position.set(0, Hb + 0.003, -D / 2 + 0.004); L.add(lid);
+    const Hl = 0.205, lidM = new T3.Mesh(rbox(W, Hl, 0.006, 0.0026, 3), body); lidM.position.set(0, Hl / 2, -0.0032); lidM.castShadow = true; lid.add(lidM);
+    const bez = new T3.Mesh(new T3.PlaneGeometry(W - 0.008, Hl - 0.008), M({ color: 0x0b0c0e, roughness: 0.3 })); bez.position.set(0, Hl / 2, 0.0002); lid.add(bez);
+    const tex = new T3.CanvasTexture(screenPic()); tex.encoding = T3.sRGBEncoding; tex.anisotropy = R.capabilities.getMaxAnisotropy();
+    const scrM = new T3.MeshStandardMaterial({ map: tex, emissiveMap: tex, emissive: 0xffffff, emissiveIntensity: 0.6, roughness: 0.2, color: 0x404040, metalness: 0 });
+    const scr = new T3.Mesh(new T3.PlaneGeometry(W - 0.024, Hl - 0.034), scrM); scr.position.set(0, Hl / 2 + 0.003, 0.0004); lid.add(scr);
+    const camDot = new T3.Mesh(new T3.CircleGeometry(0.0016, 16), M({ color: 0x1e2a44, roughness: 0.2 })); camDot.position.set(0, Hl - 0.008, 0.0005); lid.add(camDot);
+    // the wood it sits on only takes its shadow; the page's own wood shows through
+    const floor = new T3.Mesh(new T3.PlaneGeometry(3, 3), new T3.ShadowMaterial({ opacity: 0.5 })); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; S.add(floor);
+    // the lamp is up at the top left of the desk: warm key light from there, a cool fill, the screen's own glow
+    S.add(new T3.HemisphereLight(0xfff1dc, 0x3a2414, 0.55));
+    const key = new T3.DirectionalLight(0xffe0b0, 2.0); key.position.set(-0.9, 1.3, -0.7); key.castShadow = true; key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 6; key.shadow.bias = -0.0004;
+    Object.assign(key.shadow.camera, { left: -0.4, right: 0.4, top: 0.4, bottom: -0.4, near: 0.1, far: 4 }); S.add(key);
+    const fill = new T3.DirectionalLight(0x9db4ff, 0.35); fill.position.set(0.8, 0.6, 0.9); S.add(fill);
+    const glow = new T3.PointLight(0x8fb0ff, 0.25, 0.5, 2); glow.position.set(0, 0.12, -0.02); S.add(glow);
+    st = { T3, R, S, cam, L, lid, cv, scrM, open: 1.86, openT: 1.86, yaw: 0, yawT: 0, pit: 0, pitT: 0, raf: 0 };
+    lid.rotation.x = -(Math.PI - st.open) ;
+  };
+  // fit the 3D laptop over where the drawn one lies
+  const place = () => { if (!st) return; const scene = desk.querySelector(".dk-scene"), a = desk.querySelector(".dk-laptop .dk-lift"); if (!scene || !a) return;
+    if (st.cv.parentNode !== scene) scene.append(st.cv);
+    const sr = scene.getBoundingClientRect(), r = a.getBoundingClientRect(); if (!r.width) return;
+    const s = desk.classList.contains("dk-3d") ? 1.05 : 1, w = r.width / s * 1.7, h = r.height / s * 1.9, cx = (r.left + r.width / 2 - sr.left) / s, cy = (r.top + r.height / 2 - sr.top) / s;
+    Object.assign(st.cv.style, { left: (cx - w / 2) + "px", top: (cy - h * 0.47) + "px", width: w + "px", height: h + "px" });
+    st.R.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); st.R.setSize(w, h, false); st.cam.aspect = w / h;
+    // the drawn laptop's base spans about 0.62 of its bounding width; the model's 0.31 m should do the same
+    const span = 0.31 / ((r.width / s * 0.68) / w); st.cam.fov = 26; const d = span / (2 * Math.tan(st.cam.fov * Math.PI / 360) * st.cam.aspect);
+    st.dist = d; st.cam.updateProjectionMatrix(); st.rot = -2 * Math.PI / 180; kick(); };
+  const draw = () => { const { cam, L, lid, R, S } = st;
+    const pitch = 0.78 + st.pit, d = st.dist; cam.position.set(Math.sin(st.yaw * 0.6) * d * 0.25, Math.cos(pitch) * d, Math.sin(pitch) * d * 0.98 + 0.01); cam.up.set(0, 1, 0); cam.lookAt(0, 0.03, -0.012);
+    L.rotation.y = st.rot + st.yaw; lid.rotation.x = -(Math.PI - st.open); R.render(S, cam); };
+  const kick = () => { if (!st || st.raf) return; st.raf = requestAnimationFrame(step); };
+  const step = () => { st.raf = 0; const e = RM ? 1 : 0.12; st.yaw += (st.yawT - st.yaw) * e; st.pit += (st.pitT - st.pit) * e; st.open += (st.openT - st.open) * e; draw();
+    if (Math.abs(st.yawT - st.yaw) + Math.abs(st.pitT - st.pit) + Math.abs(st.openT - st.open) > 0.0005) kick(); };
+  const go = async () => { let T3; try { T3 = await load(); } catch (e) { return; } if (!T3 || st) return;
+    try { build(T3); } catch (e) { st = null; return; }
+    desk.classList.add("dk-3dl"); place(); requestAnimationFrame(() => st.cv.classList.add("in"));
+    // the desk rebuilds itself on resize; put the model back each time
+    new MutationObserver(() => { if (st && !st.cv.isConnected) place(); }).observe(desk, { childList: true, subtree: true });
+    addEventListener("resize", () => setTimeout(place, 60));
+    const lap = () => desk.querySelector(".dk-laptop");
+    desk.addEventListener("pointerover", e => { if (lap() && lap().contains(e.target)) { st.openT = 1.98; st.scrM.emissiveIntensity = 0.75; kick(); } });
+    desk.addEventListener("pointerout", e => { if (lap() && lap().contains(e.target) && !lap().contains(e.relatedTarget)) { st.openT = 1.86; st.scrM.emissiveIntensity = 0.6; kick(); } });
+    if (fine && !RM) addEventListener("pointermove", e => { if (!desk.classList.contains("on")) return; st.yawT = (e.clientX / innerWidth - 0.5) * 0.22; st.pitT = (e.clientY / innerHeight - 0.5) * 0.12; kick(); }, { passive: true });
+    window.__laptop3d = { st: () => st, place }; };
+  // build it once the desk is on its way in (so the opening itself is never held up)
+  const check = () => { if (desk.classList.contains("on") || (window.scrollY > innerHeight * 0.1)) { go(); obs.disconnect(); } };
+  const obs = new MutationObserver(check); obs.observe(desk, { attributes: true, attributeFilter: ["class"] }); check();
+})();
+
 
 // v83: one thread through the whole site. The desk is the map: every page is something lying on it, so each page
 // keeps a small sketch of the thing it came from (tap it to go back to the desk), each page ending shows the next
@@ -11557,21 +11668,33 @@ const AMB = window.AMB = (() => {
     const moon = new T3.DirectionalLight(0x8aa6ff, 0.4); moon.position.set(9, 4.5, -1.2); moon.target.position.set(1.5, 0, -0.3); moon.castShadow = true; moon.shadow.mapSize.set(1024, 1024); Object.assign(moon.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: 1, far: 20 }); S.add(moon); S.add(moon.target);
     // ---- the walk: one continuous glide, paced by how far the eye travels, a little handheld drift, then straight down onto the desk
     const fov = FOV * Math.PI / 180, asp = innerWidth / innerHeight, t2 = Math.tan(fov / 2), dist = Math.min(dD / 2 / t2, dW / 2 / (t2 * asp));
-    const K = [
-      [[0, 1.5, 7.4], [0, 1.6, 2.6]],
-      [[0.15, 1.45, 5.0], [0, 1.0, 2.8]],
-      [[0, 1.6, 3.2], [0, 1.5, 0.2]],
-      [[-0.9, 1.55, 1.5], [-2.8, 1.45, -0.1]],
-      [[-1.55, 1.35, 0.15], [-2.8, 1.05, -1.05]],
-      [[0.2, 1.5, 0.55], [3.0, 1.15, -0.25]],
-      [[0.9, 1.3, 0.45], [2.3, 0.62, 1.55]],
-      [[dX, 1.5, dZ + dD / 2 + 1.05], [dX, top + 0.05, dZ - 0.05]],
-      [[dX, top + dist, dZ + 0.002], [dX, top, dZ]],
-    ];
-    const V = a => new T3.Vector3(...a), pos = new T3.CatmullRomCurve3(K.map(k => V(k[0])), false, "centripetal", 0.5), look = new T3.CatmullRomCurve3(K.map(k => V(k[1])), false, "centripetal", 0.5);
-    const n = K.length - 1, W8 = K.slice(0, -1).map((k, i) => V(k[0]).distanceTo(V(K[i + 1][0])) + 0.45 * V(k[1]).distanceTo(V(K[i + 1][1])) + (i === n - 1 ? 0.6 : 0)), Wt = W8.reduce((a, b) => a + b, 0);
-    const END = 13.5, ease = x => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
-    const uAt = t => { let s = ease(Math.min(1, Math.max(0, t / END))) * Wt, i = 0; while (i < n - 1 && s > W8[i]) { s -= W8[i]; i++; } return (i + Math.min(1, s / W8[i])) / n; };
+    // v90: no floating tour. The stick figure from the bridge walks in through the open door and across the room to the
+    // desk, and the camera follows a step behind him, then rises over his shoulder and looks straight down onto the desk.
+    const V = a => new T3.Vector3(...a);
+    const chZ0 = dZ + dD / 2 + 0.36, STOP = [dX - 0.8, chZ0 - 0.05];
+    const path = new T3.CatmullRomCurve3([V([0, 0, 3.45]), V([0, 0, 2.3]), V([0.25, 0, 1.05]), V([0.55, 0, -0.05]), V([STOP[0], 0, STOP[1]])], false, "centripetal", 0.5), PL = path.getLength();
+    const T_W0 = 0.5, T_W1 = T_W0 + PL / 1.05, TB = T_W1 + 1.6, END = TB + 2.4;
+    const ss3 = x => x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x), ease = x => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+    const manAt = t => { const f = Math.max(0, Math.min(1, (t - T_W0) / (T_W1 - T_W0))), uu = Math.max(0, Math.min(1, f - Math.sin(2 * Math.PI * f) / (2 * Math.PI))), p = path.getPointAt(uu), d = path.getTangentAt(Math.min(0.999, uu)); return { p, d, moving: f > 0 && f < 1 }; };
+    // the figure: graphite tubes and a round head, like the pencil one outside
+    const man = new T3.Group(); S.add(man); const manM = M({ color: 0x26221e, roughness: 0.75, transparent: true });
+    const tube = r => { const m = new T3.Mesh(new T3.CylinderGeometry(r, r, 1, 10), manM); m.castShadow = true; man.add(m); return m; };
+    const segs = { tor: tube(0.024), ul: tube(0.021), ll: tube(0.019), ur: tube(0.021), lr: tube(0.019), ual: tube(0.017), lal: tube(0.015), uar: tube(0.017), lar: tube(0.015) };
+    const mHead = new T3.Mesh(new T3.SphereGeometry(0.105, 24, 18), manM); mHead.castShadow = true; man.add(mHead);
+    const yA = new T3.Vector3(0, 1, 0), tmp = new T3.Vector3();
+    const bone = (m, a, b) => { tmp.subVectors(b, a); const L = tmp.length(); m.position.addVectors(a, b).multiplyScalar(0.5); m.scale.set(1, L, 1); m.quaternion.setFromUnitVectors(yA, tmp.normalize()); };
+    const pose = (ph, amp) => { const bob = Math.abs(Math.sin(ph)) * 0.025 * amp, hip = V([0, 0.86 + bob, 0]), nk = V([0, 1.36 + bob, 0.02]);
+      bone(segs.tor, hip, nk); mHead.position.set(0, 1.49 + bob, 0.03);
+      const leg = (q, a, b, side) => { const sw = Math.sin(ph + q) * 0.42 * amp, kb = Math.max(0, Math.sin(ph + q + 1.3)) * 0.8 * amp, h = V([side * 0.07, hip.y, 0]), k = V([side * 0.075, hip.y - Math.cos(sw) * 0.43, Math.sin(sw) * 0.43]), f = V([side * 0.08, k.y - Math.cos(sw - kb) * 0.43, k.z + Math.sin(sw - kb) * 0.43]); bone(a, h, k); bone(b, k, f); };
+      const arm = (q, a, b, side) => { const sw = Math.sin(ph + q) * 0.45 * amp, s0 = V([side * 0.13, nk.y - 0.04, 0.02]), e = V([side * 0.16, s0.y - Math.cos(sw) * 0.27, Math.sin(sw) * 0.27]), h = V([side * 0.17, e.y - Math.cos(sw + 0.35) * 0.25, e.z + Math.sin(sw + 0.35) * 0.25]); bone(a, s0, e); bone(b, e, h); };
+      leg(0, segs.ul, segs.ll, -1); leg(Math.PI, segs.ur, segs.lr, 1); arm(Math.PI, segs.ual, segs.lal, -1); arm(0, segs.uar, segs.lar, 1); };
+    const camAt = t => { const { p, d } = manAt(t), dir = V([d.x, 0, d.z]).normalize(), side = V([-dir.z, 0, dir.x]), c = p.clone().addScaledVector(dir, -2.15).addScaledVector(side, -0.3).add(V([0, 1.95, 0])), l = p.clone().addScaledVector(dir, 1.6).addScaledVector(side, 0.1).add(V([0, 0.95, 0]));
+      { const g = Math.max(0, 1 - Math.abs(c.z - 2.575) / 0.85); c.x += (Math.max(-0.04, Math.min(0.04, c.x)) - c.x) * Math.min(1, g * 1.8); }   // through the doorway, not the wall
+      return [c, l]; };
+    const K7 = [V([dX, 1.5, dZ + dD / 2 + 1.05]), V([dX, top + 0.05, dZ - 0.05])], K8 = [V([dX, top + dist, dZ + 0.002]), V([dX, top, dZ])];
+    const shot = t => { if (t < T_W1 - 0.2) return [...camAt(t), 0]; const [c1, l1] = camAt(T_W1 - 0.2);
+      if (t < TB) { const f = ease((t - T_W1 + 0.2) / (TB - T_W1 + 0.2)); return [c1.clone().lerp(K7[0], f), l1.clone().lerp(K7[1], f), 0]; }
+      const f = ease(Math.min(1, (t - TB) / (END - TB))); return [K7[0].clone().lerp(K8[0], f), K7[1].clone().lerp(K8[1], f), f]; };
     const upA = new T3.Vector3(0, 1, 0), upB = new T3.Vector3(0, 0, -1), hand = new T3.Vector3();
     const cap = wrap.querySelector(".hs-cap");
     let t0 = 0, raf = 0, done = false;
@@ -11587,12 +11710,14 @@ const AMB = window.AMB = (() => {
       if (!t0) t0 = now; const t = window.__houseT != null ? window.__houseT : (now - t0) / 1000;
       R.toneMappingExposure = 1.35 * Math.min(1, t / 1.2);
       if (flick.light) { const q = Math.sin(now * 0.023) * 0.5 + Math.sin(now * 0.061) * 0.3 + Math.sin(now * 0.11) * 0.2; flick.light.intensity = 0.8 + q * 0.18; for (const [f, sp] of flick) { f.scale.y = 2.2 + q * 0.35; sp.material.opacity = 0.62 + q * 0.12; } }
-      const u = uAt(t), p = pos.getPoint(u), lk = look.getPoint(u), endK = Math.max(0, Math.min(1, (u - (n - 1) / n) * n)), calm = 1 - endK;
+      const [p, lk, endK] = shot(t), calm = 1 - endK;
+      { const m = manAt(t), wph = (t - T_W0) * 6.2; man.position.copy(m.p); man.rotation.y = Math.atan2(m.d.x, m.d.z); if (!m.moving && t > T_W1) man.rotation.y += (Math.atan2(0, -1) - man.rotation.y) * Math.min(1, (t - T_W1) * 1.5);
+        pose(wph, m.moving ? 1 : Math.max(0, 1 - (t - T_W1) * 3)); manM.opacity = 1 - ss3((t - T_W1 - 0.5) / 1.1); man.visible = manM.opacity > 0.01; }
       hand.set(Math.sin(t * 0.7) * 0.012 + Math.sin(t * 1.9) * 0.004, Math.sin(t * 0.9 + 1) * 0.008 + Math.sin(t * 2.3) * 0.003, Math.sin(t * 0.5 + 2) * 0.01).multiplyScalar(calm);
       cam.position.copy(p).add(hand);
-      hinge.rotation.y = 1.9 * (s => s * s * (3 - 2 * s))(Math.max(0, Math.min(1, (5.4 - cam.position.z) / 1.6)));
+      hinge.rotation.y = 1.9;
       cam.up.copy(upA).lerp(upB, endK * endK * (3 - 2 * endK)).normalize(); cam.lookAt(lk); cam.rotateZ(Math.sin(t * 0.6) * 0.006 * calm);
-      cap.classList.toggle("on", t > 0.9 && t < 3.6);
+      cap.classList.toggle("on", t > 0.6 && t < 3.0);
       wrap.classList.toggle("open", endK > 0.35);
       const dp = dg.attributes.position; for (let i = 0; i < dustN; i++) { const s = dseed[i]; dp.setXYZ(i, d0[i * 3] + Math.sin(t * 0.3 + s) * 0.03, d0[i * 3 + 1] + Math.sin(t * 0.21 + s * 1.7) * 0.025, d0[i * 3 + 2] + Math.cos(t * 0.27 + s) * 0.03); } dp.needsUpdate = true;
       if (S.userData.globe) S.userData.globe.rotation.y = t * 0.25;
