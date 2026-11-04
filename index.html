@@ -11024,7 +11024,7 @@ const AMB = window.AMB = (() => {
     plant: `<g fill="#2f6b3a"><path d="M0,0 C-60,-40 -150,-40 -200,-150 C-120,-150 -40,-110 0,0 Z"/><path d="M0,0 C-20,-80 -10,-170 40,-240 C70,-160 50,-70 0,0 Z" fill="#3a7d46"/><path d="M0,0 C-90,10 -180,60 -230,10 C-160,-30 -80,-30 0,0 Z" fill="#285e33"/></g><g stroke="rgba(0,0,0,0.25)" stroke-width="3" fill="none"><path d="M0,0 L-150,-110 M0,0 L30,-200 M0,0 L-180,20"/></g>`,
   };
   const L = {   // where everything sits: [x, y, rotation, scale]
-    wide: { vb: "0 0 1600 1000", laptop: [800, 596, -2, 1], manga: [300, 610, -9, 0.95], folder: [1290, 330, 6, 1], notebook: [1270, 720, -5, 0.95], letter: [470, 250, -7, 1],
+    wide: { vb: "0 0 1600 1000", laptop: [800, 596, -2, 1], manga: [300, 610, -9, 0.95], folder: [1290, 330, 6, 1], notebook: [1270, 720, -5, 0.95], letter: [420, 240, -7, 1],
       lamp: [70, 60, 0, 1], mug: [130, 900, 0, 0.9], bowl: [1500, 120, 0, 0.85], pencil: [640, 930, 8, 1], note: [800, 150, -3, 0.95], plant: [1640, 1040, 0, 1.2] },
     tall: { vb: "0 0 900 1600", laptop: [450, 610, -2, 0.78], manga: [235, 1040, -8, 0.82], folder: [655, 990, 6, 0.8], notebook: [250, 1390, -4, 0.78], letter: [650, 1370, 5, 0.82],
       lamp: [40, 40, 0, 0.8], mug: [790, 180, 0, 0.72], pencil: [450, 1560, 4, 0.8], note: [420, 190, -3, 0.95], plant: [940, 1640, 0, 1] },
@@ -11242,7 +11242,7 @@ const AMB = window.AMB = (() => {
     const body = M({ color: 0x2b2e36, roughness: 0.62, metalness: 0.18 }), dark = M({ color: 0x15161a, roughness: 0.7 }), keyM = M({ color: 0x1b1c20, roughness: 0.62 });
     const W = 0.31, D = 0.215, Hb = 0.016;
     const base = new T3.Mesh(rbox(W, Hb, D, 0.006, 3), body); base.position.y = Hb / 2; base.castShadow = base.receiveShadow = true; L.add(base);
-    const well = new T3.Mesh(new T3.PlaneGeometry(0.27, 0.105), dark); well.rotation.x = -Math.PI / 2; well.position.set(0, Hb + 0.0004, -0.035); L.add(well);
+    const well = new T3.Mesh(new T3.PlaneGeometry(0.27, 0.105), M({ color: 0x15161a, roughness: 0.7, emissive: 0xffb36a, emissiveIntensity: 0.22 }));   // a warm backlight between the keys well.rotation.x = -Math.PI / 2; well.position.set(0, Hb + 0.0004, -0.035); L.add(well);
     // keycaps, each its own little block
     { const kg = rbox(0.0158, 0.0035, 0.0152, 0.0012, 1), cols = 14, rows = 6, n = cols * rows, im = new T3.InstancedMesh(kg, keyM, n), o = new T3.Object3D(); let i = 0;
       for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) { const space = r === 5 && c >= 4 && c <= 9; if (r === 5 && c > 4 && c <= 9) { o.scale.set(0.0001, 0.0001, 0.0001); }
@@ -11257,7 +11257,7 @@ const AMB = window.AMB = (() => {
     const Hl = 0.205, lidM = new T3.Mesh(rbox(W, Hl, 0.006, 0.0026, 3), body); lidM.position.set(0, Hl / 2, -0.0032); lidM.castShadow = true; lid.add(lidM);
     const bez = new T3.Mesh(new T3.PlaneGeometry(W - 0.008, Hl - 0.008), M({ color: 0x0b0c0e, roughness: 0.3 })); bez.position.set(0, Hl / 2, 0.0002); lid.add(bez);
     const tex = new T3.CanvasTexture(screenPic()); tex.encoding = T3.sRGBEncoding; tex.anisotropy = R.capabilities.getMaxAnisotropy();
-    const scrM = new T3.MeshStandardMaterial({ map: tex, emissiveMap: tex, emissive: 0xffffff, emissiveIntensity: 0.6, roughness: 0.2, color: 0x404040, metalness: 0 });
+    const scrM = new T3.MeshStandardMaterial({ map: tex, emissiveMap: tex, emissive: 0xffffff, emissiveIntensity: 0.85, roughness: 0.18, color: 0x404040, metalness: 0 });
     const scr = new T3.Mesh(new T3.PlaneGeometry(W - 0.024, Hl - 0.034), scrM); scr.position.set(0, Hl / 2 + 0.003, 0.0004); lid.add(scr);
     const camDot = new T3.Mesh(new T3.CircleGeometry(0.0016, 16), M({ color: 0x1e2a44, roughness: 0.2 })); camDot.position.set(0, Hl - 0.008, 0.0005); lid.add(camDot);
     // the wood it sits on only takes its shadow; the page's own wood shows through
@@ -11267,7 +11267,7 @@ const AMB = window.AMB = (() => {
     const key = new T3.DirectionalLight(0xffe0b0, 2.0); key.position.set(-0.9, 1.3, -0.7); key.castShadow = true; key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 6; key.shadow.bias = -0.0004;
     Object.assign(key.shadow.camera, { left: -0.4, right: 0.4, top: 0.4, bottom: -0.4, near: 0.1, far: 4 }); S.add(key);
     const fill = new T3.DirectionalLight(0x9db4ff, 0.35); fill.position.set(0.8, 0.6, 0.9); S.add(fill);
-    const glow = new T3.PointLight(0x8fb0ff, 0.25, 0.5, 2); glow.position.set(0, 0.12, -0.02); S.add(glow);
+    const glow = new T3.PointLight(0x8fb0ff, 0.6, 0.6, 2); glow.position.set(0, 0.12, -0.02); S.add(glow);
     st = { T3, R, S, cam, L, lid, cv, scrM, open: 1.86, openT: 1.86, yaw: 0, yawT: 0, pit: 0, pitT: 0, raf: 0 };
     lid.rotation.x = -(Math.PI - st.open) ;
   };
@@ -11276,13 +11276,13 @@ const AMB = window.AMB = (() => {
     if (st.cv.parentNode !== scene) scene.append(st.cv);
     const sr = scene.getBoundingClientRect(), r = a.getBoundingClientRect(); if (!r.width) return;
     const s = desk.classList.contains("dk-3d") ? 1.05 : 1, w = r.width / s * 1.7, h = r.height / s * 1.9, cx = (r.left + r.width / 2 - sr.left) / s, cy = (r.top + r.height / 2 - sr.top) / s;
-    Object.assign(st.cv.style, { left: (cx - w / 2) + "px", top: (cy - h * 0.47) + "px", width: w + "px", height: h + "px" });
+    Object.assign(st.cv.style, { left: (cx - w / 2) + "px", top: (cy - h * 0.5) + "px", width: w + "px", height: h + "px" });
     st.R.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); st.R.setSize(w, h, false); st.cam.aspect = w / h;
     // the drawn laptop's base spans about 0.62 of its bounding width; the model's 0.31 m should do the same
-    const span = 0.31 / ((r.width / s * 0.68) / w); st.cam.fov = 26; const d = span / (2 * Math.tan(st.cam.fov * Math.PI / 360) * st.cam.aspect);
+    const span = 0.31 / ((r.width / s * 0.8) / w); st.cam.fov = 26; const d = span / (2 * Math.tan(st.cam.fov * Math.PI / 360) * st.cam.aspect);
     st.dist = d; st.cam.updateProjectionMatrix(); st.rot = -2 * Math.PI / 180; kick(); };
   const draw = () => { const { cam, L, lid, R, S } = st;
-    const pitch = 0.78 + st.pit, d = st.dist; cam.position.set(Math.sin(st.yaw * 0.6) * d * 0.25, Math.cos(pitch) * d, Math.sin(pitch) * d * 0.98 + 0.01); cam.up.set(0, 1, 0); cam.lookAt(0, 0.03, -0.012);
+    const pitch = 0.98 + st.pit, d = st.dist; cam.position.set(Math.sin(st.yaw * 0.6) * d * 0.25, Math.cos(pitch) * d, Math.sin(pitch) * d * 0.98 + 0.01); cam.up.set(0, 1, 0); cam.lookAt(0, 0.03, -0.012);
     L.rotation.y = st.rot + st.yaw; lid.rotation.x = -(Math.PI - st.open); R.render(S, cam); };
   const kick = () => { if (!st || st.raf) return; st.raf = requestAnimationFrame(step); };
   const step = () => { st.raf = 0; const e = RM ? 1 : 0.12; st.yaw += (st.yawT - st.yaw) * e; st.pit += (st.pitT - st.pit) * e; st.open += (st.openT - st.open) * e; draw();
@@ -11297,8 +11297,8 @@ const AMB = window.AMB = (() => {
     new MutationObserver(() => { if (st && !st.cv.isConnected) place(); }).observe(desk, { childList: true, subtree: true });
     addEventListener("resize", () => setTimeout(place, 60));
     const lap = () => desk.querySelector(".dk-laptop");
-    desk.addEventListener("pointerover", e => { if (lap() && lap().contains(e.target)) { st.openT = 1.98; st.scrM.emissiveIntensity = 0.75; kick(); } });
-    desk.addEventListener("pointerout", e => { if (lap() && lap().contains(e.target) && !lap().contains(e.relatedTarget)) { st.openT = 1.86; st.scrM.emissiveIntensity = 0.6; kick(); } });
+    desk.addEventListener("pointerover", e => { if (lap() && lap().contains(e.target)) { st.openT = 1.98; st.scrM.emissiveIntensity = 1.05; kick(); } });
+    desk.addEventListener("pointerout", e => { if (lap() && lap().contains(e.target) && !lap().contains(e.relatedTarget)) { st.openT = 1.86; st.scrM.emissiveIntensity = 0.85; kick(); } });
     if (fine && !RM) addEventListener("pointermove", e => { if (!desk.classList.contains("on")) return; st.yawT = (e.clientX / innerWidth - 0.5) * 0.22; st.pitT = (e.clientY / innerHeight - 0.5) * 0.12; kick(); }, { passive: true });
     window.__laptop3d = { st: () => st, place }; };
   // build it once the desk is on its way in (so the opening itself is never held up)
@@ -11681,7 +11681,7 @@ const AMB = window.AMB = (() => {
     const manAt = t => { const f = Math.max(0, Math.min(1, (t - T_W0) / (T_W1 - T_W0))), uu = Math.max(0, Math.min(1, f - Math.sin(2 * Math.PI * f) / (2 * Math.PI))), p = path.getPointAt(uu), d = path.getTangentAt(Math.min(0.999, uu)); return { p, d, moving: f > 0 && f < 1 }; };
     // the figure: the same little character as on the bridge outside. Cream limbs with rounded joints, a round head with
     // two eyes and a smile, brown shoes, and the red scarf, its tail swinging as he walks.
-    const man = new T3.Group(); S.add(man);
+    const man = new T3.Group(); man.scale.setScalar(0.92); S.add(man);
     const manM = M({ color: 0xf1ebe0, roughness: 0.55, transparent: true }), farM = manM, eyeM = M({ color: 0x1c140e, roughness: 0.3, transparent: true }), scarfM = M({ color: 0xd2492f, roughness: 0.8, transparent: true }), shoeM = M({ color: 0x7a4a2e, roughness: 0.6, transparent: true });
     const all = [manM, eyeM, scarfM, shoeM];
     const tube = (r, m = manM) => { const g = new T3.Mesh(new T3.CylinderGeometry(r, r, 1, 14), m); g.castShadow = true; man.add(g); return g; };
@@ -11708,7 +11708,7 @@ const AMB = window.AMB = (() => {
         bone(a, s0, e); bone(b, e, h); el.position.copy(e); hn.position.copy(h); shj.position.copy(s0); };
       leg(0, segs.ul, segs.ll, -1, jt.kl, null, shoes[0]); leg(Math.PI, segs.ur, segs.lr, 1, jt.kr, null, shoes[1]);
       arm(Math.PI, segs.ual, segs.lal, -1, jt.el, jt.hl, jt.sl); arm(0, segs.uar, segs.lar, 1, jt.er, jt.hr, jt.sr); };
-    const camAt = t => { const { p, d } = manAt(t), dir = V([d.x, 0, d.z]).normalize(), side = V([-dir.z, 0, dir.x]), c = p.clone().addScaledVector(dir, -2.15).addScaledVector(side, -0.3).add(V([0, 1.95, 0])), l = p.clone().addScaledVector(dir, 1.6).addScaledVector(side, 0.1).add(V([0, 0.95, 0]));
+    const camAt = t => { const { p, d } = manAt(t), dir = V([d.x, 0, d.z]).normalize(), side = V([-dir.z, 0, dir.x]), c = p.clone().addScaledVector(dir, -2.7).addScaledVector(side, -0.35).add(V([0, 1.8, 0])), l = p.clone().addScaledVector(dir, 1.6).addScaledVector(side, 0.1).add(V([0, 0.95, 0]));
       { const g = Math.max(0, 1 - Math.abs(c.z - 2.575) / 0.85); c.x += (Math.max(-0.04, Math.min(0.04, c.x)) - c.x) * Math.min(1, g * 1.8); }   // through the doorway, not the wall
       return [c, l]; };
     const K7 = [V([dX, 1.5, dZ + dD / 2 + 1.05]), V([dX, top + 0.05, dZ - 0.05])], K8 = [V([dX, top + dist, dZ + 0.002]), V([dX, top, dZ])];
@@ -11741,7 +11741,7 @@ const AMB = window.AMB = (() => {
     wrap.querySelector(".hs-skip").addEventListener("click", finish);
     const frame = now => {
       if (!t0) t0 = now; const t = window.__houseT != null ? window.__houseT : (now - t0) / 1000;
-      R.toneMappingExposure = 1.35 * Math.min(1, t / 1.2);
+      R.toneMappingExposure = 1.42 * Math.min(1, t / 1.2);
       if (flick.light) { const q = Math.sin(now * 0.023) * 0.5 + Math.sin(now * 0.061) * 0.3 + Math.sin(now * 0.11) * 0.2; flick.light.intensity = 0.8 + q * 0.18; for (const [f, sp] of flick) { f.scale.y = 2.2 + q * 0.35; sp.material.opacity = 0.62 + q * 0.12; } }
       const [p, lk, endK] = shot(t), calm = 1 - endK;
       { const m = manAt(t), wph = (t - T_W0) * 6.2; man.position.copy(m.p); man.rotation.y = Math.atan2(m.d.x, m.d.z); if (!m.moving && t > T_W1) man.rotation.y += (Math.PI / 2 - man.rotation.y) * Math.min(1, (t - T_W1) * 1.5);
@@ -11802,13 +11802,13 @@ const AMB = window.AMB = (() => {
     let seed = 1, boil = 0; const jr = () => (seed = (seed * 16807) % 2147483647) / 2147483647 - 0.5;
     let inkC = "236,229,214"; const ink = (a = 0.9) => `rgba(${inkC},${a})`;
     const line = (pa, w = 1.4, a = 0.85, j = 0.8) => { for (let pass = 0; pass < 2; pass++) { g.strokeStyle = ink(pass ? a * 0.45 : a); g.lineWidth = pass ? w * 0.6 : w; g.beginPath(); pa.forEach(([x, y], i) => { const X = x + jr() * j * k, Y = y + jr() * j * k; i ? g.lineTo(X, Y) : g.moveTo(X, Y); }); g.stroke(); } };
-    const door = E => { const [ex, ey] = E, dw = 44 * k, dh = 86 * k, x0 = ex + 42 * k, y1 = ey; return { x0, y0: y1 - dh, dw, dh }; };
+    const door = E => { const [ex, ey] = E, dw = 52 * k, dh = 102 * k, x0 = ex + 46 * k, y1 = ey; return { x0, y0: y1 - dh, dw, dh }; };
     // v91: the character. The same little figure walks into the house in 3D: cream limbs with rounded ends and real
     // knees and elbows, a round head with two eyes looking where he goes, and a red scarf that trails as he walks.
     const BODY = "#f1ebe0", FAR = "#bdb4a6", EDGE = "rgba(20,14,10,0.9)", SCARF = "#d2492f", SCARF2 = "#9e3221", SHOE = "#8a5a3c";
     let silh = false;   // against the light of the open door he is a dark silhouette
     const stick = (x, y, ph, dir, a = 1, reach = null, lean = 0) => {   // feet at (x, y)
-      const s = k * 1.08, now = performance.now() / 1000, walk = Math.abs(Math.sin(ph)) > 0 || ph !== 0, bob = Math.abs(Math.cos(ph)) * 2.4 * s;
+      const s = k * 1.3, now = performance.now() / 1000, walk = Math.abs(Math.sin(ph)) > 0 || ph !== 0, bob = Math.abs(Math.cos(ph)) * 2.4 * s;
       const tilt = (walk ? 0.07 : 0) - lean * 0.18, hip = [x, y - 30 * s + Math.abs(Math.sin(ph)) * 1.7 * s], nk = [hip[0] + dir * Math.sin(tilt) * 22 * s, hip[1] - Math.cos(tilt) * 22 * s], hd = [nk[0] + dir * (2 + Math.sin(tilt) * 10) * s, nk[1] - 10.5 * s];
       const body = silh ? "#1e160f" : BODY, far = silh ? "#2a1f16" : FAR;
       const limb = (pts, col, w) => { g.lineCap = "round"; g.lineJoin = "round"; g.beginPath(); pts.forEach(([px, py], q) => q ? g.lineTo(px, py) : g.moveTo(px, py));
