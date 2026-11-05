@@ -11425,23 +11425,33 @@ const AMB = window.AMB = (() => {
     s.addEventListener("load", () => ok(window.THREE)); s.addEventListener("error", no); setTimeout(() => window.THREE ? ok(window.THREE) : no(), 8000);
   });
   // the desk, flattened into one picture: the wood, then every object as drawn, styles and all
-  const paintDesk = async (tall, lap) => {
-    const W = tall ? 1152 : 2048, H = tall ? 2048 : 1280, c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
+  // The desk top's picture. Normal mode paints the desk's viewBox to fill the canvas (the 3D desk top). Full mode (v94)
+  // paints the screen exactly as the desk page shows it: the photo and the drawing fitted into the page's own scene
+  // box, lamp and plant included, so the film's last frame can become the page.
+  const paintDesk = async (tall, lap, full) => {
+    const src = desk.querySelector(".dk-svg"), vb = src && src.viewBox.baseVal, sr = (lap && lap.sr) || (src ? src.getBoundingClientRect() : { left: 0, top: 0, width: innerWidth, height: innerHeight });
+    const kS = Math.min(2, 2048 / Math.max(innerWidth, innerHeight));
+    const W = full ? Math.round(innerWidth * kS) : tall ? 1152 : 2048, H = full ? Math.round(innerHeight * kS) : tall ? 2048 : 1280, c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
+    // where the scene box lands on the canvas
+    const box = full ? [sr.left * kS, sr.top * kS, sr.width * kS, sr.height * kS] : [0, 0, W, H];
     g.fillStyle = "#5a361d"; g.fillRect(0, 0, W, H);
     const bg = (desk.querySelector(".dk-photo").style.backgroundImage || "").match(/url\("?(.*?)"?\)$/);
     const img = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; });
-    if (bg) { const w = await img(bg[1]); if (w) { const s = Math.max(W / w.width, H / w.height); g.drawImage(w, (W - w.width * s) / 2, (H - w.height * s) / 2, w.width * s, w.height * s); } }
-    const src = desk.querySelector(".dk-svg"); if (src) {
-      const cl = src.cloneNode(true); cl.querySelectorAll(".dk-lamp, .dk-plant").forEach(n => n.remove());   // v93: the plaques stay, as on the desk page
+    if (bg) { const w = await img(bg[1]); if (w) { const [bx, by, bw, bh] = box, s = Math.max(bw / w.width, bh / w.height); g.drawImage(w, bx + (bw - w.width * s) / 2, by + (bh - w.height * s) / 2, w.width * s, w.height * s); } }
+    if (src) {
+      const cl = src.cloneNode(true); if (!full) cl.querySelectorAll(".dk-lamp, .dk-plant").forEach(n => n.remove());   // v93: the plaques stay, as on the desk page
       if (lap) cl.querySelectorAll(".dk-laptop .dk-lift, .dk-laptop .glow").forEach(n => n.setAttribute("style", "opacity:0"));
       const css = [...document.styleSheets].flatMap(s => { try { return [...s.cssRules]; } catch (e) { return []; } }).filter(r => r.selectorText && /dk-/.test(r.selectorText) && !/\.desk\b|:hover|:focus/.test(r.selectorText)).map(r => r.cssText).join("\n");
-      cl.setAttribute("xmlns", "http://www.w3.org/2000/svg"); cl.setAttribute("width", W); cl.setAttribute("height", H); cl.setAttribute("preserveAspectRatio", "xMidYMid slice");
+      cl.setAttribute("xmlns", "http://www.w3.org/2000/svg"); cl.setAttribute("width", Math.round(box[2])); cl.setAttribute("height", Math.round(box[3])); cl.setAttribute("preserveAspectRatio", full ? "xMidYMid meet" : "xMidYMid slice");
       cl.insertAdjacentHTML("afterbegin", `<style>svg{--font-ui:Helvetica,Arial,sans-serif;--font-display:Georgia,serif}${css}</style>${(document.querySelector(".dk-defs") || {}).innerHTML || ""}`);
       const u = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(cl)], { type: "image/svg+xml" }));
-      const w = await img(u); if (w) g.drawImage(w, 0, 0, W, H); URL.revokeObjectURL(u);
-      // v93: the laptop as the desk page shows it, the 3D one, laid in where it sits on the page
-      if (lap) { const vb = src.viewBox.baseVal, sr = lap.sr, K0 = Math.max(sr.width / vb.width, sr.height / vb.height), K = Math.max(W / vb.width, H / vb.height);
-        const toX = x => ((x - sr.left - (sr.width - vb.width * K0) / 2) / K0) * K + (W - vb.width * K) / 2, toY = y => ((y - sr.top - (sr.height - vb.height * K0) / 2) / K0) * K + (H - vb.height * K) / 2;
+      const w = await img(u); if (w) g.drawImage(w, box[0], box[1], box[2], box[3]); URL.revokeObjectURL(u);
+      // v93: the laptop as the desk page shows it, the 3D one, laid in where it sits on the page. The page fits its
+      // viewBox into the scene box ("meet"); map screen points through that into this canvas.
+      if (lap) { let toX, toY;
+        if (full) { toX = x => x * kS; toY = y => y * kS; }
+        else { const K0 = Math.min(sr.width / vb.width, sr.height / vb.height), K = Math.max(W / vb.width, H / vb.height);
+          toX = x => ((x - sr.left - (sr.width - vb.width * K0) / 2) / K0) * K + (W - vb.width * K) / 2; toY = y => ((y - sr.top - (sr.height - vb.height * K0) / 2) / K0) * K + (H - vb.height * K) / 2; }
         const x0 = toX(lap.r.left), y0 = toY(lap.r.top); g.drawImage(lap.snap, x0, y0, toX(lap.r.right) - x0, toY(lap.r.bottom) - y0); }
     }
     return c;
@@ -11683,11 +11693,19 @@ const AMB = window.AMB = (() => {
       const st = window.__laptop3d && window.__laptop3d.st(), svg = desk.querySelector(".dk-svg"); if (!st || !svg || done || !st.cv.isConnected || st.cv.style.display === "none") return;
       try { window.__laptop3d.place(); st.R.render(st.S, st.cam); const snap = document.createElement("canvas"); snap.width = st.cv.width; snap.height = st.cv.height; snap.getContext("2d").drawImage(st.cv, 0, 0);
         const r = st.cv.getBoundingClientRect(), sr = svg.getBoundingClientRect(); if (!r.width || !sr.width) return;
-        const pic = await paintDesk(tall, { snap, r, sr }); if (done) return; deskPic.getContext("2d").drawImage(pic, 0, 0); topT.needsUpdate = true; } catch (e) {} })();
+        const pic = await paintDesk(tall, { snap, r, sr }); if (done) return; deskPic.getContext("2d").drawImage(pic, 0, 0); topT.needsUpdate = true;
+        const pf = await paintDesk(tall, { snap, r, sr }, true); if (done) return; decC.getContext("2d").drawImage(pf, 0, 0); decT.needsUpdate = true; decReady = true; } catch (e) {} })();
     const topMats = [walnut, walnut, M({ map: topT, roughness: 0.38, metalness: 0 }), walnut, walnut, walnut];
     { const g = rbox(dW, 0.04, dD, 0.006, 2); const m = new T3.Mesh(g, topMats); m.position.set(dX, top - 0.02, dZ); m.receiveShadow = m.castShadow = true; S.add(m);
       // flatten the top face's UVs onto the picture: rbox keeps BoxGeometry's per-face UVs, so the +y face is already 0..1
     }
+    // v94: the desk page itself, unlit and exact, lamp and plant included. It fades in over the last of the top-down
+    // shot (drawn over the 3D lamp, which then goes), so the film's last frame is the page you land on.
+    const decC = document.createElement("canvas"); decC.width = Math.round(innerWidth * Math.min(2, 2048 / Math.max(innerWidth, innerHeight))); decC.height = Math.round(innerHeight * Math.min(2, 2048 / Math.max(innerWidth, innerHeight))); let decReady = false;
+    const decT = new T3.CanvasTexture(decC); decT.encoding = T3.sRGBEncoding;
+    const decM = new T3.MeshBasicMaterial({ map: decT, transparent: true, opacity: 0, depthTest: false, depthWrite: false, toneMapped: false, fog: false });
+    const dec = new T3.Mesh(new T3.PlaneGeometry(1, 1), decM); dec.rotation.x = -Math.PI / 2; dec.position.set(dX, top + 0.001, dZ); dec.renderOrder = 10; dec.visible = false; S.add(dec);
+    paintDesk(tall, null, true).then(pf => { if (decReady || done) return; decC.getContext("2d").drawImage(pf, 0, 0); decT.needsUpdate = true; decReady = true; }).catch(() => {});
     for (const [sx2, sz2] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) rb(0.045, top - 0.04, 0.045, walnut, dX + sx2 * (dW / 2 - 0.05), (top - 0.04) / 2, dZ + sz2 * (dD / 2 - 0.05), { r: 0.008 });
     rb(dW - 0.12, 0.08, 0.02, walnut, dX, top - 0.08, dZ + dD / 2 - 0.05, { r: 0.004 });
     const chZ = dZ + dD / 2 + 0.36; rb(0.46, 0.06, 0.44, M({ color: 0x2a2f38, roughness: 0.9 }), dX, 0.47, chZ, { r: 0.025 }); rb(0.44, 0.48, 0.05, M({ color: 0x2a2f38, roughness: 0.9 }), dX, 0.78, chZ + 0.21, { r: 0.03, rx: -0.08 });
@@ -11697,6 +11715,7 @@ const AMB = window.AMB = (() => {
     // its lamp, where the drawn one sits, lit for real, with a beam of light and dust in it
     const lp = (px, py) => { const vb = tall ? [900, 1600] : [1600, 1000]; return [dX + (px / vb[0] - 0.5) * dW, dZ + (py / vb[1] - 0.5) * dD]; };
     const [lx, lz] = lp(tall ? 40 : 70, tall ? 40 : 60), [bx, bz] = lp(tall ? 230 : 300, tall ? 210 : 270);
+    const nL0 = S.children.length;
     lathe([[0, 0], [0.08, 0], [0.085, 0.01], [0.07, 0.022], [0, 0.022]], brass, bx, top, bz);
     const joint = new T3.Vector3(bx + (lx - bx) * 0.35, top + 0.36, bz + (lz - bz) * 0.35), head = new T3.Vector3(lx, top + 0.42, lz);
     const rod = (a, b) => { const d = b.clone().sub(a), m = put(new T3.CylinderGeometry(0.009, 0.009, d.length(), 12), brass, 0, 0, 0); m.position.copy(a).addScaledVector(d, 0.5); m.quaternion.setFromUnitVectors(new T3.Vector3(0, 1, 0), d.normalize()); };
@@ -11706,6 +11725,7 @@ const AMB = window.AMB = (() => {
     const lampL = new T3.SpotLight(0xffd59a, 2.8, 5, 1.05, 0.65, 1.5); lampL.position.set(lx, top + 0.37, lz); lampL.target.position.set(dX, top, dZ); lampL.castShadow = true; lampL.shadow.mapSize.set(2048, 2048); lampL.shadow.bias = -0.0004; lampL.shadow.radius = 4; S.add(lampL); S.add(lampL.target);
     { const bc = noise(8, 128, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, "rgba(255,255,255,0)"); gr.addColorStop(0.15, "rgba(255,255,255,1)"); gr.addColorStop(1, "rgba(255,255,255,0.05)"); g.fillStyle = gr; g.fillRect(0, 0, w, h); });
       const beam = put(new T3.ConeGeometry(0.42, 0.42, 40, 1, true), B({ map: tex(bc, 1, 1, false), color: 0xffd59a, transparent: true, opacity: 0.09, blending: T3.AdditiveBlending, depthWrite: false, side: T3.DoubleSide }), lx, top + 0.2, lz, { cast: false }); beam.lookAt(dX, top - 0.5, dZ); beam.rotateX(Math.PI / 2); beam.rotateX(Math.PI); beam.position.set((lx + dX) / 2 * 0.3 + lx * 0.7, top + 0.17, (lz + dZ) / 2 * 0.3 + lz * 0.7); }
+    const lampObjs = S.children.slice(nL0);
     // dust in the lamp light and in the moonlight
     const dustN = 500, dg = new T3.BufferGeometry(), da = new Float32Array(dustN * 3), dseed = new Float32Array(dustN);
     for (let i = 0; i < dustN; i++) { const inLamp = i < 300; da.set(inLamp ? [lx + (rnd() - 0.3) * 0.7, top + 0.05 + rnd() * 0.5, lz + (rnd() - 0.3) * 0.6] : [2.2 + rnd() * 0.8, 0.6 + rnd() * 1.6, wz + (rnd() - 0.5) * 1.6], i * 3); dseed[i] = rnd() * 100; }
@@ -11714,7 +11734,11 @@ const AMB = window.AMB = (() => {
     S.add(new T3.HemisphereLight(0x8a7a90, 0x3a2410, 0.16));
     const moon = new T3.DirectionalLight(0x8aa6ff, 0.4); moon.position.set(9, 4.5, -1.2); moon.target.position.set(1.5, 0, -0.3); moon.castShadow = true; moon.shadow.mapSize.set(1024, 1024); Object.assign(moon.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: 1, far: 20 }); S.add(moon); S.add(moon.target);
     // ---- the walk: one continuous glide, paced by how far the eye travels, a little handheld drift, then straight down onto the desk
-    const fov = FOV * Math.PI / 180, asp = innerWidth / innerHeight, t2 = Math.tan(fov / 2), dist = Math.min(dD / 2 / t2, dW / 2 / (t2 * asp));
+    const fov = FOV * Math.PI / 180, asp = innerWidth / innerHeight, t2 = Math.tan(fov / 2), pgR = (desk.querySelector(".dk-svg") || desk).getBoundingClientRect(),
+      // v94: end exactly where the desk page puts its desk: the page fits its viewBox (the desk top) into its scene box
+      deskPx = (pgR.width > 0 ? Math.min(pgR.width / dW, pgR.height / dD) : Math.max(innerWidth / dW, innerHeight / dD)) * dW, mPx = dW / deskPx,
+      dist = dW * innerWidth / (deskPx * 2 * t2 * asp), offX = pgR.width > 0 ? (pgR.left + pgR.width / 2 - innerWidth / 2) * mPx : 0, offZ = pgR.width > 0 ? (pgR.top + pgR.height / 2 - innerHeight / 2) * mPx : 0;
+    dec.scale.set(2 * dist * t2 * asp, 2 * dist * t2, 1); dec.position.set(dX - offX, top + 0.001, dZ - offZ);
     // v90: no floating tour. The stick figure from the bridge walks in through the open door and across the room to the
     // desk, and the camera follows a step behind him, then rises over his shoulder and looks straight down onto the desk.
     const V = a => new T3.Vector3(...a);
@@ -11761,7 +11785,7 @@ const AMB = window.AMB = (() => {
     // passes into him, and from there it is his eyes: a slow look right across the sofa, the candles and the lights,
     // then left along the shelves and the Go board, and on to the desk, where it rises and looks straight down.
     const gauss = (t, c, w) => Math.exp(-((t - c) * (t - c)) / (2 * w * w));
-    const K7 = [V([dX, 1.5, dZ + dD / 2 + 1.05]), V([dX, top + 0.05, dZ - 0.05])], K8 = [V([dX, top + dist, dZ + 0.002]), V([dX, top, dZ])];
+    const K7 = [V([dX, 1.5, dZ + dD / 2 + 1.05]), V([dX, top + 0.05, dZ - 0.05])], K8 = [V([dX - offX, top + dist, dZ - offZ + 0.002]), V([dX - offX, top, dZ - offZ])];
     const eyeH = 1.43 * 0.92;
     const wide = t => { const { p } = manAt(t), k = Math.min(1, t / TA); const e = k * k * (3 - 2 * k); return [V([3.3 - e * 1.3, 3.5 - e * 0.9, 11.8 - e * 3.2]), p.clone().add(V([0, 1.05, -0.6]))]; };
     // his eyes: absolute headings (0 = straight at the far wall, + to the right), so the look sweeps the room in one
@@ -11811,6 +11835,7 @@ const AMB = window.AMB = (() => {
       cam.up.copy(upA).lerp(upB, endK * endK * (3 - 2 * endK)).normalize(); cam.lookAt(lk); cam.rotateZ(Math.sin(t * 0.6) * 0.006 * calm);
       cap.classList.toggle("on", t > 0.6 && t < 3.0);
       wrap.classList.toggle("open", endK > 0.35);
+      { const o = decReady ? ss3((endK - 0.5) / 0.42) : 0; decM.opacity = o; dec.visible = o > 0.001; for (const ob of lampObjs) ob.visible = o < 0.97; }
       const dp = dg.attributes.position; for (let i = 0; i < dustN; i++) { const s = dseed[i]; dp.setXYZ(i, d0[i * 3] + Math.sin(t * 0.3 + s) * 0.03, d0[i * 3 + 1] + Math.sin(t * 0.21 + s * 1.7) * 0.025, d0[i * 3 + 2] + Math.cos(t * 0.27 + s) * 0.03); } dp.needsUpdate = true;
       if (S.userData.globe) S.userData.globe.rotation.y = t * 0.25;
       R.render(S, cam);
