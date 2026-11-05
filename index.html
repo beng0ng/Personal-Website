@@ -295,13 +295,14 @@ body.pj-lit[data-page="projects"] #projects .dk-table { opacity: 1; }
 .dk-svg .dk-lift { filter: drop-shadow(calc(var(--sx, 0.3) * 1.2px) calc(var(--sy, 0.5) * 1.2px + 1.6px) 0.7px rgba(10, 5, 1, 0.85)) drop-shadow(calc(var(--sx, 0.3) * 14px) calc(var(--sy, 0.5) * 14px) 10px rgba(10, 4, 0, 0.45)) drop-shadow(calc(var(--sx, 0.3) * 38px) calc(var(--sy, 0.5) * 38px) 34px rgba(10, 4, 0, 0.3)); }
 /* the whole desk tilts a little toward the pointer, like leaning over a real one; the lamp's sheen slides across */
 .desk { transform-origin: 50% 55%; will-change: transform; }
-.desk.on.dk-3d { transform: perspective(1500px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(1.05); transition: transform 1.1s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.desk.on.dk-3d { transform: perspective(1500px) scale(1.05); transition: transform 1.1s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.desk.on.dk-3d[style*="transform"] { transition: none; }
 .desk.dk-dive, .desk.dk-reset { transform: none !important; transition: none !important; }
 .dk-sheen { position: absolute; left: -50%; top: -50%; width: 200%; height: 200%; pointer-events: none; mix-blend-mode: soft-light; opacity: 0; transition: opacity 1.4s ease 0.6s;
   background: radial-gradient(22% 18% at 50% 50%, rgba(255, 236, 200, 0.55), rgba(255, 214, 160, 0.16) 55%, rgba(255, 200, 140, 0) 100%);
   transform: translate3d(var(--shx, -18%), var(--shy, -22%), 0); will-change: transform; }
 .desk.on .dk-sheen { opacity: 1; }
-.dk-sheen { transition: opacity 1.4s ease 0.6s, transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.dk-sheen { transition: opacity 1.4s ease 0.6s; }
 .desk.dk-dive .dk-sheen { display: none; }
 @media (prefers-reduced-motion: reduce) { .desk.on.dk-3d { transform: none; } }
 /* every surface catches the lamp: lit on the side toward it, falling into shadow away from it, so each object has volume */
@@ -11224,11 +11225,21 @@ const AMB = window.AMB = (() => {
   const fine = matchMedia("(hover: hover) and (pointer: fine)").matches, RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (!fine || RM) return;
   desk.classList.add("dk-3d");
-  let raf = 0, nx = 0, ny = 0;
-  const apply = () => { raf = 0; desk.style.setProperty("--ry", (nx * 2.4).toFixed(2) + "deg"); desk.style.setProperty("--rx", (-ny * 1.8).toFixed(2) + "deg");
-    desk.style.setProperty("--shx", (-25 + nx * 14).toFixed(1) + "%"); desk.style.setProperty("--shy", (-25 + ny * 14).toFixed(1) + "%"); };
-  addEventListener("pointermove", e => { if (!desk.classList.contains("on")) return; nx = e.clientX / innerWidth * 2 - 1; ny = e.clientY / innerHeight * 2 - 1; if (!raf) raf = requestAnimationFrame(apply); }, { passive: true });
-  document.addEventListener("mouseleave", () => { nx = ny = 0; if (!raf) raf = requestAnimationFrame(apply); });
+  // v95: the tilt eases toward the pointer in one rAF loop and is written straight onto the desk's transform (and the
+  // sheen's), not through inherited custom properties and a CSS transition restarted on every move, which made the
+  // browser restyle and repaint the whole drawing as you moved the mouse.
+  let raf = 0, nx = 0, ny = 0, cx = 0, cy = 0;
+  const sheen = () => desk.querySelector(".dk-sheen");
+  const write = () => { desk.style.transform = `perspective(1500px) rotateX(${(-cy * 1.8).toFixed(3)}deg) rotateY(${(cx * 2.4).toFixed(3)}deg) scale(1.05)`;
+    const sh = sheen(); if (sh) sh.style.transform = `translate3d(${(-25 + cx * 14).toFixed(2)}%, ${(-25 + cy * 14).toFixed(2)}%, 0)`; };
+  const step = () => { raf = 0; if (!desk.classList.contains("on") || desk.classList.contains("dk-dive") || desk.classList.contains("dk-reset")) return;
+    cx += (nx - cx) * 0.085; cy += (ny - cy) * 0.085; write(); if (Math.abs(nx - cx) + Math.abs(ny - cy) > 0.0008) raf = requestAnimationFrame(step); };
+  const kick = () => { if (!raf) raf = requestAnimationFrame(step); };
+  addEventListener("pointermove", e => { if (!desk.classList.contains("on")) return; nx = e.clientX / innerWidth * 2 - 1; ny = e.clientY / innerHeight * 2 - 1; kick(); }, { passive: true });
+  document.addEventListener("mouseleave", () => { nx = ny = 0; kick(); });
+  // the inline tilt only belongs to the desk while it is on; leaving, diving in or resetting hands back to the stylesheet
+  new MutationObserver(() => { const on = desk.classList.contains("on") && !desk.classList.contains("dk-dive") && !desk.classList.contains("dk-reset");
+    if (!on) { desk.style.removeProperty("transform"); const sh = sheen(); if (sh) sh.style.removeProperty("transform"); cx = cy = 0; } else if (nx || ny) kick(); }).observe(desk, { attributes: true, attributeFilter: ["class"] });
 })();
 
 // v90: the laptop on the desk is a real 3D model now: a matte graphite body (not steel), an open lid leaning back,
@@ -11742,15 +11753,15 @@ const AMB = window.AMB = (() => {
     // v90: no floating tour. The stick figure from the bridge walks in through the open door and across the room to the
     // desk, and the camera follows a step behind him, then rises over his shoulder and looks straight down onto the desk.
     const V = a => new T3.Vector3(...a);
-    const chZ0 = dZ + dD / 2 + 0.36, STOP = [dX - dW / 2 - 0.28, dZ + 0.12];
-    const path = new T3.CatmullRomCurve3([V([0.35, 0, 5.3]), V([0, 0, 3.7]), V([0, 0, 2.3]), V([0.25, 0, 1.05]), V([0.2, 0, -0.35]), V([STOP[0], 0, STOP[1]])], false, "centripetal", 0.5), PL = path.getLength();
+    const chZ0 = dZ + dD / 2 + 0.36, STOP = [dX - 0.04, dZ + dD / 2 + 1.0];   // v95: he ends up in front of the desk, facing it, so the view never has to swing round
+    const path = new T3.CatmullRomCurve3([V([0.35, 0, 5.3]), V([0, 0, 3.7]), V([0, 0, 2.3]), V([0.25, 0, 1.05]), V([0.55, 0, 0.05]), V([STOP[0], 0, STOP[1]])], false, "centripetal", 0.5), PL = path.getLength();
     // v93: he walks at an easy pace, slows right down once he is inside while he looks round the room, then goes on to
     // the desk and eases to a stop; the distance he has covered is integrated once into a table.
     const ss3 = x => x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x), ease = x => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
-    const T_W0 = 0.3, TA = 2.5, TZ = TA + 1.7, PAN = 2.9, WDT = 1 / 60, wS = [0];
+    const T_W0 = 0.3, TA = 2.5, TZ = TA + 2.1, PAN = 4.1, WDT = 1 / 60, wS = [0];
     { let sN = 0, tt = T_W0; while (sN < PL - 0.001 && wS.length < 4000) { const v0 = 0.95 * ss3((tt - T_W0) / 0.5) * (1 - 0.66 * ss3((tt - TZ + 0.3) / 0.6) * (1 - ss3((tt - TZ - PAN + 0.2) / 0.6))) + 0.05 * ss3((tt - TZ - PAN) / 0.6);
         const v = Math.min(v0, Math.sqrt(2 * 0.7 * Math.max(0, PL - sN)) + 0.015); sN = Math.min(PL, sN + v * WDT); tt += WDT; wS.push(sN); } }
-    const T_W1 = T_W0 + (wS.length - 1) * WDT, TB = T_W1 + 1.7, END = TB + 2.5;
+    const T_W1 = T_W0 + (wS.length - 1) * WDT, TB = T_W1 + 1.2, END = TB + 3.0;
     const manAt = t => { const f = Math.max(0, Math.min(1, (t - T_W0) / (T_W1 - T_W0))), x = Math.max(0, Math.min(wS.length - 1, (t - T_W0) / WDT)), i0 = Math.floor(x), i1 = Math.min(wS.length - 1, i0 + 1), uu = Math.max(0, Math.min(1, (wS[i0] + (wS[i1] - wS[i0]) * (x - i0)) / PL)), p = path.getPointAt(uu), d = path.getTangentAt(Math.min(0.999, uu)); return { p, d, moving: f > 0 && f < 1 }; };
     // v93: the figure is one connected body now: every limb is a single smooth tube that grows out of the hips or the
     // shoulders, a neck into a round head, and every part carries a dark outline, so he reads as drawn, like the one on
@@ -11791,15 +11802,15 @@ const AMB = window.AMB = (() => {
     // his eyes: absolute headings (0 = straight at the far wall, + to the right), so the look sweeps the room in one
     // smooth arc: the desk, right to the sofa and the floor lamp, the window, then all the way left along the bookshelf
     // and the Go board, and back round to the desk he is walking to.
-    const HK = [[0, 0.12, -0.14], [0.24, 1.45, -0.28], [0.44, 1.05, -0.05], [0.86, -1.08, -0.1], [1, -0.95, -0.12]];
+    const HK = [[0, 0.12, -0.14], [0.22, 1.32, -0.28], [0.4, 1.0, -0.05], [0.9, -0.95, -0.1]];
     const eyes = t => { const { p, d } = manAt(t), dir = V([d.x, 0, d.z]).normalize(), c = p.clone().add(V([0, eyeH + Math.abs(Math.sin((t - T_W0) * 3.1)) * 0.012, 0])).addScaledVector(dir, 0.06);
       const span = PAN + 0.6, u0 = (t - TZ) / span, u = u0 <= 1 ? Math.max(0, u0) : 1 + Math.min(1, (t - TZ - span) / Math.max(0.5, T_W1 - 0.2 - TZ - span)), toDesk = K7[1].clone().sub(c), hEnd = Math.atan2(toDesk.x, -toDesk.z), pEnd = Math.atan2(toDesk.y, Math.hypot(toDesk.x, toDesk.z));
       const ks = [...HK, [2, hEnd, pEnd]]; let q = 0; while (q < ks.length - 2 && u > ks[q + 1][0]) q++;
-      const a = ks[q], b = ks[q + 1], f = ease(Math.max(0, Math.min(1, (u - a[0]) / (b[0] - a[0])))), h = a[1] + (b[1] - a[1]) * f, pt = a[2] + (b[2] - a[2]) * f;
+      const a = ks[q], b = ks[q + 1], f = 0.5 - 0.5 * Math.cos(Math.PI * Math.max(0, Math.min(1, (u - a[0]) / (b[0] - a[0]))))   /* v95: sine ease, half the peak turn speed of a cubic */, h = a[1] + (b[1] - a[1]) * f, pt = a[2] + (b[2] - a[2]) * f;
       const l = c.clone().add(V([Math.sin(h) * Math.cos(pt) * 5, Math.sin(pt) * 5, -Math.cos(h) * Math.cos(pt) * 5])); return [c, l]; };
     const raw = t => {
       if (t < TA) return [...wide(t), 0];
-      if (t < TZ) { const f = ease((t - TA) / (TZ - TA)), [c0, l0] = wide(t), [c1, l1] = eyes(t); return [c0.lerp(c1, f), l0.lerp(l1, f), 0]; }
+      if (t < TZ) { const f = 0.5 - 0.5 * Math.cos(Math.PI * (t - TA) / (TZ - TA)), [c0, l0] = wide(t), [c1, l1] = eyes(t); return [c0.lerp(c1, f), l0.lerp(l1, f), 0]; }
       if (t < T_W1 - 0.2) return [...eyes(t), 0];
       const [c1, l1] = eyes(T_W1 - 0.2);
       if (t < TB) { const f = ease((t - T_W1 + 0.2) / (TB - T_W1 + 0.2)); return [c1.clone().lerp(K7[0], f), l1.clone().lerp(K7[1], f), 0]; }
@@ -11811,6 +11822,7 @@ const AMB = window.AMB = (() => {
     const smP = blur(rawP, 0.32), smL = blur(rawL, 0.42);
     const at2 = (arr, t) => { const x = Math.max(0, Math.min(NS, t / DT)), a = Math.floor(x), b = Math.min(NS, a + 1); return arr[a].clone().lerp(arr[b], x - a); };
     const shot = t => { const [rc, rl, f] = raw(t), k2 = ss3((t - TB + 0.3) / 0.6); return [at2(smP, t).lerp(rc, k2), at2(smL, t).lerp(rl, k2), f]; };
+    window.__houseCam = t => { const [c, l, f] = shot(t); return [c.x, c.y, c.z, l.x, l.y, l.z, f, END]; };   // for tests
     const upA = new T3.Vector3(0, 1, 0), upB = new T3.Vector3(0, 0, -1), hand = new T3.Vector3();
     const cap = wrap.querySelector(".hs-cap");
     let t0 = 0, raf = 0, done = false;
@@ -11828,7 +11840,7 @@ const AMB = window.AMB = (() => {
       if (flick.light) { const q = Math.sin(now * 0.023) * 0.5 + Math.sin(now * 0.061) * 0.3 + Math.sin(now * 0.11) * 0.2; flick.light.intensity = 0.8 + q * 0.18; for (const [f, sp] of flick) { f.scale.y = 2.2 + q * 0.35; sp.material.opacity = 0.62 + q * 0.12; } }
       const [p, lk, endK] = shot(t), calm = 1 - endK;
       { const m = manAt(t), wph = (t - T_W0) * 6.2; man.position.copy(m.p); man.rotation.y = Math.atan2(m.d.x, m.d.z); if (!m.moving && t > T_W1) man.rotation.y += (Math.PI / 2 - man.rotation.y) * Math.min(1, (t - T_W1) * 1.5);
-        pose(wph, m.moving ? 1 : Math.max(0, 1 - (t - T_W1) * 3), t); const op = 1 - ss3((t - TZ + 0.55) / 0.4); for (const mm of all) mm.opacity = op; man.visible = op > 0.01; }
+        const op = 1 - ss3((t - TZ + 0.55) / 0.4); if (op > 0.01) pose(wph, m.moving ? 1 : Math.max(0, 1 - (t - T_W1) * 3), t); /* v95: no rebuilding his limbs once he is out of shot */ for (const mm of all) mm.opacity = op; man.visible = op > 0.01; }
       hand.set(Math.sin(t * 0.7) * 0.012 + Math.sin(t * 1.9) * 0.004, Math.sin(t * 0.9 + 1) * 0.008 + Math.sin(t * 2.3) * 0.003, Math.sin(t * 0.5 + 2) * 0.01).multiplyScalar(calm);
       cam.position.copy(p).add(hand);
       hinge.rotation.y = 1.9;
@@ -11842,11 +11854,14 @@ const AMB = window.AMB = (() => {
       if (t > END + 0.45 && window.__houseT == null) return finish();
       raf = requestAnimationFrame(frame);
     };
-    R.compile(S, cam); requestAnimationFrame(() => { wrap.classList.add("in"); raf = requestAnimationFrame(frame); });
+    R.compile(S, cam); requestAnimationFrame(() => { wrap.classList.add("in"); raf = requestAnimationFrame(frame); setTimeout(() => dispatchEvent(new Event("house:in")), 650); });   // v95: tell the bridge when we cover the screen
     window.__house.running = () => !done;
   }
   const GL = () => { try { const c = document.createElement("canvas"); return !!(c.getContext("webgl") || c.getContext("experimental-webgl")); } catch (e) { return false; } };
-  window.__house = { play: () => play().catch(() => { dispatchEvent(new Event("house:done")); }), running: () => false, claim: () => { played = true; }, able: () => !RM && (force || !window.__lite || GL()) };
+  window.__house = { prep: () => { if (!RM) loadThree().catch(() => {}); }, play: () => play().catch(() => { dispatchEvent(new Event("house:done")); }), running: () => false, claim: () => { played = true; }, able: () => !RM && (force || !window.__lite || GL()) };
+  // v95: fetch and parse three.js in a quiet moment after the opening has played, not while he is walking
+  if (!played && window.__house.able()) { const idle = () => (window.requestIdleCallback || (f => setTimeout(f, 1)))(() => window.__house.prep(), { timeout: 4000 });
+    if (document.readyState === "complete") setTimeout(idle, 9000); else addEventListener("load", () => setTimeout(idle, 9000), { once: true }); }
   if (played) return;
   if (window.__lite && !force) return;
   const go = () => { if (played) return; played = true; try { sessionStorage.setItem("bgHouse", "1"); } catch (e) {} play().catch(() => {}); };
@@ -11871,7 +11886,7 @@ const AMB = window.AMB = (() => {
   const to = y => scrollTo({ top: y, behavior: "instant" });
   function run() {
     if (ran || busy) return; ran = busy = true;
-    const first = runs === 0 && !!H5 && H5.able(); runs++; if (H5) H5.claim();   // v87: the house every first time per load; the dark on a return to home
+    const first = runs === 0 && !!H5 && H5.able(); runs++; if (H5) H5.claim(); if (first && H5.prep) H5.prep();   // v95: fetch three.js while he walks   // v87: the house every first time per load; the dark on a return to home
     const W = innerWidth, H = innerHeight, k = clamp(Math.min(W, H) / 820, 0.62, 1.25), y0 = scrollY, land = window.__hub.landing(), lead = (window.__hub.state().lead || H), D = Math.max(y0, Math.min(y0 + H * 0.2, lead * 0.16));   // stay short of where the Lumos starts by itself
     const cr = reveal.querySelector(".cue").getBoundingClientRect(), shown = revealed() && cr.width > 0 && cr.top > 0 && cr.top < H, cx = shown ? cr.left + cr.width / 2 : W / 2, cy = (shown ? cr.top + cr.height / 2 : H * 0.8) + y0;   // the opening may not have finished: start where the arrow will be
     const wrap = document.createElement("div"); wrap.className = "trn"; wrap.innerHTML = `<canvas></canvas><button class="hs-skip" type="button">Skip <span aria-hidden="true">›</span></button>`; document.body.append(wrap);
@@ -11927,7 +11942,12 @@ const AMB = window.AMB = (() => {
     const unlock = () => { if (typeof off === "function") off(); removeEventListener("wheel", stopScroll); removeEventListener("touchmove", stopScroll); removeEventListener("keydown", stopKeys); busy = false; };
     let t0 = 0, raf = 0, phase = "walk", done = false;
     const glide = (from, toY, ms, after) => { const s0 = performance.now(); const st = now => { const f = Math.min(1, (now - s0) / ms), e = f < 0.5 ? 2 * f * f : 1 - Math.pow(-2 * f + 2, 2) / 2; to(from + (toY - from) * e); if (f < 1) requestAnimationFrame(st); else after && after(); }; requestAnimationFrame(st); };
-    const toHouse = () => { to(land); if (first) { H5.play(); setTimeout(() => wrap.remove(), 900); addEventListener("house:done", unlock, { once: true }); } else { wrap.remove(); unlock(); } };
+    const toHouse = () => { to(land); if (first) { H5.play();
+        // v95: the bridge's last frame stays up until the house is actually covering the screen, then fades; no flash of
+        // the page underneath while the house is still building
+        let gone = false; const rm = () => { if (gone) return; gone = true; wrap.classList.add("out"); setTimeout(() => wrap.remove(), 1300); };
+        addEventListener("house:in", rm, { once: true }); addEventListener("house:done", rm, { once: true }); setTimeout(rm, 20000);
+        addEventListener("house:done", unlock, { once: true }); } else { wrap.remove(); unlock(); } };
     const toLumos = () => { to(land); unlock(); requestAnimationFrame(() => wrap.classList.add("out")); setTimeout(() => wrap.remove(), 1800); };
     const skip = () => { if (done) return; done = true; cancelAnimationFrame(raf); if (first) { g.fillStyle = "#000"; g.fillRect(0, 0, cv.width, cv.height); toHouse(); } else { wrap.remove(); to(land); unlock(); } };
     wrap.querySelector(".hs-skip").addEventListener("click", skip);
