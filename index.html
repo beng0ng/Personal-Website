@@ -494,11 +494,12 @@ body.pj-listed[data-page="projects"] #projects .part-head { opacity: 1 !importan
 /* v99: no filler lines: the "me, on the team" notes on project pages, the resume's "short version" line, the end-of-page index blurbs */
 .org-me, #resume .part-head .lede, #resume .part-head > p, .fin-l { display: none !important; }
 
-/* v99: the page change, as a soft cross-fade with the new page rising a touch; the bar stays put */
-::view-transition-old(root) { animation: vtOut 0.38s cubic-bezier(0.4, 0, 1, 1) both; }
-::view-transition-new(root) { animation: vtIn 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) 0.08s both; }
-@keyframes vtOut { to { opacity: 0; transform: scale(0.985); filter: blur(4px); } }
-@keyframes vtIn { from { opacity: 0; transform: translateY(14px) scale(1.01); filter: blur(4px); } }
+/* v99: the page change grows out of the dot you picked: the new page opens as a circle from that point while the
+   old one sinks back a touch; links without a dot open from where you clicked */
+::view-transition-old(root) { animation: vtOld 0.75s cubic-bezier(0.6, 0, 0.2, 1) both; }
+::view-transition-new(root) { animation: vtReveal 0.8s cubic-bezier(0.7, 0, 0.2, 1) both; }
+@keyframes vtOld { to { opacity: 0.35; transform: scale(0.97); filter: blur(2px); } }
+@keyframes vtReveal { from { clip-path: circle(0px at var(--vx, 50%) var(--vy, 50%)); } to { clip-path: circle(150vmax at var(--vx, 50%) var(--vy, 50%)); } }
 #topbar { view-transition-name: topbar; }
 ::view-transition-group(topbar) { animation: none; }
 @media (prefers-reduced-motion: reduce) { ::view-transition-old(root), ::view-transition-new(root) { animation: none; } }
@@ -7178,7 +7179,7 @@ document.addEventListener("click", e => {
 const WARP = { el: null, t: 0 };
 function warp(fn) {
   if (reduceMotion) { fn(); return; }
-  if (document.startViewTransition) { try { document.startViewTransition(() => fn()); return; } catch (e) {} }
+  if (document.startViewTransition) { try { const o = window.__vtFrom || [innerWidth / 2, innerHeight / 2]; window.__vtFrom = null; document.documentElement.style.setProperty("--vx", Math.round(o[0]) + "px"); document.documentElement.style.setProperty("--vy", Math.round(o[1]) + "px"); document.startViewTransition(() => fn()); return; } catch (e) {} }
   if (!WARP.el) { WARP.el = h("div", { id: "warp", "aria-hidden": "true" }); document.body.append(WARP.el); void WARP.el.offsetWidth; }
   const w = WARP.el; clearTimeout(WARP.t); w.classList.add("on");
   WARP.t = setTimeout(() => { fn(); requestAnimationFrame(() => requestAnimationFrame(() => w.classList.remove("on"))); }, 200);
@@ -10281,7 +10282,7 @@ function pageRoute(hash) {   // on load and on back or forward: show the page th
 }
 window.__pages = { of: pageOfEl, current: () => PG.cur, show: pageShow, route: pageRoute,
   remember: (t, push) => { const url = t && t.id && t.id !== "intro" ? "#" + t.id : location.pathname + location.search; try { history[push ? "pushState" : "replaceState"](null, "", url); } catch (e) {} } };
-window.addEventListener("popstate", () => { if (document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches) { try { document.startViewTransition(() => pageRoute(location.hash)); return; } catch (e) {} } pageRoute(location.hash); });
+window.addEventListener("popstate", () => { if (document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches) { try { document.documentElement.style.setProperty("--vx", "50%"); document.documentElement.style.setProperty("--vy", "50%"); document.startViewTransition(() => pageRoute(location.hash)); return; } catch (e) {} } pageRoute(location.hash); });
 pageRoute(location.hash);
 // v60: the five cards are painted, edge to edge, as SVG built here: a 250 x 350 scene each, with a few things that
 // move (stars, mist, a pulse in the network, a swirl in the sky) and the card's index in the corners.
@@ -11418,6 +11419,9 @@ const AMB = window.AMB = (() => {
     document.addEventListener("visibilitychange", kick);
     stopFx = () => { cancelAnimationFrame(raf); removeEventListener("pointermove", onMove); removeEventListener("pointerdown", onDown); removeEventListener("resize", onSize); mo.disconnect(); document.removeEventListener("visibilitychange", kick); };
     requestAnimationFrame(() => { size(); kick(); }); };
+  // remember where a page change should open from: a timeline card's dot, or wherever a link was clicked
+  document.addEventListener("click", e => { const a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a) return; const dot = a.querySelector(".pr-node"), r = dot && dot.getBoundingClientRect();
+    window.__vtFrom = r && r.width ? [r.left + r.width / 2, r.top + r.height / 2] : [e.clientX || innerWidth / 2, e.clientY || innerHeight / 2]; }, true);
   new MutationObserver(() => { if (!scene.querySelector(".pr")) build(); }).observe(scene, { childList: true });
   build();
   desk.classList.add("pro");
