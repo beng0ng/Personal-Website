@@ -311,16 +311,40 @@ body.pj-lit[data-page="projects"] #projects .dk-table { opacity: 1; }
 .dk-lit text, .dk-lit .glow, .dk-lit .steam { display: none; }
 .desk.dk-dive .dk-lit { display: none; }
 
-/* v96: the Go board home screen */
-.desk.gbh .dk-sheen { opacity: 0.6; }
-.gb-svg .gb-door { cursor: pointer; }
-.gb-svg .gb-sh { display: none; }
-.gb-svg .gb-ring { fill: none; stroke: #e2bd72; stroke-width: 3; opacity: 0.55; transition: opacity 0.3s ease; filter: drop-shadow(0 0 6px rgba(240, 200, 120, 0.8)); }
-.gb-svg .gb-door:hover .gb-ring, .gb-svg .gb-door:focus-visible .gb-ring { opacity: 1; }
-.gb-svg .gb-door .dk-tag { transition: transform 0.3s ease; }
-.gb-svg .gb-door:hover .dk-tg, .gb-svg .gb-door:focus-visible .dk-tg { transform: translateY(-3px); }
-.gb-svg .dk-tg { transition: transform 0.3s ease; }
-/* no Lumos wand: the board simply comes up with the lamp */
+/* v97: the abstract home screen */
+.desk.abh { background: #070709; }
+.desk.abh .dk-wood, .desk.abh .dk-photo, .desk.abh .dk-grain, .desk.abh .dk-light, .desk.abh .dk-lit, .desk.abh .dk-shade, .desk.abh .dk-sheen, .desk.abh .dk-pen, .desk.abh .dk-fall { display: none !important; }
+.ab-svg { font-family: var(--font-ui); }
+.ab-svg .ab-door { cursor: pointer; outline: none; }
+.ab-svg .ab-t1 { font-family: var(--font-display); font-weight: 500; fill: #f6efe2; letter-spacing: -0.01em; }
+.ab-svg .ab-t2 { font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; fill: rgba(233, 224, 207, 0.55); }
+.ab-svg .ab-n { font: 600 12px var(--font-ui); letter-spacing: 0.22em; }
+.ab-svg.tall .ab-n { font-size: 16px; }
+.ab-svg .ab-float { animation: abFloat 7s ease-in-out var(--d, 0s) infinite; }
+.ab-svg .ab-g .ab-gs { transform-box: fill-box; transform-origin: center; transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.ab-svg .ab-halo { opacity: 0.55; transition: opacity 0.4s ease; }
+.ab-svg .ab-hit { transition: stroke-opacity 0.4s ease; }
+.ab-svg .ab-door:hover .ab-halo, .ab-svg .ab-door:focus-visible .ab-halo { opacity: 1; }
+.ab-svg .ab-door:hover .ab-hit, .ab-svg .ab-door:focus-visible .ab-hit { stroke-opacity: 0.6; }
+.ab-svg .ab-door:hover .ab-gs, .ab-svg .ab-door:focus-visible .ab-gs { transform: scale(1.12) rotate(8deg); }
+.ab-svg .ab-door:hover .ab-t1, .ab-svg .ab-door:focus-visible .ab-t1 { fill: #fff; }
+.ab-svg .ab-spin { transform-box: view-box; transform-origin: 50% 50%; animation: abSpin var(--t, 100s) linear infinite; }
+.ab-svg .ab-spin.r { animation-direction: reverse; }
+.ab-svg .ab-tw { animation: abTw 5s ease-in-out var(--d, 0s) infinite; }
+.ab-svg .ab-core { animation: abPulse 6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.ab-svg .ab-th { animation: abFlow 14s linear infinite; }
+.ab-svg .ab-f1 { animation: abDrift 26s ease-in-out infinite alternate; }
+.ab-svg .ab-f2 { animation: abDrift 32s ease-in-out -9s infinite alternate-reverse; }
+.ab-svg .ab-f3 { animation: abDrift 38s ease-in-out -4s infinite alternate; }
+@keyframes abFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+@keyframes abSpin { to { transform: rotate(360deg); } }
+@keyframes abTw { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.9; } }
+@keyframes abPulse { 0%, 100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.12); opacity: 1; } }
+@keyframes abFlow { to { stroke-dashoffset: -200; } }
+@keyframes abDrift { from { transform: translate(-30px, -20px); } to { transform: translate(40px, 30px); } }
+@media (prefers-reduced-motion: reduce) { .ab-svg * { animation: none !important; } }
+/* the blog is off for now */
+#topbar a[href="#blog"], a[href="#blog"], a[href^="#blog-"] { display: none !important; }
 .hub-lumos { display: none !important; }
 
 
@@ -390,40 +414,29 @@ body[data-page="projects"] .dk-felt, .dk-felt { background: radial-gradient(110%
 .dk-felt::before { opacity: 0.1 !important; }
 .dk-felt .pl-zod, .dk-felt .pl-orb { display: none !important; }
 
-/* v96: the projects as a tidy list on the dark page */
+/* v97: the projects as résumé entries on the dark page */
 body.pj-listed #projects .dk-table, body.pj-listed .parlour, body.pj-listed .crow-fly { display: none !important; }
 body.pj-listed[data-page="projects"] #projects .part-head { opacity: 1 !important; transform: none !important; }
-.pj-list { display: grid; gap: 0; max-width: 1080px; margin: clamp(18px, 3vw, 36px) auto clamp(40px, 6vw, 80px) 0; border-top: 1px solid rgba(255, 255, 255, 0.08); }
-.pj-row { display: grid; grid-template-columns: clamp(150px, 19vw, 230px) 1fr; gap: clamp(20px, 3.2vw, 44px); align-items: start; padding: clamp(22px, 3vw, 34px) 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
-.pj-pic { position: relative; display: block; aspect-ratio: 5 / 6; border-radius: 12px; overflow: hidden; background: #141210; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 18px 30px -18px rgba(0, 0, 0, 0.9); transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.35s ease; }
-.pj-pic svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.pj-pic svg * { animation-play-state: paused; }
-.pj-row:hover .pj-pic svg * { animation-play-state: running; }
-.pj-row:hover .pj-pic, .pj-pic:focus-visible { transform: translateY(-3px); box-shadow: 0 0 0 1px rgba(217, 179, 108, 0.55), 0 24px 36px -18px rgba(0, 0, 0, 0.95); outline: none; }
-.pj-body { min-width: 0; padding-top: 4px; }
-.pj-kick { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 0 0 10px; font: 600 11.5px/1.2 var(--font-ui); letter-spacing: 0.14em; text-transform: uppercase; color: #d9b36c; }
-.pj-st { display: inline-flex; align-items: center; gap: 7px; padding: 4px 9px 4px 8px; border-radius: 6px; background: rgba(255, 255, 255, 0.05); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.09); color: #e9e0cf; letter-spacing: 0.1em; font-size: 10.5px; }
-.pj-st::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #a99f8e; }
-.pj-st-ok::before { background: #4fd18b; box-shadow: 0 0 0 3px rgba(79, 209, 139, 0.16); }
-.pj-st-wip::before { background: #f2b544; box-shadow: 0 0 0 3px rgba(242, 181, 68, 0.16); }
-.pj-st-est::before { background: #d9b36c; }
-.pj-st-info::before { background: #8fb4ff; }
-.pj-name { margin: 0 0 6px; font: 500 clamp(26px, 2.9vw, 38px)/1.08 var(--font-display); letter-spacing: -0.01em; color: #f6efe2; }
-.pj-line { margin: 0 0 10px; font: 500 clamp(15px, 1.25vw, 17px)/1.45 var(--font-ui); color: #e6dccb; }
-.pj-text { margin: 0 0 18px; max-width: 64ch; font: 400 clamp(14px, 1.1vw, 15.5px)/1.65 var(--font-ui); color: rgba(233, 224, 207, 0.66); }
-.pj-links { display: flex; flex-wrap: wrap; gap: 10px; }
-.pj-btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 8px; font: 600 13px/1 var(--font-ui); letter-spacing: 0.02em; color: #efe5d2; text-decoration: none; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16); transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
-.pj-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.2s ease; }
-.pj-btn:hover, .pj-btn:focus-visible { background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3); outline: none; }
-.pj-btn:hover svg { transform: translateX(2px); }
-.pj-btn.pri { background: #d9b36c; color: #17120b; box-shadow: none; }
-.pj-btn.pri:hover, .pj-btn.pri:focus-visible { background: #e6c47f; }
+.pj-list { max-width: 980px; margin: clamp(18px, 3vw, 36px) auto clamp(40px, 6vw, 80px) 0; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+.pj-row { display: grid; grid-template-columns: 170px 1fr; gap: clamp(18px, 3vw, 40px); padding: clamp(20px, 2.6vw, 28px) 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+.pj-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding-top: 7px; }
+.pj-when { font: 500 13px/1.2 var(--font-ui); letter-spacing: 0.04em; color: rgba(233, 224, 207, 0.6); font-variant-numeric: tabular-nums; }
+.pj-st { display: inline-flex; align-items: center; gap: 7px; font: 600 10.5px/1.2 var(--font-ui); letter-spacing: 0.1em; text-transform: uppercase; color: #e9e0cf; }
+.pj-st::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #a99f8e; flex: none; }
+.pj-st-ok::before { background: #4fd18b; } .pj-st-wip::before { background: #f2b544; } .pj-st-est::before { background: #d9b36c; } .pj-st-info::before { background: #8fb4ff; }
+.pj-body { min-width: 0; }
+.pj-name { margin: 0; font: 500 clamp(22px, 2.2vw, 28px)/1.15 var(--font-display); color: #f6efe2; }
+.pj-kick { margin: 4px 0 10px; font: 600 11px/1.3 var(--font-ui); letter-spacing: 0.14em; text-transform: uppercase; color: #d9b36c; }
+.pj-pts { margin: 0 0 12px; padding: 0 0 0 18px; max-width: 66ch; font: 400 clamp(14px, 1.1vw, 15px)/1.6 var(--font-ui); color: rgba(233, 224, 207, 0.78); }
+.pj-pts li { margin: 2px 0; } .pj-pts li::marker { color: rgba(217, 179, 108, 0.7); }
+.pj-links { display: flex; flex-wrap: wrap; gap: 6px 20px; }
+.pj-lk { display: inline-flex; align-items: center; gap: 6px; padding: 3px 0; font: 600 13px/1.2 var(--font-ui); color: #efe5d2; text-decoration: none; border-bottom: 1px solid rgba(217, 179, 108, 0.35); transition: color 0.2s ease, border-color 0.2s ease; }
+.pj-lk svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.pj-lk:hover, .pj-lk:focus-visible { color: #e6c47f; border-color: #e6c47f; outline: none; }
 @media (max-width: 640px) {
-  .pj-row { grid-template-columns: 1fr; gap: 16px; }
-  .pj-pic { aspect-ratio: 16 / 10; }
-  .pj-pic svg { height: auto; top: 50%; transform: translateY(-50%); }
+  .pj-row { grid-template-columns: 1fr; gap: 8px; }
+  .pj-meta { flex-direction: row; align-items: center; gap: 14px; padding-top: 0; }
 }
-@media (prefers-reduced-motion: reduce) { .pj-pic, .pj-btn, .pj-btn svg { transition: none; } }
 
 .hero .robot { position: absolute; transform: translateZ(0.7px); visibility: hidden; pointer-events: none; }
 .edge { position: absolute; backface-visibility: hidden; background: linear-gradient(180deg, #c99e5a, #8f6a33); }
@@ -4302,7 +4315,7 @@ const SITE = {
       ],
     },
   ],
-  footer: { left: "Ben Gong", mid: "Drawn, coded and shipped as one HTML file", right: "Back to the top" },
+  footer: { left: "Ben Gong", right: "Back to the top" },
 };
 
 // The games: eight professional matches against AlphaGo, from the published records. The five games of
@@ -9693,7 +9706,6 @@ const FIN_ITEMS = [
   { id: "resume", href: "#resume", page: "resume", name: "Résumé", line: "The short version, on one page." },
   { id: "go", deck: 1, href: "#gofilm", page: "go", name: "Learn more about Go", line: "How the game works, then eight AlphaGo games to play through." },
   { id: "goglobal", deck: 1, href: "#goglobal", page: "goglobal", name: "Go Global", line: "The youth-run nonprofit: free lessons, and Go where it hasn't reached." },
-  { id: "blog", href: "#blog", page: "blog", name: "Blog", line: "Short notes on what I'm building and learning." },
   { id: "hello", href: "#hello", page: "hello", name: "Contact me", line: "A note straight to my inbox." },
 ];
 const FIN_NEXT = { projects: "polymind", polymind: "go", go: "fraguessr", fraguessr: "muse", muse: "goglobal", goglobal: "resume", resume: "blog", blog: "hello", hello: "home" };
@@ -11257,139 +11269,69 @@ const AMB = window.AMB = (() => {
     if (!on) { desk.style.removeProperty("transform"); const sh = sheen(); if (sh) sh.style.removeProperty("transform"); cx = cy = 0; } else if (nx || ny) kick(); }).observe(desk, { attributes: true, attributeFilter: ["class"] });
 })();
 
-// v96: the home screen is a Go board again, made to look real: a kaya board lying on my desk under the lamp, the
-// position from game two just after Move 37, two bowls of stones beside it with their lids. Five of the stones are
-// doors, each with its plaque: Move 37 itself is More about AlphaGo; the others open Projects, the résumé, the blog
-// and the contact page. It reuses the desk's frame (wood, lamp light, tilt, the dive into what you pick).
+// v97: the home screen, abstract. No board and no desk: a dark field with drifting light, slow orbit lines and four
+// glowing shapes, one per door (Projects, More about AlphaGo, Résumé, Contact me). The blog is left out for now.
+// It reuses the desk's frame for the tilt toward the pointer and the dive into whatever you pick.
 (() => {
   const desk = document.querySelector(".desk"), scene = desk && desk.querySelector(".dk-scene"); if (!scene) return;
   const DOORS = [
-    { k: "laptop", href: "#projects", name: "Projects", sub: "Things I've built", near: [3, 3] },
-    { k: "manga", href: "#manga", name: "More about AlphaGo", sub: "Move 37, in pencil", at: [14, 9] },
-    { k: "folder", href: "#resume", name: "Résumé", sub: "Experience & skills", near: [15, 15] },
-    { k: "notebook", href: "#blog", name: "Blog", sub: "Notes & writing", near: [3, 15] },
-    { k: "letter", href: "#hello", name: "Contact me", sub: "Say hello", near: [15, 3] },
+    { k: "laptop", href: "#projects", name: "Projects", sub: "Things I've built", c: "#e2bd72", n: "01" },
+    { k: "manga", href: "#manga", name: "More about AlphaGo", sub: "Move 37, in pencil", c: "#8fb4ff", n: "02" },
+    { k: "folder", href: "#resume", name: "Résumé", sub: "Experience & skills", c: "#6fd3b8", n: "03" },
+    { k: "letter", href: "#hello", name: "Contact me", sub: "Say hello", c: "#f08a6c", n: "04" },
   ];
-  // AlphaGo (Black) v Lee Sedol, game two, through Black 37 at P10
-  const REC = "pddpcdqpopoqnqpqcnfqmpqnicdjpoqocpcqbqcobpbodobndqepdrcmjpcgedqfqepfndpioj";
-  const N = 19, board = Array.from({ length: N }, () => Array(N).fill(0));
-  { const nb = (c, r) => [[c - 1, r], [c + 1, r], [c, r - 1], [c, r + 1]].filter(([x, y]) => x >= 0 && y >= 0 && x < N && y < N);
-    const group = (c, r) => { const col = board[r][c], seen = new Set([c + "," + r]), st = [[c, r]], g = []; let lib = 0;
-      while (st.length) { const [x, y] = st.pop(); g.push([x, y]); for (const [a, b] of nb(x, y)) { const k = a + "," + b; if (seen.has(k)) continue; if (!board[b][a]) { seen.add(k); lib++; } else if (board[b][a] === col) { seen.add(k); st.push([a, b]); } } }
-      return { g, lib }; };
-    for (let i = 0; i < REC.length; i += 2) { const c = REC.charCodeAt(i) - 97, r = REC.charCodeAt(i + 1) - 97, col = (i / 2) % 2 ? 2 : 1; board[r][c] = col;
-      for (const [a, b] of nb(c, r)) if (board[b][a] && board[b][a] !== col) { const G = group(a, b); if (!G.lib) for (const [x, y] of G.g) board[y][x] = 0; } } }
-  const stones = []; for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (board[r][c]) stones.push({ c, r, col: board[r][c] });
-  // doors: Move 37 exactly; the others the stone nearest each corner point
-  const taken = new Set();
-  for (const d of DOORS) { let s = null;
-    if (d.at) s = stones.find(q => q.c === d.at[0] && q.r === d.at[1]);
-    if (!s) { let best = 1e9; for (const q of stones) { const dd = Math.hypot(q.c - d.near[0], q.r - d.near[1]); if (dd < best && !taken.has(q)) { best = dd; s = q; } } }
-    taken.add(s); s.door = d; d.stone = s; }
-  let sd = 37; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
-  const cv = (w, h, f) => { const c = document.createElement("canvas"); c.width = w; c.height = h; f(c.getContext("2d"), w, h); return c; };
-  // the stones: Yunzi-like slate and shell, lit from the upper left
-  const SP = 128;
-  const stoneArt = col => cv(SP, SP, (g, w) => { const r = w * 0.46, cx = w / 2, cy = w / 2;
-    if (col === 1) { const gr = g.createRadialGradient(cx - r * 0.35, cy - r * 0.4, r * 0.05, cx, cy, r); gr.addColorStop(0, "#6d6f72"); gr.addColorStop(0.25, "#2c2d30"); gr.addColorStop(0.8, "#111214"); gr.addColorStop(1, "#060607"); g.fillStyle = gr; }
-    else { const gr = g.createRadialGradient(cx - r * 0.3, cy - r * 0.35, r * 0.05, cx, cy, r); gr.addColorStop(0, "#ffffff"); gr.addColorStop(0.55, "#f1ede4"); gr.addColorStop(0.9, "#d6d0c3"); gr.addColorStop(1, "#bdb6a7"); g.fillStyle = gr; }
-    g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill();
-    if (col === 2) { g.save(); g.clip(); g.strokeStyle = "rgba(150,140,120,0.13)"; g.lineWidth = 1.2; for (let i = 0; i < 9; i++) { g.beginPath(); g.arc(cx + r * 1.6, cy + r * 1.3, r * (1.2 + i * 0.16), 0, Math.PI * 2); g.stroke(); } g.restore(); }
-    const hl = g.createRadialGradient(cx - r * 0.38, cy - r * 0.42, 0, cx - r * 0.38, cy - r * 0.42, r * 0.5); hl.addColorStop(0, col === 1 ? "rgba(255,255,255,0.28)" : "rgba(255,255,255,0.9)"); hl.addColorStop(1, "rgba(255,255,255,0)");
-    g.fillStyle = hl; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill();
-    g.strokeStyle = col === 1 ? "rgba(0,0,0,0.6)" : "rgba(120,110,95,0.45)"; g.lineWidth = 1; g.beginPath(); g.arc(cx, cy, r - 0.5, 0, Math.PI * 2); g.stroke(); });
-  const SB = stoneArt(1), SW = stoneArt(2);
-  const urlB = SB.toDataURL(), urlW = SW.toDataURL();
-  // a stone with its soft contact shadow, for drawing into the board
-  const putStone = (g, x, y, d, col) => { g.save(); g.fillStyle = "rgba(20,10,0,0.45)"; g.filter = `blur(${Math.max(1, d * 0.07)}px)`; g.beginPath(); g.ellipse(x + d * 0.06, y + d * 0.09, d * 0.47, d * 0.45, 0, 0, Math.PI * 2); g.fill(); g.restore();
-    g.drawImage(col === 1 ? SB : SW, x - d / 2 / 0.92, y - d / 2 / 0.92, d / 0.92, d / 0.92); };
-  // the board: straight-grained kaya, lacquer sheen, inked lines and star points; every non-door stone painted in
-  const BW = 1400, BH = Math.round(BW * 454.5 / 424.2), M = BW * 0.0332, cwp = (BW - 2 * M) / 18, chp = (BH - 2 * M) / 18;
-  const px = c => M + c * cwp, py = r => M + r * chp;
-  const boardPic = () => cv(BW, BH, (g, w, h) => {
-    g.fillStyle = "#dcae6a"; g.fillRect(0, 0, w, h);
-    for (let x = 0; x < w; x++) { const v = Math.sin(x * 0.021) * 0.5 + Math.sin(x * 0.0063 + 1.3) * 0.8 + Math.sin(x * 0.11 + 0.4) * 0.25 + (rnd() - 0.5) * 0.9;
-      const dark = v > 0.9 ? 0.16 : v > 0.4 ? 0.08 : 0.02; g.fillStyle = `rgba(${v > 0 ? "120,70,20" : "255,225,170"},${(Math.abs(v) * 0.05 + dark * 0.6).toFixed(3)})`; g.fillRect(x, 0, 1, h); }
-    for (let i = 0; i < 900; i++) { const x = rnd() * w, y = rnd() * h, l = 6 + rnd() * 40; g.fillStyle = `rgba(110,60,15,${(rnd() * 0.12).toFixed(3)})`; g.fillRect(x, y, 0.8, l); }
-    const sh = g.createRadialGradient(w * 0.32, h * 0.22, 0, w * 0.32, h * 0.22, w * 0.9); sh.addColorStop(0, "rgba(255,240,205,0.22)"); sh.addColorStop(0.6, "rgba(255,240,205,0)"); sh.addColorStop(1, "rgba(60,30,5,0.18)"); g.fillStyle = sh; g.fillRect(0, 0, w, h);
-    g.strokeStyle = "rgba(28,16,6,0.88)"; g.lineCap = "square";
-    for (let i = 0; i < N; i++) { g.lineWidth = i === 0 || i === N - 1 ? 3.2 : 2.1; g.beginPath(); g.moveTo(px(i), py(0)); g.lineTo(px(i), py(18)); g.stroke(); g.beginPath(); g.moveTo(px(0), py(i)); g.lineTo(px(18), py(i)); g.stroke(); }
-    g.fillStyle = "rgba(28,16,6,0.92)"; for (const a of [3, 9, 15]) for (const b of [3, 9, 15]) { g.beginPath(); g.arc(px(a), py(b), 6.5, 0, Math.PI * 2); g.fill(); }
-    for (const s of stones) if (!s.door) putStone(g, px(s.c), py(s.r), cwp * 0.96, s.col);
-    g.strokeStyle = "rgba(255,235,200,0.35)"; g.lineWidth = 2; g.strokeRect(1, 1, w - 2, h - 2);
-    g.strokeStyle = "rgba(70,40,10,0.5)"; g.lineWidth = 1.5; g.strokeRect(3, 3, w - 6, h - 6); });
-  // a go bowl from above with its lid off: turned wood, a rim catching the lamp, stones heaped inside; and the lid, upturned
-  const bowlPic = (col, n) => cv(520, 520, (g, w) => { const cx = w / 2, cy = w / 2, R = w * 0.44;
-    g.save(); g.fillStyle = "rgba(10,5,0,0.55)"; g.filter = "blur(14px)"; g.beginPath(); g.arc(cx + 12, cy + 18, R * 1.02, 0, Math.PI * 2); g.fill(); g.restore();
-    const wd = g.createRadialGradient(cx - R * 0.4, cy - R * 0.45, R * 0.1, cx, cy, R); wd.addColorStop(0, "#c9884a"); wd.addColorStop(0.6, "#9b5a2a"); wd.addColorStop(1, "#5e3415"); g.fillStyle = wd; g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.fill();
-    g.save(); g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.clip(); g.strokeStyle = "rgba(60,25,5,0.18)"; for (let i = 0; i < 26; i++) { g.lineWidth = 1 + rnd() * 2; g.beginPath(); g.arc(cx + R * 0.3, cy - R * 2.2, R * (2 + i * 0.07), 0, Math.PI * 2); g.stroke(); } g.restore();
-    const ri = R * 0.8; g.fillStyle = "#3a1f0b"; g.beginPath(); g.arc(cx, cy, ri, 0, Math.PI * 2); g.fill();
-    g.save(); g.beginPath(); g.arc(cx, cy, ri - 2, 0, Math.PI * 2); g.clip();
-    const pts = []; for (let i = 0; i < n; i++) { const a = rnd() * Math.PI * 2, d = Math.sqrt(rnd()) * (ri - 14); pts.push([cx + Math.cos(a) * d, cy + Math.sin(a) * d]); }
-    pts.sort((p, q) => p[1] - q[1]); for (const [x, y] of pts) putStone(g, x, y, 46, col);
-    const inS = g.createRadialGradient(cx, cy, ri * 0.6, cx, cy, ri); inS.addColorStop(0, "rgba(0,0,0,0)"); inS.addColorStop(1, "rgba(0,0,0,0.45)"); g.fillStyle = inS; g.fillRect(0, 0, w, w); g.restore();
-    g.strokeStyle = "rgba(255,220,170,0.35)"; g.lineWidth = 3; g.beginPath(); g.arc(cx, cy, R - 3, Math.PI * 1.05, Math.PI * 1.7); g.stroke(); });
-  const lidPic = (col, n) => cv(460, 460, (g, w) => { const cx = w / 2, cy = w / 2, R = w * 0.42;
-    g.save(); g.fillStyle = "rgba(10,5,0,0.5)"; g.filter = "blur(12px)"; g.beginPath(); g.arc(cx + 10, cy + 15, R, 0, Math.PI * 2); g.fill(); g.restore();
-    const wd = g.createRadialGradient(cx - R * 0.3, cy - R * 0.4, R * 0.1, cx, cy, R); wd.addColorStop(0, "#b8773e"); wd.addColorStop(1, "#5a3214"); g.fillStyle = wd; g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.fill();
-    const ri = R * 0.86, inn = g.createRadialGradient(cx + ri * 0.2, cy + ri * 0.25, ri * 0.2, cx, cy, ri); inn.addColorStop(0, "#a8682f"); inn.addColorStop(1, "#4a2810"); g.fillStyle = inn; g.beginPath(); g.arc(cx, cy, ri, 0, Math.PI * 2); g.fill();
-    for (let i = 0; i < n; i++) { const a = rnd() * Math.PI * 2, d = Math.sqrt(rnd()) * ri * 0.5; putStone(g, cx + Math.cos(a) * d, cy + Math.sin(a) * d, 44, col); }
-    g.strokeStyle = "rgba(255,220,170,0.3)"; g.lineWidth = 2.5; g.beginPath(); g.arc(cx, cy, R - 2, Math.PI * 1.05, Math.PI * 1.7); g.stroke(); });
-  const shadowPic = cv(160, 170, (g, w, h) => { g.filter = "blur(9px)"; g.fillStyle = "rgba(8,4,0,0.85)"; g.fillRect(22, 24, w - 40, h - 38); });
-  let pics = null;
-  const getPics = () => pics || (pics = { board: boardPic().toDataURL("image/jpeg", 0.9), shadow: shadowPic.toDataURL(), bB: bowlPic(1, 70).toDataURL(), bW: bowlPic(2, 70).toDataURL(), lB: lidPic(2, 3).toDataURL(), lW: lidPic(1, 2).toDataURL() });
-  // where things lie: board centre and width, bowls and lids, in each layout's viewBox
-  const L = { wide: { vb: "0 0 1600 1000", board: [800, 530, 690], bW: [250, 650, 270], lW: [255, 300, 210], bB: [1350, 360, 270], lB: [1345, 715, 210] },
-    tall: { vb: "0 0 900 1600", board: [450, 760, 830], bW: [205, 1400, 300], lW: [215, 175, 240], bB: [695, 1400, 300], lB: [685, 175, 240] } };
-  const img = (href, x, y, w, h, cls = "") => `<image ${cls ? `class="${cls}" ` : ""}href="${href}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" preserveAspectRatio="none"/>`;
-  const build = () => {
-    const P = getPics(), tall = innerWidth / innerHeight < 0.9, Ly = tall ? L.tall : L.wide, [bx, by, bw] = Ly.board, bh = bw * BH / BW, x0 = bx - bw / 2, y0 = by - bh / 2, k = bw / BW;
-    const sx = c => x0 + px(c) * k, sy = r => y0 + py(r) * k, sd = cwp * k * 0.96;
-    let o = `<svg class="dk-svg gb-svg${tall ? " tall" : ""}" viewBox="${Ly.vb}" preserveAspectRatio="xMidYMid meet" role="group" aria-label="A Go board on my desk: five of its stones are doors to the rest of the site">`;
-    o += `<defs><linearGradient id="gbSide" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b5803f"/><stop offset="1" stop-color="#6e4519"/></linearGradient><linearGradient id="gbSideR" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a06c33"/><stop offset="1" stop-color="#5e3a14"/></linearGradient></defs>`;
-    for (const [key, pic] of [["lW", "lW"], ["bW", "bW"], ["lB", "lB"], ["bB", "bB"]]) { const [x, y, d] = Ly[key]; o += `<g class="dk-dec gb-${key}">${img(P[pic], x - d / 2, y - d / 2, d, d)}</g>`; }
-    // the board's thickness shows a little on the side away from the lamp, and it throws a soft shadow
-    const T = bw * 0.04;
-    o += `<g class="dk-dec gb-board">${img(P.shadow, x0 - bw * 0.1 + T * 0.6, y0 - bh * 0.1 + T, bw * 1.24, bh * 1.22)}` +
-      `<path d="M${x0} ${y0 + bh} L${x0 + bw} ${y0 + bh} L${x0 + bw + T * 0.35} ${y0 + bh + T} L${x0 + T * 0.35} ${y0 + bh + T} Z" fill="url(#gbSide)"/>` +
-      `<path d="M${x0 + bw} ${y0} L${x0 + bw + T * 0.35} ${y0 + T * 0.6} L${x0 + bw + T * 0.35} ${y0 + bh + T} L${x0 + bw} ${y0 + bh} Z" fill="url(#gbSideR)"/>` +
-      `${img(P.board, x0, y0, bw, bh, "gb-top")}</g>`;
-    DOORS.forEach((d, i) => { const s = d.stone, x = sx(s.c), y = sy(s.r), h = s.col === 1 ? urlB : urlW, r = sd / 2;
-      const mark = d.k === "manga" ? `<circle cx="${x}" cy="${y}" r="${(r * 0.42).toFixed(1)}" fill="none" stroke="#c8402c" stroke-width="${(r * 0.12).toFixed(1)}"/>` : "";
-      o += `<a class="dk-o dk-${d.k} gb-door" href="${d.href}" aria-label="${d.name}" style="--i:${i}"><g class="dk-lift" style="--sx:0.35;--sy:0.6"><g class="dk-art">` +
-        `<circle class="gb-ring" cx="${x}" cy="${y}" r="${(r * 1.32).toFixed(1)}"/><ellipse cx="${(x + r * 0.12).toFixed(1)}" cy="${(y + r * 0.18).toFixed(1)}" rx="${(r * 0.95).toFixed(1)}" ry="${(r * 0.9).toFixed(1)}" fill="rgba(20,10,0,0.4)" class="gb-sh"/>` +
-        `${img(h, x - r / 0.92, y - r / 0.92, 2 * r / 0.92, 2 * r / 0.92)}${mark}</g></g>` +
-        `<g class="dk-tag" data-sx="${x.toFixed(1)}" data-sy="${y.toFixed(1)}" data-r="${s.r}"><g class="dk-tg"><rect class="pl-sh"/><rect class="pl"/><rect class="pl-hi"/><rect class="pl-bar"/><text class="t1" text-anchor="middle">${d.name}</text><text class="t2" text-anchor="middle">${d.sub}</text></g></g></a>`; });
-    scene.innerHTML = o + "</svg>"; scene.dataset.gb = tall ? "tall" : "wide";
-    fit(sd);
+  const L = {
+    wide: { vb: [1600, 1000], ctr: [800, 500], R: 64, at: { laptop: [430, 300], letter: [1170, 300], manga: [1170, 680], folder: [430, 680] } },
+    tall: { vb: [900, 1600], ctr: [450, 800], R: 66, at: { laptop: [280, 480], letter: [620, 480], manga: [620, 1120], folder: [280, 1120] } },
   };
-  // plaques: sized to their words, set just off the stone toward the middle of the board, kept on screen
-  const fit = sd => { const svg = scene.querySelector(".gb-svg"); if (!svg) return; const tall = svg.classList.contains("tall"), vb = svg.getAttribute("viewBox").split(/\s+/).map(Number), Ly = tall ? L.tall : L.wide;
-    sd = sd || (Ly.board[2] / BW) * cwp * 0.96;
-    for (const tg of svg.querySelectorAll(".dk-tag")) { const t = tg.firstChild, a = t.querySelector(".t1"), b = t.querySelector(".t2"); let w = 0;
-      try { w = Math.max(a.getBBox().width, b.getBBox().width); } catch (e) {} if (!(w > 0)) w = Math.max(a.textContent.length * (tall ? 30 : 20), 120);
-      const fs1 = tall ? 34 : 27, fs2 = tall ? 19 : 14, pad = tall ? 20 : 18, h = fs1 + fs2 + pad * 1.35, W = w + pad * 2 + 8, x = -W / 2, y = -h / 2, set = (el, o) => { for (const k in o) el.setAttribute(k, o[k]); };
-      set(t.querySelector(".pl"), { x, y, width: W, height: h, rx: 7 }); set(t.querySelector(".pl-sh"), { x: x + 2, y: y + 5, width: W, height: h, rx: 7 });
-      set(t.querySelector(".pl-hi"), { x: x + 2, y: y + 2, width: W - 4, height: h * 0.45, rx: 5 }); set(t.querySelector(".pl-bar"), { x: x + 2, y: y + h - (tall ? 9 : 7), width: W - 4, height: tall ? 7 : 5, rx: 2 });
-      a.setAttribute("y", y + pad * 0.55 + fs1 * 0.82); b.setAttribute("y", y + pad * 0.55 + fs1 + fs2 * 0.95 + 2);
-      const sx0 = +tg.dataset.sx, sy0 = +tg.dataset.sy, up = +tg.dataset.r < 9, cy = sy0 + (up ? -1 : 1) * (sd * 0.5 + h / 2 + 12);   // toward the nearer edge
-      const cx = Math.max(W / 2 + 12, Math.min(vb[2] - W / 2 - 12, sx0)); tg.setAttribute("transform", `translate(${cx.toFixed(1)} ${cy.toFixed(1)})`); } };
-  const tryBuild = () => { const tall = innerWidth / innerHeight < 0.9; if (scene.dataset.gb !== (tall ? "tall" : "wide") || !scene.querySelector(".gb-svg")) build(); };
-  // the desk rebuilds its own scene when the screen turns; put the board back each time
-  new MutationObserver(() => { if (!scene.querySelector(".gb-svg")) build(); }).observe(scene, { childList: true });
+  // each door's shape, drawn around 0,0 at radius r
+  const glyph = (k, r, col, sw) => { const s = `fill="none" stroke="${col}" stroke-width="${sw}" stroke-linejoin="round" stroke-linecap="round"`;
+    const poly = (n, rr, rot) => Array.from({ length: n }, (_, i) => { const a = rot + i * 2 * Math.PI / n; return `${(Math.cos(a) * rr).toFixed(1)},${(Math.sin(a) * rr).toFixed(1)}`; }).join(" ");
+    if (k === "laptop") return `<polygon points="${poly(4, r, -Math.PI / 2)}" ${s}/><polygon points="${poly(4, r * 0.55, -Math.PI / 2)}" ${s} opacity="0.6"/><circle r="${r * 0.12}" fill="${col}"/>`;
+    if (k === "manga") return `<polygon points="${poly(3, r, -Math.PI / 2)}" ${s}/><circle cy="${r * 0.12}" r="${r * 0.3}" ${s} opacity="0.6"/><circle cy="${r * 0.12}" r="${r * 0.1}" fill="${col}"/>`;
+    if (k === "folder") return `<polygon points="${poly(6, r, Math.PI / 6)}" ${s}/><path d="M${-r * 0.42} ${-r * 0.24}H${r * 0.42}M${-r * 0.42} 0H${r * 0.42}M${-r * 0.42} ${r * 0.24}H${r * 0.16}" ${s} opacity="0.7"/>`;
+    return `<circle r="${r}" ${s}/><path d="M${-r * 0.55} 0 Q${-r * 0.28} ${-r * 0.42} 0 0 T${r * 0.55} 0" ${s} opacity="0.75"/><circle r="${r * 0.62}" ${s} opacity="0.35" stroke-dasharray="${r * 0.12} ${r * 0.16}"/>`; };
+  let sd = 7; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+  const build = () => {
+    const tall = innerWidth / innerHeight < 0.9, Ly = tall ? L.tall : L.wide, [W, H] = Ly.vb, [cx, cy] = Ly.ctr, R = Ly.R; sd = 7;
+    let o = `<svg class="dk-svg ab-svg${tall ? " tall" : ""}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" role="group" aria-label="Home: four shapes, each a door to part of the site">`;
+    o += `<defs><radialGradient id="abBg" cx="50%" cy="48%" r="70%"><stop offset="0" stop-color="#1a1822"/><stop offset="0.55" stop-color="#0e0d12"/><stop offset="1" stop-color="#070709"/></radialGradient>` +
+      DOORS.map(d => `<radialGradient id="abH-${d.k}"><stop offset="0" stop-color="${d.c}" stop-opacity="0.38"/><stop offset="0.45" stop-color="${d.c}" stop-opacity="0.1"/><stop offset="1" stop-color="${d.c}" stop-opacity="0"/></radialGradient>`).join("") +
+      `<radialGradient id="abCore"><stop offset="0" stop-color="#fff4dc" stop-opacity="0.9"/><stop offset="0.12" stop-color="#e2bd72" stop-opacity="0.45"/><stop offset="0.5" stop-color="#8f6cff" stop-opacity="0.08"/><stop offset="1" stop-color="#8f6cff" stop-opacity="0"/></radialGradient></defs>`;
+    o += `<rect class="dk-dec" width="${W}" height="${H}" fill="url(#abBg)"/>`;
+    // drifting colour fields
+    o += `<g class="dk-dec ab-fog"><circle class="ab-f1" cx="${W * 0.22}" cy="${H * 0.3}" r="${Math.max(W, H) * 0.32}" fill="url(#abH-manga)"/><circle class="ab-f2" cx="${W * 0.8}" cy="${H * 0.75}" r="${Math.max(W, H) * 0.3}" fill="url(#abH-letter)"/><circle class="ab-f3" cx="${W * 0.7}" cy="${H * 0.2}" r="${Math.max(W, H) * 0.25}" fill="url(#abH-folder)"/></g>`;
+    // a field of faint points
+    let dots = ""; for (let i = 0; i < 120; i++) { const x = rnd() * W, y = rnd() * H, r = 0.6 + rnd() * 1.6, a = 0.12 + rnd() * 0.4; dots += `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${r.toFixed(1)}" fill="#efe5d2" opacity="${a.toFixed(2)}"${i % 9 === 0 ? ` class="ab-tw" style="--d:${(rnd() * 6).toFixed(1)}s"` : ""}/>`; }
+    o += `<g class="dk-dec">${dots}</g>`;
+    // orbits around the middle, slowly turning
+    const rx = tall ? 300 : 520, ry = tall ? 520 : 300;
+    o += `<g class="dk-dec ab-orbits" fill="none" stroke="#efe5d2">` +
+      `<g class="ab-spin" style="--t:140s"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" stroke-opacity="0.09"/><circle cx="${cx + rx}" cy="${cy}" r="3" fill="#e2bd72" stroke="none"/></g>` +
+      `<g class="ab-spin r" style="--t:90s"><ellipse cx="${cx}" cy="${cy}" rx="${rx * 0.62}" ry="${ry * 0.62}" stroke-opacity="0.07" stroke-dasharray="2 10"/><circle cx="${cx}" cy="${cy - ry * 0.62}" r="2.4" fill="#8fb4ff" stroke="none"/></g>` +
+      `<g class="ab-spin" style="--t:60s"><circle cx="${cx}" cy="${cy}" r="${Math.min(rx, ry) * 0.42}" stroke-opacity="0.08"/><circle cx="${cx - Math.min(rx, ry) * 0.42}" cy="${cy}" r="2" fill="#6fd3b8" stroke="none"/></g>` +
+      `<circle cx="${cx}" cy="${cy}" r="${R * 2.2}" fill="url(#abCore)" stroke="none" class="ab-core"/><circle cx="${cx}" cy="${cy}" r="4" fill="#fff4dc" stroke="none"/></g>`;
+    // threads from the middle out to each door
+    o += `<g class="dk-dec ab-threads" fill="none">` + DOORS.map(d => { const [x, y] = Ly.at[d.k], mx = (cx + x) / 2 + (y - cy) * 0.18, my = (cy + y) / 2 - (x - cx) * 0.18;
+      return `<path class="ab-th" d="M${cx} ${cy} Q${mx.toFixed(0)} ${my.toFixed(0)} ${x} ${y}" stroke="${d.c}" stroke-opacity="0.32" stroke-width="1.2" stroke-dasharray="3 7"/>`; }).join("") + `</g>`;
+    DOORS.forEach((d, i) => { const [x, y] = Ly.at[d.k], fs1 = tall ? 32 : 30, fs2 = tall ? 15 : 13, ly = y + R * 1.25 + fs1 + (tall ? 30 : 26);
+      o += `<a class="dk-o dk-${d.k} ab-door" href="${d.href}" aria-label="${d.name}" style="--i:${i};--c:${d.c}"><g class="dk-lift"><g class="ab-float" style="--d:${(-i * 1.7).toFixed(1)}s"><g class="dk-art">` +
+        `<circle class="ab-halo" cx="${x}" cy="${y}" r="${R * 2.1}" fill="url(#abH-${d.k})"/><circle class="ab-hit" cx="${x}" cy="${y}" r="${R * 1.25}" fill="rgba(10,10,14,0.55)" stroke="${d.c}" stroke-opacity="0.18"/>` +
+        `<g class="ab-g" transform="translate(${x} ${y})"><g class="ab-gs">${glyph(d.k, R * 0.62, d.c, tall ? 3 : 2.4)}</g></g></g>` +
+        `<g class="ab-lab" text-anchor="middle"><text class="ab-n" x="${x}" y="${ly - fs1 - 2}" fill="${d.c}">${d.n}</text><text class="ab-t1" x="${x}" y="${ly}" style="font-size:${fs1}px">${d.name}</text><text class="ab-t2" x="${x}" y="${ly + fs2 + 12}" style="font-size:${fs2}px">${d.sub}</text></g></g></g></a>`; });
+    scene.innerHTML = o + "</svg>"; scene.dataset.ab = tall ? "tall" : "wide";
+  };
+  const tryBuild = () => { const tall = innerWidth / innerHeight < 0.9; if (scene.dataset.ab !== (tall ? "tall" : "wide") || !scene.querySelector(".ab-svg")) build(); };
+  new MutationObserver(() => { if (!scene.querySelector(".ab-svg")) build(); }).observe(scene, { childList: true });
   addEventListener("resize", () => setTimeout(tryBuild, 30));
-  if (document.fonts) { document.fonts.ready.then(() => fit()); }
   build();
-  desk.classList.add("gbh");
-  // the little sketch each page keeps of where it came from: now a corner of the board with a stone on it
+  desk.classList.add("abh");
+  // the little emblem each page keeps of where it came from: that door's shape
   const D = window.__desk || {}, art0 = D.art;
-  const SIZE = { laptop: 430, manga: 220, folder: 250, notebook: 270, letter: 180, note: 160 };
-  const mini = k => { const s = SIZE[k] || 200, h = s / 2, st = s / 6, d = s * 0.15, door = DOORS.find(q => q.k === k), col = door && door.stone ? door.stone.col : 1;
-    let l = ""; for (let i = 0; i < 6; i++) { l += `<path d="M${-h + st * 0.5 + i * st} ${-h} V${h}M${-h} ${-h + st * 0.5 + i * st} H${h}"/>`; }
-    return `<g><rect x="${-h}" y="${-h}" width="${s}" height="${s}" rx="${s * 0.02}" fill="#dcae6a" stroke="#6e4519" stroke-width="${s * 0.012}"/><g stroke="rgba(30,18,6,0.8)" stroke-width="${s * 0.008}">${l}</g>` +
-      `<image href="${col === 1 ? urlB : urlW}" x="${(st * 0.5 - d * 0.55).toFixed(1)}" y="${(-st * 0.5 - d * 0.55).toFixed(1)}" width="${(d * 1.1).toFixed(1)}" height="${(d * 1.1).toFixed(1)}"/>` +
-      `<image href="${col === 1 ? urlW : urlB}" x="${(-st * 1.5 - d * 0.55).toFixed(1)}" y="${(st * 0.5 - d * 0.55).toFixed(1)}" width="${(d * 1.1).toFixed(1)}" height="${(d * 1.1).toFixed(1)}"/></g>`; };
-  window.__desk = Object.assign({}, D, { art: k => (k === "pencil" && art0 ? art0(k) : mini(k)), board: true });
+  const SIZE = { laptop: 300, manga: 220, folder: 240, notebook: 220, letter: 200, note: 160 };
+  const mini = k => { const s = SIZE[k] || 200, d = DOORS.find(q => q.k === k) || DOORS[0];
+    return `<g><circle r="${s * 0.5}" fill="#121118" stroke="${d.c}" stroke-opacity="0.35" stroke-width="${s * 0.012}"/>${glyph(d.k, s * 0.3, d.c, s * 0.022)}</g>`; };
+  window.__desk = Object.assign({}, D, { art: k => (k === "pencil" && art0 ? art0(k) : mini(k)), abstract: true });
 })();
 
 
@@ -11401,13 +11343,13 @@ const AMB = window.AMB = (() => {
   const NS = "http://www.w3.org/2000/svg";
   const OBJ = { projects: "laptop", polymind: "laptop", go: "laptop", fraguessr: "laptop", muse: "laptop", goglobal: "laptop", story: "manga", resume: "folder", blog: "notebook", hello: "letter", home: "note" };
   const VB = { laptop: "-285 -235 570 570", manga: "-140 -180 280 360", folder: "-175 -180 350 315", notebook: "-140 -185 350 410", letter: "-165 -112 330 224", note: "-100 -100 200 200" };
-  const CAP = { laptop: "back to the board", manga: "back to the board", folder: "back to the board", notebook: "back to the board", letter: "back to the board", note: "back to the board" };
+  const CAP = { laptop: "back home", manga: "back home", folder: "back home", notebook: "back home", letter: "back home", note: "back home" };
   const sketch = (k, cls) => `<svg class="dk-svg ${cls}" viewBox="${VB[k]}" aria-hidden="true">${D.art(k)}</svg>`;
   // 1. the object each page came from, pinned beside its heading
   const HEADS = { projects: "projects", polymind: "polymind", gofilm: "go", fraguessr: "fraguessr", muse: "muse", goglobal: "goglobal", resume: "resume", blog: "blog", hello: "hello" };
   for (const [id, pg] of Object.entries(HEADS)) {
     const sec = document.getElementById(id), head = sec && sec.querySelector(".part-head"); if (!head || head.querySelector(".pc-obj")) continue;
-    const k = OBJ[pg], a = document.createElement("a"); a.className = "pc-obj pc-" + k; a.href = "#hub"; a.setAttribute("aria-label", "Back to the board");
+    const k = OBJ[pg], a = document.createElement("a"); a.className = "pc-obj pc-" + k; a.href = "#hub"; a.setAttribute("aria-label", "Back home");
     a.innerHTML = sketch(k, "pc-svg") + `<span class="pc-cap">${CAP[k]}</span>`; head.classList.add("pc-has"); head.prepend(a);
   }
   // 2. each page ending shows the next thing you'll pick up off the desk
@@ -11480,35 +11422,41 @@ const AMB = window.AMB = (() => {
   fix(); new MutationObserver(fix).observe(deck, { childList: true, subtree: true });
 })();
 
-// v96: the projects, listed. One row each on a plain dark page, like the site's first pages: the picture, a category
-// and status line, the name, what it is, and its links. The card table, curtains, candles and crow are put away.
+// v97: the projects, résumé style. No pictures and no paragraphs: each entry is a name, what it is, its status and year,
+// two short points, and its links. Opening Move (this site) is left off.
 (() => {
-  const sec = document.getElementById("projects"); if (!sec || !window.__DECK) return; const DECK = window.__DECK, DART = window.__DART;
-  const KICK = { "PolyMind": "AI · Strategy game", "Learn more about Go": "Go · Story & lessons", "Fraguessr": "Web game · Data", "Muse": "Generative art · Audio", "Go Global": "Community · Nonprofit", "Opening Move": "Web · Interactive" };
-  const stat = t => /live/i.test(t) ? "ok" : /progress|training/i.test(t) ? "wip" : /founded/i.test(t) ? "est" : "info";
+  const sec = document.getElementById("projects"); if (!sec) return;
+  const P = [
+    { name: "PolyMind", kind: "AI · Strategy game", tag: "In training", when: "",
+      pts: ["Rebuilt Polytopia as a game engine and trained a neural network on 10,000 games of self-play.", "Top model, Legion2, plays at Elo 1483, and you can play it in the browser."],
+      links: [["Play against it", "#polymind-play"], ["How it learned", "#polymind"], ["Source", "https://github.com/beng0ng/polymind"]] },
+    { name: "Learn more about Go", kind: "Go · Story & lessons", tag: "Live", when: "",
+      pts: ["Told Move 37 as a hand-drawn pencil manga.", "Five short chapters on how Go works, and eight AlphaGo games to step through."],
+      links: [["Watch Move 37", "#manga"], ["How Go works", "#gofilm"], ["Eight games", "#go"]] },
+    { name: "Fraguessr", kind: "Web game · Data", tag: "Live", when: "",
+      pts: ["A daily perfume guessing game at fraguessr.com.", "An atlas of 354 ingredients from 116 countries on a globe you can spin."],
+      links: [["Open it", "#fraguessr"], ["fraguessr.com", "https://fraguessr.com"], ["Source", "https://github.com/beng0ng/fraguessr"]] },
+    { name: "Muse", kind: "Generative art · Audio", tag: "In progress", when: "",
+      pts: ["Maps each of the twelve notes to a color you choose.", "Repaints The Starry Night in the proportions a song's notes are played."],
+      links: [["Open Muse", "https://claude.ai/artifact/8Avjqfou2j6pjYp61eGXBJ"], ["About it", "#muse"]] },
+    { name: "Go Global", kind: "Community · Nonprofit", tag: "Active", when: "Founded 2024",
+      pts: ["Founded a youth-led nonprofit offering free Go lessons with strong young players.", "45+ volunteer teachers and 500+ hours taught."],
+      links: [["See it", "#goglobal"], ["goglobals.org", "https://goglobals.org/"]] },
+  ];
+  const stat = t => /live|active/i.test(t) ? "ok" : /progress|training/i.test(t) ? "wip" : /founded|active/i.test(t) ? "est" : "info";
   const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   const arrow = ext => ext ? `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11 11 5M6 5h5v5"/></svg>` : `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"/></svg>`;
-  // each picture is the card's own painting, copied with its ids renamed so it can't borrow from (or lend to) the deck
-  const artOf = (c, i) => { let h = "";
-    try { h = typeof DART !== "undefined" && DART[c.art] ? `<svg viewBox="0 0 250 350" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${DART[c.art]()}</svg>` : ""; } catch (e) { h = ""; }
-    if (!h) return ""; const ids = [...h.matchAll(/\sid="([^"]+)"/g)].map(m => m[1]);
-    for (const id of ids) { const n = `pj${i}-${id}`; h = h.split(`id="${id}"`).join(`id="${n}"`).split(`url(#${id})`).join(`url(#${n})`).split(`href="#${id}"`).join(`href="#${n}"`); }
-    return h; };
   const build = () => {
     if (sec.querySelector(".pj-list")) return true;
     const list = document.createElement("div"); list.className = "pj-list";
-    const order = DECK.cards.filter(c => !c.side).concat(DECK.cards.filter(c => c.side));
-    list.innerHTML = order.map((c, i) => { const [first, ...rest] = c.links || [];
-      const link = ([t, href], primary) => { const ext = /^https?:/.test(href); return `<a class="pj-btn${primary ? " pri" : ""}" href="${esc(href)}"${ext ? ' target="_blank" rel="noopener"' : ""}>${esc(t)}${arrow(ext)}</a>`; };
-      const main = first ? first[1] : "#projects", ext = /^https?:/.test(main);
-      return `<article class="pj-row" style="--i:${i}">` +
-        `<a class="pj-pic" href="${esc(main)}"${ext ? ' target="_blank" rel="noopener"' : ""} aria-label="${esc(c.name)}">${artOf(c, i)}</a>` +
-        `<div class="pj-body"><p class="pj-kick"><span>${esc(KICK[c.name] || "")}</span><span class="pj-st pj-st-${stat(c.tag)}">${esc(c.tag)}</span></p>` +
-        `<h3 class="pj-name">${esc(c.name)}</h3><p class="pj-line">${esc(c.line)}</p><p class="pj-text">${esc(c.text)}</p>` +
-        `<div class="pj-links">${first ? link(first, true) : ""}${rest.map(l => link(l, false)).join("")}</div></div></article>`; }).join("");
+    list.innerHTML = P.map((c, i) => `<article class="pj-row" style="--i:${i}">` +
+      `<div class="pj-meta">${c.when ? `<span class="pj-when">${esc(c.when)}</span>` : ""}<span class="pj-st pj-st-${stat(c.tag)}">${esc(c.tag)}</span></div>` +
+      `<div class="pj-body"><h3 class="pj-name">${esc(c.name)}</h3><p class="pj-kick">${esc(c.kind)}</p>` +
+      `<ul class="pj-pts">${c.pts.map(t => `<li>${esc(t)}</li>`).join("")}</ul>` +
+      `<div class="pj-links">${c.links.map(([t, href]) => { const ext = /^https?:/.test(href); return `<a class="pj-lk" href="${esc(href)}"${ext ? ' target="_blank" rel="noopener"' : ""}>${esc(t)}${arrow(ext)}</a>`; }).join("")}</div></div></article>`).join("");
     const table = sec.querySelector(".dk-table"); (table ? table.parentNode : sec).insertBefore(list, table || null);
     document.body.classList.add("pj-listed");
-    for (const p of sec.querySelectorAll(".part-head p")) if (/dealt as one hand/.test(p.textContent)) p.textContent = "Five things I've made, and the site you're on. Each has a page of its own.";
+    for (const p of sec.querySelectorAll(".part-head p")) if (/dealt as one hand|Five things/.test(p.textContent)) p.textContent = "Selected work.";
     return true; };
   if (!build()) { const mo = new MutationObserver(() => { if (build()) mo.disconnect(); }); mo.observe(document.body, { childList: true, subtree: true }); }
 })();
