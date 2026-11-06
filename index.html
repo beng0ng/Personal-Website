@@ -311,12 +311,17 @@ body.pj-lit[data-page="projects"] #projects .dk-table { opacity: 1; }
 .dk-lit text, .dk-lit .glow, .dk-lit .steam { display: none; }
 .desk.dk-dive .dk-lit { display: none; }
 
-/* v90: the 3D laptop over the drawn one */
-.dk-l3 { position: absolute; pointer-events: none; opacity: 0; transition: opacity 0.9s ease 0.3s; z-index: 1; }
-.dk-l3.in { opacity: 1; }
-.desk:not(.on) .dk-l3 { opacity: 0; }
-.desk.dk-3dl .dk-laptop .dk-lift, .desk.dk-3dl .dk-laptop .glow { opacity: 0; }
-.dk-scene { position: absolute; }
+/* v96: the Go board home screen */
+.desk.gbh .dk-sheen { opacity: 0.6; }
+.gb-svg .gb-door { cursor: pointer; }
+.gb-svg .gb-sh { display: none; }
+.gb-svg .gb-ring { fill: none; stroke: #e2bd72; stroke-width: 3; opacity: 0.55; transition: opacity 0.3s ease; filter: drop-shadow(0 0 6px rgba(240, 200, 120, 0.8)); }
+.gb-svg .gb-door:hover .gb-ring, .gb-svg .gb-door:focus-visible .gb-ring { opacity: 1; }
+.gb-svg .gb-door .dk-tag { transition: transform 0.3s ease; }
+.gb-svg .gb-door:hover .dk-tg, .gb-svg .gb-door:focus-visible .dk-tg { transform: translateY(-3px); }
+.gb-svg .dk-tg { transition: transform 0.3s ease; }
+/* no Lumos wand: the board simply comes up with the lamp */
+.hub-lumos { display: none !important; }
 
 
 /* v83: the desk's thread through the site */
@@ -349,36 +354,6 @@ body.pj-lit[data-page="projects"] #projects .dk-table { opacity: 1; }
 .pt-pencil .dk-pen, .pt-pencil .dk-shade { display: none; }
 @media (prefers-reduced-motion: reduce) { .pc-obj, .fin-obj { transition: none; } }
 
-
-/* v84: the walk in */
-.house { position: fixed; inset: 0; z-index: 95; background: #000; opacity: 0; transition: opacity 0.6s ease; }
-.house.in { opacity: 1; }
-.house.out { opacity: 0; transition: opacity 1s ease; pointer-events: none; }
-.house canvas { width: 100%; height: 100%; display: block; }
-.hs-cap { position: absolute; left: 0; right: 0; bottom: 18vh; margin: 0; text-align: center; font: 700 clamp(30px, 4vw, 52px)/1 "Caveat", "Segoe Print", cursive; color: #f3e3c0; text-shadow: 0 2px 18px rgba(0, 0, 0, 0.8); opacity: 0; transform: translateY(8px); transition: opacity 0.8s ease, transform 1s ease; pointer-events: none; }
-.hs-cap.on { opacity: 1; transform: none; }
-.hs-skip { position: absolute; right: 18px; bottom: 18px; font: 600 13px/1 var(--font-ui); letter-spacing: 0.14em; text-transform: uppercase; color: #e8dcc4; background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(232, 220, 196, 0.35); border-radius: 999px; padding: 10px 16px; cursor: pointer; backdrop-filter: blur(4px); }
-.hs-skip:hover, .hs-skip:focus-visible { background: rgba(0, 0, 0, 0.55); border-color: #d9b36c; outline: none; }
-
-/* v85: cinematic dressing: letterbox that opens as we look down at the desk, vignette, grain */
-.hs-bar { position: absolute; left: 0; right: 0; height: max(0px, calc((100vh - 100vw / 2.2) / 2)); background: #000; transition: transform 1.4s cubic-bezier(0.6, 0, 0.3, 1); z-index: 2; }
-.hs-bar.t { top: 0; } .hs-bar.b { bottom: 0; }
-@media (max-aspect-ratio: 1/1) { .hs-bar { height: 7vh; } }
-.house.open .hs-bar.t { transform: translateY(-100%); } .house.open .hs-bar.b { transform: translateY(100%); }
-.hs-vig { position: absolute; inset: 0; background: radial-gradient(120% 95% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.55)); pointer-events: none; transition: opacity 1.4s ease; }
-.house.open .hs-vig { opacity: 0.35; }
-.hs-grain { position: absolute; inset: -40px; background-size: 160px 160px; opacity: 0.06; mix-blend-mode: overlay; pointer-events: none; animation: hsGrain 0.5s steps(4) infinite; }
-@keyframes hsGrain { 0% { transform: translate(0, 0); } 25% { transform: translate(-17px, 9px); } 50% { transform: translate(11px, -23px); } 75% { transform: translate(-7px, 19px); } }
-.hs-cap, .hs-skip { z-index: 3; }
-
-
-/* v86: the bridge from the opening to the desk */
-.trn { position: fixed; inset: 0; z-index: 96; pointer-events: none; transition: opacity 0.7s ease; }
-.trn canvas { width: 100%; height: 100%; display: block; }
-.trn .hs-skip { pointer-events: auto; position: absolute; left: 18px; right: auto; bottom: 18px; font: 600 13px/1 var(--font-ui); letter-spacing: 0.14em; text-transform: uppercase; color: #e8dcc4; background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(232, 220, 196, 0.35); border-radius: 999px; padding: 10px 16px; cursor: pointer; }
-.trn.out { opacity: 0; transition-duration: 1.2s; }
-body:has(.trn:not(.out)) .hub-lumos { opacity: 0; }
-
 /* v93: the project cards, cleaner and more product-like. The art sits in an inset window; under it a solid plate
    carries a category line, the title, a two-line description, and a footer with a status light and "View". */
 .dk-card.dk-pro .dk-front { background: #14110e; box-shadow: inset 0 0 0 1px rgba(255, 236, 200, 0.14), 0 22px 34px -16px rgba(0, 0, 0, 0.85), 0 2px 6px rgba(0, 0, 0, 0.45); }
@@ -410,6 +385,10 @@ body:has(.trn:not(.out)) .hub-lumos { opacity: 0; }
 /* the laptop sketch beside the Projects heading: its caption goes above it, clear of the table's "Deal again" */
 #projects .pc-obj .pc-cap { order: -1; }
 #projects .pc-obj { top: 30px; }
+/* v96: a plain table under the cards: a calm, dark charcoal surface with a soft light on it, no zodiac or crystal ball */
+body[data-page="projects"] .dk-felt, .dk-felt { background: radial-gradient(110% 85% at 50% 30%, #2a2826 0%, #1c1b1a 55%, #121110 100%) !important; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06), inset 0 30px 60px -40px rgba(255, 240, 220, 0.12), 0 30px 60px -30px rgba(0, 0, 0, 0.8) !important; }
+.dk-felt::before { opacity: 0.1 !important; }
+.dk-felt .pl-zod, .dk-felt .pl-orb { display: none !important; }
 
 .hero .robot { position: absolute; transform: translateZ(0.7px); visibility: hidden; pointer-events: none; }
 .edge { position: absolute; backface-visibility: hidden; background: linear-gradient(180deg, #c99e5a, #8f6a33); }
@@ -9325,7 +9304,7 @@ function hubFrame(now) {
 function hubStep(now) {
   const rect = HUB.sec.getBoundingClientRect(), x = -rect.top / Math.max(1, HUB.lead);
   // the dark comes up over the name as the scroll leaves the opening; while it is invisible, clicks go through to the opening
-  const up = reduceMotion ? (x > 0.3 ? 1 : 0) : clamp(prog(x, 0.18, 0.11), 0, 1);
+  const up = reduceMotion ? (x > 0.3 ? 1 : 0) : clamp(prog(x, 0.14, 0.26), 0, 1);
   if (up !== HUB.up) { HUB.up = up; HUB.stick.style.opacity = up.toFixed(3); HUB.stick.classList.toggle("off", up <= 0); }
   // the reveal only ever advances, and only with forward scrolling: going back holds it where it got to, and once the
   // scroll is back above the opening's end it is set to play again from the start
@@ -11242,111 +11221,139 @@ const AMB = window.AMB = (() => {
     if (!on) { desk.style.removeProperty("transform"); const sh = sheen(); if (sh) sh.style.removeProperty("transform"); cx = cy = 0; } else if (nx || ny) kick(); }).observe(desk, { attributes: true, attributeFilter: ["class"] });
 })();
 
-// v90: the laptop on the desk is a real 3D model now: a matte graphite body (not steel), an open lid leaning back,
-// keycaps in a sunken well, a glass trackpad, the Projects screen glowing; lit by the desk lamp, with its own soft
-// shadow on the wood. It turns a little toward the pointer and lifts its lid a touch when you hover it. The drawn one
-// stays underneath as the click target (and as the fallback without WebGL).
+// v96: the home screen is a Go board again, made to look real: a kaya board lying on my desk under the lamp, the
+// position from game two just after Move 37, two bowls of stones beside it with their lids. Five of the stones are
+// doors, each with its plaque: Move 37 itself is More about AlphaGo; the others open Projects, the résumé, the blog
+// and the contact page. It reuses the desk's frame (wood, lamp light, tilt, the dive into what you pick).
 (() => {
-  const desk = document.querySelector(".desk"); if (!desk) return;
-  const RM = matchMedia("(prefers-reduced-motion: reduce)").matches, fine = matchMedia("(hover: hover) and (pointer: fine)").matches;
-  const load = () => new Promise((ok, no) => {
-    if (window.THREE) return ok(window.THREE);
-    let s = document.querySelector('script[src="lib/three.min.js"]');
-    if (!s) { s = document.createElement("script"); s.src = "lib/three.min.js"; s.async = true; document.head.append(s); }
-    s.addEventListener("load", () => ok(window.THREE)); s.addEventListener("error", no); setTimeout(() => window.THREE ? ok(window.THREE) : no(), 15000);
-  });
-  const glOK = (() => { try { const c = document.createElement("canvas"); return !!(c.getContext("webgl") || c.getContext("experimental-webgl")); } catch (e) { return false; } })();
-  if (!glOK) return;
-
-  // the screen: the same Projects screen as the drawing, painted for the glass
-  const screenPic = () => { const c = document.createElement("canvas"); c.width = 1024; c.height = 680; const g = c.getContext("2d");
-    const bg = g.createLinearGradient(0, 0, 0, 680); bg.addColorStop(0, "#22325a"); bg.addColorStop(1, "#0c1222"); g.fillStyle = bg; g.fillRect(0, 0, 1024, 680);
-    const v = g.createRadialGradient(512, 360, 40, 512, 360, 620); v.addColorStop(0, "rgba(120,160,255,0.18)"); v.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = v; g.fillRect(0, 0, 1024, 680);
-    g.fillStyle = "rgba(225,232,255,0.92)"; g.font = "800 46px Helvetica, Arial, sans-serif"; g.textAlign = "center"; if ("letterSpacing" in g) g.letterSpacing = "14px"; g.fillText("PROJECTS", 519, 130);
-    const cols = ["#3a64a8", "#2b2521", "#4f7a46", "#a43f72", "#b07a22"];
-    cols.forEach((col, i) => { g.save(); g.translate(512 + (i - 2) * 118, 360 + Math.abs(i - 2) * 10); g.rotate((i - 2) * 0.13);
-      g.shadowColor = "rgba(0,0,0,0.5)"; g.shadowBlur = 24; g.shadowOffsetY = 10; g.fillStyle = col; g.beginPath(); g.roundRect ? g.roundRect(-80, -115, 160, 230, 14) : g.rect(-80, -115, 160, 230); g.fill();
-      g.shadowColor = "transparent"; g.strokeStyle = "rgba(255,255,255,0.35)"; g.lineWidth = 3; g.stroke(); g.strokeStyle = "rgba(217,179,108,0.85)"; g.lineWidth = 4; g.beginPath(); g.arc(0, 0, 36, 0, 7); g.stroke(); g.restore(); });
-    g.fillStyle = "rgba(255,255,255,0.05)"; g.beginPath(); g.moveTo(0, 680); g.lineTo(0, 0); g.lineTo(380, 0); g.lineTo(120, 680); g.fill();
-    return c; };
-
-  let st = null;
-  const build = T3 => {
-    const cv = document.createElement("canvas"); cv.className = "dk-l3"; cv.setAttribute("aria-hidden", "true");
-    const R = new T3.WebGLRenderer({ canvas: cv, antialias: true, alpha: true, powerPreference: "low-power", preserveDrawingBuffer: false });
-    R.outputEncoding = T3.sRGBEncoding; R.toneMapping = T3.ACESFilmicToneMapping; R.toneMappingExposure = 1.15; R.shadowMap.enabled = true; R.shadowMap.type = T3.PCFSoftShadowMap;
-    const S = new T3.Scene(), cam = new T3.PerspectiveCamera(26, 1, 0.05, 10);
-    const lin = m => { if (m.color) m.color.convertSRGBToLinear(); if (m.emissive) m.emissive.convertSRGBToLinear(); return m; }, M = o => lin(new T3.MeshStandardMaterial(o)), Ph = o => lin(new T3.MeshPhysicalMaterial(o));
-    const rbox = (w, h, d, r, seg = 3) => { const g = new T3.BoxGeometry(w, h, d, seg * 2, seg * 2, seg * 2), p = g.attributes.position, v = new T3.Vector3(), hw = w / 2 - r, hh = h / 2 - r, hd = d / 2 - r;
-      for (let i = 0; i < p.count; i++) { v.fromBufferAttribute(p, i); const c = new T3.Vector3(Math.max(-hw, Math.min(hw, v.x)), Math.max(-hh, Math.min(hh, v.y)), Math.max(-hd, Math.min(hd, v.z))); const n = v.clone().sub(c); if (n.lengthSq() > 0) n.setLength(r); p.setXYZ(i, c.x + n.x, c.y + n.y, c.z + n.z); }
-      g.computeVertexNormals(); return g; };
-    const L = new T3.Group(); S.add(L);
-    // body: matte graphite aluminium, soft rounded edges
-    const body = M({ color: 0x2b2e36, roughness: 0.62, metalness: 0.18 }), dark = M({ color: 0x15161a, roughness: 0.7 }), keyM = M({ color: 0x1b1c20, roughness: 0.62 });
-    const W = 0.31, D = 0.215, Hb = 0.016;
-    const base = new T3.Mesh(rbox(W, Hb, D, 0.006, 3), body); base.position.y = Hb / 2; base.castShadow = base.receiveShadow = true; L.add(base);
-    const well = new T3.Mesh(new T3.PlaneGeometry(0.27, 0.105), M({ color: 0x15161a, roughness: 0.7, emissive: 0xffb36a, emissiveIntensity: 0.22 }));   // a warm backlight between the keys well.rotation.x = -Math.PI / 2; well.position.set(0, Hb + 0.0004, -0.035); L.add(well);
-    // keycaps, each its own little block
-    { const kg = rbox(0.0158, 0.0035, 0.0152, 0.0012, 1), cols = 14, rows = 6, n = cols * rows, im = new T3.InstancedMesh(kg, keyM, n), o = new T3.Object3D(); let i = 0;
-      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) { const space = r === 5 && c >= 4 && c <= 9; if (r === 5 && c > 4 && c <= 9) { o.scale.set(0.0001, 0.0001, 0.0001); }
-          else { o.scale.set(space ? 6.3 : 1, r === 0 ? 0.8 : 1, r === 0 ? 0.6 : 1); }
-          o.position.set(-0.1235 + c * 0.019 + (space ? 0.0475 : 0), Hb + 0.0016, -0.08 + r * 0.0182 - (r === 0 ? 0.002 : 0)); o.updateMatrix(); im.setMatrixAt(i++, o.matrix); }
-      im.castShadow = true; L.add(im); }
-    const pad = new T3.Mesh(rbox(0.11, 0.0006, 0.07, 0.0003, 1), Ph({ color: 0x33363e, roughness: 0.6, metalness: 0.05, clearcoat: 0.15 })); pad.position.set(0, Hb + 0.0001, 0.058); L.add(pad);
-    for (const sx of [-1, 1]) { const gr = new T3.Mesh(new T3.PlaneGeometry(0.008, 0.1), M({ color: 0x24262b, roughness: 0.9 })); gr.rotation.x = -Math.PI / 2; gr.position.set(sx * 0.143, Hb + 0.0004, -0.035); L.add(gr); }
-    const hinge = new T3.Mesh(new T3.CylinderGeometry(0.0055, 0.0055, 0.25, 20), M({ color: 0x2a2c31, roughness: 0.5, metalness: 0.4 })); hinge.rotation.z = Math.PI / 2; hinge.position.set(0, Hb + 0.002, -D / 2 + 0.006); L.add(hinge);
-    // the lid on its hinge
-    const lid = new T3.Group(); lid.position.set(0, Hb + 0.003, -D / 2 + 0.004); L.add(lid);
-    const Hl = 0.205, lidM = new T3.Mesh(rbox(W, Hl, 0.006, 0.0026, 3), body); lidM.position.set(0, Hl / 2, -0.0032); lidM.castShadow = true; lid.add(lidM);
-    const bez = new T3.Mesh(new T3.PlaneGeometry(W - 0.008, Hl - 0.008), M({ color: 0x0b0c0e, roughness: 0.3 })); bez.position.set(0, Hl / 2, 0.0002); lid.add(bez);
-    const tex = new T3.CanvasTexture(screenPic()); tex.encoding = T3.sRGBEncoding; tex.anisotropy = R.capabilities.getMaxAnisotropy();
-    const scrM = new T3.MeshStandardMaterial({ map: tex, emissiveMap: tex, emissive: 0xffffff, emissiveIntensity: 0.85, roughness: 0.18, color: 0x404040, metalness: 0 });
-    const scr = new T3.Mesh(new T3.PlaneGeometry(W - 0.024, Hl - 0.034), scrM); scr.position.set(0, Hl / 2 + 0.003, 0.0004); lid.add(scr);
-    const camDot = new T3.Mesh(new T3.CircleGeometry(0.0016, 16), M({ color: 0x1e2a44, roughness: 0.2 })); camDot.position.set(0, Hl - 0.008, 0.0005); lid.add(camDot);
-    // the wood it sits on only takes its shadow; the page's own wood shows through
-    const floor = new T3.Mesh(new T3.PlaneGeometry(3, 3), new T3.ShadowMaterial({ opacity: 0.5 })); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; S.add(floor);
-    // the lamp is up at the top left of the desk: warm key light from there, a cool fill, the screen's own glow
-    S.add(new T3.HemisphereLight(0xfff1dc, 0x3a2414, 0.55));
-    const key = new T3.DirectionalLight(0xffe0b0, 2.0); key.position.set(-0.9, 1.3, -0.7); key.castShadow = true; key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 6; key.shadow.bias = -0.0004;
-    Object.assign(key.shadow.camera, { left: -0.4, right: 0.4, top: 0.4, bottom: -0.4, near: 0.1, far: 4 }); S.add(key);
-    const fill = new T3.DirectionalLight(0x9db4ff, 0.35); fill.position.set(0.8, 0.6, 0.9); S.add(fill);
-    const glow = new T3.PointLight(0x8fb0ff, 0.6, 0.6, 2); glow.position.set(0, 0.12, -0.02); S.add(glow);
-    st = { T3, R, S, cam, L, lid, cv, scrM, open: 1.86, openT: 1.86, yaw: 0, yawT: 0, pit: 0, pitT: 0, raf: 0 };
-    lid.rotation.x = -(Math.PI - st.open) ;
+  const desk = document.querySelector(".desk"), scene = desk && desk.querySelector(".dk-scene"); if (!scene) return;
+  const DOORS = [
+    { k: "laptop", href: "#projects", name: "Projects", sub: "Things I've built", near: [3, 3] },
+    { k: "manga", href: "#manga", name: "More about AlphaGo", sub: "Move 37, in pencil", at: [14, 9] },
+    { k: "folder", href: "#resume", name: "Résumé", sub: "Experience & skills", near: [15, 15] },
+    { k: "notebook", href: "#blog", name: "Blog", sub: "Notes & writing", near: [3, 15] },
+    { k: "letter", href: "#hello", name: "Contact me", sub: "Say hello", near: [15, 3] },
+  ];
+  // AlphaGo (Black) v Lee Sedol, game two, through Black 37 at P10
+  const REC = "pddpcdqpopoqnqpqcnfqmpqnicdjpoqocpcqbqcobpbodobndqepdrcmjpcgedqfqepfndpioj";
+  const N = 19, board = Array.from({ length: N }, () => Array(N).fill(0));
+  { const nb = (c, r) => [[c - 1, r], [c + 1, r], [c, r - 1], [c, r + 1]].filter(([x, y]) => x >= 0 && y >= 0 && x < N && y < N);
+    const group = (c, r) => { const col = board[r][c], seen = new Set([c + "," + r]), st = [[c, r]], g = []; let lib = 0;
+      while (st.length) { const [x, y] = st.pop(); g.push([x, y]); for (const [a, b] of nb(x, y)) { const k = a + "," + b; if (seen.has(k)) continue; if (!board[b][a]) { seen.add(k); lib++; } else if (board[b][a] === col) { seen.add(k); st.push([a, b]); } } }
+      return { g, lib }; };
+    for (let i = 0; i < REC.length; i += 2) { const c = REC.charCodeAt(i) - 97, r = REC.charCodeAt(i + 1) - 97, col = (i / 2) % 2 ? 2 : 1; board[r][c] = col;
+      for (const [a, b] of nb(c, r)) if (board[b][a] && board[b][a] !== col) { const G = group(a, b); if (!G.lib) for (const [x, y] of G.g) board[y][x] = 0; } } }
+  const stones = []; for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (board[r][c]) stones.push({ c, r, col: board[r][c] });
+  // doors: Move 37 exactly; the others the stone nearest each corner point
+  const taken = new Set();
+  for (const d of DOORS) { let s = null;
+    if (d.at) s = stones.find(q => q.c === d.at[0] && q.r === d.at[1]);
+    if (!s) { let best = 1e9; for (const q of stones) { const dd = Math.hypot(q.c - d.near[0], q.r - d.near[1]); if (dd < best && !taken.has(q)) { best = dd; s = q; } } }
+    taken.add(s); s.door = d; d.stone = s; }
+  let sd = 37; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+  const cv = (w, h, f) => { const c = document.createElement("canvas"); c.width = w; c.height = h; f(c.getContext("2d"), w, h); return c; };
+  // the stones: Yunzi-like slate and shell, lit from the upper left
+  const SP = 128;
+  const stoneArt = col => cv(SP, SP, (g, w) => { const r = w * 0.46, cx = w / 2, cy = w / 2;
+    if (col === 1) { const gr = g.createRadialGradient(cx - r * 0.35, cy - r * 0.4, r * 0.05, cx, cy, r); gr.addColorStop(0, "#6d6f72"); gr.addColorStop(0.25, "#2c2d30"); gr.addColorStop(0.8, "#111214"); gr.addColorStop(1, "#060607"); g.fillStyle = gr; }
+    else { const gr = g.createRadialGradient(cx - r * 0.3, cy - r * 0.35, r * 0.05, cx, cy, r); gr.addColorStop(0, "#ffffff"); gr.addColorStop(0.55, "#f1ede4"); gr.addColorStop(0.9, "#d6d0c3"); gr.addColorStop(1, "#bdb6a7"); g.fillStyle = gr; }
+    g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill();
+    if (col === 2) { g.save(); g.clip(); g.strokeStyle = "rgba(150,140,120,0.13)"; g.lineWidth = 1.2; for (let i = 0; i < 9; i++) { g.beginPath(); g.arc(cx + r * 1.6, cy + r * 1.3, r * (1.2 + i * 0.16), 0, Math.PI * 2); g.stroke(); } g.restore(); }
+    const hl = g.createRadialGradient(cx - r * 0.38, cy - r * 0.42, 0, cx - r * 0.38, cy - r * 0.42, r * 0.5); hl.addColorStop(0, col === 1 ? "rgba(255,255,255,0.28)" : "rgba(255,255,255,0.9)"); hl.addColorStop(1, "rgba(255,255,255,0)");
+    g.fillStyle = hl; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = col === 1 ? "rgba(0,0,0,0.6)" : "rgba(120,110,95,0.45)"; g.lineWidth = 1; g.beginPath(); g.arc(cx, cy, r - 0.5, 0, Math.PI * 2); g.stroke(); });
+  const SB = stoneArt(1), SW = stoneArt(2);
+  const urlB = SB.toDataURL(), urlW = SW.toDataURL();
+  // a stone with its soft contact shadow, for drawing into the board
+  const putStone = (g, x, y, d, col) => { g.save(); g.fillStyle = "rgba(20,10,0,0.45)"; g.filter = `blur(${Math.max(1, d * 0.07)}px)`; g.beginPath(); g.ellipse(x + d * 0.06, y + d * 0.09, d * 0.47, d * 0.45, 0, 0, Math.PI * 2); g.fill(); g.restore();
+    g.drawImage(col === 1 ? SB : SW, x - d / 2 / 0.92, y - d / 2 / 0.92, d / 0.92, d / 0.92); };
+  // the board: straight-grained kaya, lacquer sheen, inked lines and star points; every non-door stone painted in
+  const BW = 1400, BH = Math.round(BW * 454.5 / 424.2), M = BW * 0.0332, cwp = (BW - 2 * M) / 18, chp = (BH - 2 * M) / 18;
+  const px = c => M + c * cwp, py = r => M + r * chp;
+  const boardPic = () => cv(BW, BH, (g, w, h) => {
+    g.fillStyle = "#dcae6a"; g.fillRect(0, 0, w, h);
+    for (let x = 0; x < w; x++) { const v = Math.sin(x * 0.021) * 0.5 + Math.sin(x * 0.0063 + 1.3) * 0.8 + Math.sin(x * 0.11 + 0.4) * 0.25 + (rnd() - 0.5) * 0.9;
+      const dark = v > 0.9 ? 0.16 : v > 0.4 ? 0.08 : 0.02; g.fillStyle = `rgba(${v > 0 ? "120,70,20" : "255,225,170"},${(Math.abs(v) * 0.05 + dark * 0.6).toFixed(3)})`; g.fillRect(x, 0, 1, h); }
+    for (let i = 0; i < 900; i++) { const x = rnd() * w, y = rnd() * h, l = 6 + rnd() * 40; g.fillStyle = `rgba(110,60,15,${(rnd() * 0.12).toFixed(3)})`; g.fillRect(x, y, 0.8, l); }
+    const sh = g.createRadialGradient(w * 0.32, h * 0.22, 0, w * 0.32, h * 0.22, w * 0.9); sh.addColorStop(0, "rgba(255,240,205,0.22)"); sh.addColorStop(0.6, "rgba(255,240,205,0)"); sh.addColorStop(1, "rgba(60,30,5,0.18)"); g.fillStyle = sh; g.fillRect(0, 0, w, h);
+    g.strokeStyle = "rgba(28,16,6,0.88)"; g.lineCap = "square";
+    for (let i = 0; i < N; i++) { g.lineWidth = i === 0 || i === N - 1 ? 3.2 : 2.1; g.beginPath(); g.moveTo(px(i), py(0)); g.lineTo(px(i), py(18)); g.stroke(); g.beginPath(); g.moveTo(px(0), py(i)); g.lineTo(px(18), py(i)); g.stroke(); }
+    g.fillStyle = "rgba(28,16,6,0.92)"; for (const a of [3, 9, 15]) for (const b of [3, 9, 15]) { g.beginPath(); g.arc(px(a), py(b), 6.5, 0, Math.PI * 2); g.fill(); }
+    for (const s of stones) if (!s.door) putStone(g, px(s.c), py(s.r), cwp * 0.96, s.col);
+    g.strokeStyle = "rgba(255,235,200,0.35)"; g.lineWidth = 2; g.strokeRect(1, 1, w - 2, h - 2);
+    g.strokeStyle = "rgba(70,40,10,0.5)"; g.lineWidth = 1.5; g.strokeRect(3, 3, w - 6, h - 6); });
+  // a go bowl from above with its lid off: turned wood, a rim catching the lamp, stones heaped inside; and the lid, upturned
+  const bowlPic = (col, n) => cv(520, 520, (g, w) => { const cx = w / 2, cy = w / 2, R = w * 0.44;
+    g.save(); g.fillStyle = "rgba(10,5,0,0.55)"; g.filter = "blur(14px)"; g.beginPath(); g.arc(cx + 12, cy + 18, R * 1.02, 0, Math.PI * 2); g.fill(); g.restore();
+    const wd = g.createRadialGradient(cx - R * 0.4, cy - R * 0.45, R * 0.1, cx, cy, R); wd.addColorStop(0, "#c9884a"); wd.addColorStop(0.6, "#9b5a2a"); wd.addColorStop(1, "#5e3415"); g.fillStyle = wd; g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.fill();
+    g.save(); g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.clip(); g.strokeStyle = "rgba(60,25,5,0.18)"; for (let i = 0; i < 26; i++) { g.lineWidth = 1 + rnd() * 2; g.beginPath(); g.arc(cx + R * 0.3, cy - R * 2.2, R * (2 + i * 0.07), 0, Math.PI * 2); g.stroke(); } g.restore();
+    const ri = R * 0.8; g.fillStyle = "#3a1f0b"; g.beginPath(); g.arc(cx, cy, ri, 0, Math.PI * 2); g.fill();
+    g.save(); g.beginPath(); g.arc(cx, cy, ri - 2, 0, Math.PI * 2); g.clip();
+    const pts = []; for (let i = 0; i < n; i++) { const a = rnd() * Math.PI * 2, d = Math.sqrt(rnd()) * (ri - 14); pts.push([cx + Math.cos(a) * d, cy + Math.sin(a) * d]); }
+    pts.sort((p, q) => p[1] - q[1]); for (const [x, y] of pts) putStone(g, x, y, 46, col);
+    const inS = g.createRadialGradient(cx, cy, ri * 0.6, cx, cy, ri); inS.addColorStop(0, "rgba(0,0,0,0)"); inS.addColorStop(1, "rgba(0,0,0,0.45)"); g.fillStyle = inS; g.fillRect(0, 0, w, w); g.restore();
+    g.strokeStyle = "rgba(255,220,170,0.35)"; g.lineWidth = 3; g.beginPath(); g.arc(cx, cy, R - 3, Math.PI * 1.05, Math.PI * 1.7); g.stroke(); });
+  const lidPic = (col, n) => cv(460, 460, (g, w) => { const cx = w / 2, cy = w / 2, R = w * 0.42;
+    g.save(); g.fillStyle = "rgba(10,5,0,0.5)"; g.filter = "blur(12px)"; g.beginPath(); g.arc(cx + 10, cy + 15, R, 0, Math.PI * 2); g.fill(); g.restore();
+    const wd = g.createRadialGradient(cx - R * 0.3, cy - R * 0.4, R * 0.1, cx, cy, R); wd.addColorStop(0, "#b8773e"); wd.addColorStop(1, "#5a3214"); g.fillStyle = wd; g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.fill();
+    const ri = R * 0.86, inn = g.createRadialGradient(cx + ri * 0.2, cy + ri * 0.25, ri * 0.2, cx, cy, ri); inn.addColorStop(0, "#a8682f"); inn.addColorStop(1, "#4a2810"); g.fillStyle = inn; g.beginPath(); g.arc(cx, cy, ri, 0, Math.PI * 2); g.fill();
+    for (let i = 0; i < n; i++) { const a = rnd() * Math.PI * 2, d = Math.sqrt(rnd()) * ri * 0.5; putStone(g, cx + Math.cos(a) * d, cy + Math.sin(a) * d, 44, col); }
+    g.strokeStyle = "rgba(255,220,170,0.3)"; g.lineWidth = 2.5; g.beginPath(); g.arc(cx, cy, R - 2, Math.PI * 1.05, Math.PI * 1.7); g.stroke(); });
+  const shadowPic = cv(160, 170, (g, w, h) => { g.filter = "blur(9px)"; g.fillStyle = "rgba(8,4,0,0.85)"; g.fillRect(22, 24, w - 40, h - 38); });
+  let pics = null;
+  const getPics = () => pics || (pics = { board: boardPic().toDataURL("image/jpeg", 0.9), shadow: shadowPic.toDataURL(), bB: bowlPic(1, 70).toDataURL(), bW: bowlPic(2, 70).toDataURL(), lB: lidPic(2, 3).toDataURL(), lW: lidPic(1, 2).toDataURL() });
+  // where things lie: board centre and width, bowls and lids, in each layout's viewBox
+  const L = { wide: { vb: "0 0 1600 1000", board: [800, 530, 690], bW: [250, 650, 270], lW: [255, 300, 210], bB: [1350, 360, 270], lB: [1345, 715, 210] },
+    tall: { vb: "0 0 900 1600", board: [450, 760, 830], bW: [205, 1400, 300], lW: [215, 175, 240], bB: [695, 1400, 300], lB: [685, 175, 240] } };
+  const img = (href, x, y, w, h, cls = "") => `<image ${cls ? `class="${cls}" ` : ""}href="${href}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" preserveAspectRatio="none"/>`;
+  const build = () => {
+    const P = getPics(), tall = innerWidth / innerHeight < 0.9, Ly = tall ? L.tall : L.wide, [bx, by, bw] = Ly.board, bh = bw * BH / BW, x0 = bx - bw / 2, y0 = by - bh / 2, k = bw / BW;
+    const sx = c => x0 + px(c) * k, sy = r => y0 + py(r) * k, sd = cwp * k * 0.96;
+    let o = `<svg class="dk-svg gb-svg${tall ? " tall" : ""}" viewBox="${Ly.vb}" preserveAspectRatio="xMidYMid meet" role="group" aria-label="A Go board on my desk: five of its stones are doors to the rest of the site">`;
+    o += `<defs><linearGradient id="gbSide" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b5803f"/><stop offset="1" stop-color="#6e4519"/></linearGradient><linearGradient id="gbSideR" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a06c33"/><stop offset="1" stop-color="#5e3a14"/></linearGradient></defs>`;
+    for (const [key, pic] of [["lW", "lW"], ["bW", "bW"], ["lB", "lB"], ["bB", "bB"]]) { const [x, y, d] = Ly[key]; o += `<g class="dk-dec gb-${key}">${img(P[pic], x - d / 2, y - d / 2, d, d)}</g>`; }
+    // the board's thickness shows a little on the side away from the lamp, and it throws a soft shadow
+    const T = bw * 0.04;
+    o += `<g class="dk-dec gb-board">${img(P.shadow, x0 - bw * 0.1 + T * 0.6, y0 - bh * 0.1 + T, bw * 1.24, bh * 1.22)}` +
+      `<path d="M${x0} ${y0 + bh} L${x0 + bw} ${y0 + bh} L${x0 + bw + T * 0.35} ${y0 + bh + T} L${x0 + T * 0.35} ${y0 + bh + T} Z" fill="url(#gbSide)"/>` +
+      `<path d="M${x0 + bw} ${y0} L${x0 + bw + T * 0.35} ${y0 + T * 0.6} L${x0 + bw + T * 0.35} ${y0 + bh + T} L${x0 + bw} ${y0 + bh} Z" fill="url(#gbSideR)"/>` +
+      `${img(P.board, x0, y0, bw, bh, "gb-top")}</g>`;
+    DOORS.forEach((d, i) => { const s = d.stone, x = sx(s.c), y = sy(s.r), h = s.col === 1 ? urlB : urlW, r = sd / 2;
+      const mark = d.k === "manga" ? `<circle cx="${x}" cy="${y}" r="${(r * 0.42).toFixed(1)}" fill="none" stroke="#c8402c" stroke-width="${(r * 0.12).toFixed(1)}"/>` : "";
+      o += `<a class="dk-o dk-${d.k} gb-door" href="${d.href}" aria-label="${d.name}" style="--i:${i}"><g class="dk-lift" style="--sx:0.35;--sy:0.6"><g class="dk-art">` +
+        `<circle class="gb-ring" cx="${x}" cy="${y}" r="${(r * 1.32).toFixed(1)}"/><ellipse cx="${(x + r * 0.12).toFixed(1)}" cy="${(y + r * 0.18).toFixed(1)}" rx="${(r * 0.95).toFixed(1)}" ry="${(r * 0.9).toFixed(1)}" fill="rgba(20,10,0,0.4)" class="gb-sh"/>` +
+        `${img(h, x - r / 0.92, y - r / 0.92, 2 * r / 0.92, 2 * r / 0.92)}${mark}</g></g>` +
+        `<g class="dk-tag" data-sx="${x.toFixed(1)}" data-sy="${y.toFixed(1)}" data-r="${s.r}"><g class="dk-tg"><rect class="pl-sh"/><rect class="pl"/><rect class="pl-hi"/><rect class="pl-bar"/><text class="t1" text-anchor="middle">${d.name}</text><text class="t2" text-anchor="middle">${d.sub}</text></g></g></a>`; });
+    scene.innerHTML = o + "</svg>"; scene.dataset.gb = tall ? "tall" : "wide";
+    fit(sd);
   };
-  // fit the 3D laptop over where the drawn one lies
-  const place = () => { if (!st) return; const scene = desk.querySelector(".dk-scene"), a = desk.querySelector(".dk-laptop .dk-lift"); if (!scene || !a) return;
-    if (st.cv.parentNode !== scene) scene.append(st.cv);
-    const sr = scene.getBoundingClientRect(), r = a.getBoundingClientRect(); if (!r.width) return;
-    const s = desk.classList.contains("dk-3d") ? 1.05 : 1, w = r.width / s * 1.7, h = r.height / s * 1.9, cx = (r.left + r.width / 2 - sr.left) / s, cy = (r.top + r.height / 2 - sr.top) / s;
-    Object.assign(st.cv.style, { left: (cx - w / 2) + "px", top: (cy - h * 0.5) + "px", width: w + "px", height: h + "px" });
-    st.R.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); st.R.setSize(w, h, false); st.cam.aspect = w / h;
-    // the drawn laptop's base spans about 0.62 of its bounding width; the model's 0.31 m should do the same
-    const span = 0.31 / ((r.width / s * 0.8) / w); st.cam.fov = 26; const d = span / (2 * Math.tan(st.cam.fov * Math.PI / 360) * st.cam.aspect);
-    st.dist = d; st.cam.updateProjectionMatrix(); st.rot = -2 * Math.PI / 180; kick(); };
-  const draw = () => { const { cam, L, lid, R, S } = st;
-    const pitch = 0.98 + st.pit, d = st.dist; cam.position.set(Math.sin(st.yaw * 0.6) * d * 0.25, Math.cos(pitch) * d, Math.sin(pitch) * d * 0.98 + 0.01); cam.up.set(0, 1, 0); cam.lookAt(0, 0.03, -0.012);
-    L.rotation.y = st.rot + st.yaw; lid.rotation.x = -(Math.PI - st.open); R.render(S, cam); };
-  const kick = () => { if (!st || st.raf) return; st.raf = requestAnimationFrame(step); };
-  const step = () => { st.raf = 0; const e = RM ? 1 : 0.12; st.yaw += (st.yawT - st.yaw) * e; st.pit += (st.pitT - st.pit) * e; st.open += (st.openT - st.open) * e; draw();
-    if (Math.abs(st.yawT - st.yaw) + Math.abs(st.pitT - st.pit) + Math.abs(st.openT - st.open) > 0.0005) kick(); };
-  const go = async () => { let T3; try { T3 = await load(); } catch (e) { return; } if (!T3 || st) return;
-    try { build(T3); } catch (e) { st = null; return; }
-    // if the browser ever drops the 3D context, fall back to the drawn laptop rather than an empty patch
-    st.cv.addEventListener("webglcontextlost", e => { e.preventDefault(); desk.classList.remove("dk-3dl"); st.cv.style.display = "none"; });
-    st.cv.addEventListener("webglcontextrestored", () => { st.cv.style.display = ""; desk.classList.add("dk-3dl"); kick(); });
-    desk.classList.add("dk-3dl"); place(); requestAnimationFrame(() => st.cv.classList.add("in"));
-    // the desk rebuilds itself on resize; put the model back each time
-    new MutationObserver(() => { if (st && !st.cv.isConnected) place(); }).observe(desk, { childList: true, subtree: true });
-    addEventListener("resize", () => setTimeout(place, 60));
-    const lap = () => desk.querySelector(".dk-laptop");
-    desk.addEventListener("pointerover", e => { if (lap() && lap().contains(e.target)) { st.openT = 1.98; st.scrM.emissiveIntensity = 1.05; kick(); } });
-    desk.addEventListener("pointerout", e => { if (lap() && lap().contains(e.target) && !lap().contains(e.relatedTarget)) { st.openT = 1.86; st.scrM.emissiveIntensity = 0.85; kick(); } });
-    if (fine && !RM) addEventListener("pointermove", e => { if (!desk.classList.contains("on")) return; st.yawT = (e.clientX / innerWidth - 0.5) * 0.22; st.pitT = (e.clientY / innerHeight - 0.5) * 0.12; kick(); }, { passive: true });
-    window.__laptop3d = { st: () => st, place }; };
-  // build it once the desk is on its way in (so the opening itself is never held up)
-  const check = () => { if (desk.classList.contains("on") || (window.scrollY > innerHeight * 0.1)) { go(); obs.disconnect(); } };
-  const obs = new MutationObserver(check); obs.observe(desk, { attributes: true, attributeFilter: ["class"] }); check();
+  // plaques: sized to their words, set just off the stone toward the middle of the board, kept on screen
+  const fit = sd => { const svg = scene.querySelector(".gb-svg"); if (!svg) return; const tall = svg.classList.contains("tall"), vb = svg.getAttribute("viewBox").split(/\s+/).map(Number), Ly = tall ? L.tall : L.wide;
+    sd = sd || (Ly.board[2] / BW) * cwp * 0.96;
+    for (const tg of svg.querySelectorAll(".dk-tag")) { const t = tg.firstChild, a = t.querySelector(".t1"), b = t.querySelector(".t2"); let w = 0;
+      try { w = Math.max(a.getBBox().width, b.getBBox().width); } catch (e) {} if (!(w > 0)) w = Math.max(a.textContent.length * (tall ? 30 : 20), 120);
+      const fs1 = tall ? 34 : 27, fs2 = tall ? 19 : 14, pad = tall ? 20 : 18, h = fs1 + fs2 + pad * 1.35, W = w + pad * 2 + 8, x = -W / 2, y = -h / 2, set = (el, o) => { for (const k in o) el.setAttribute(k, o[k]); };
+      set(t.querySelector(".pl"), { x, y, width: W, height: h, rx: 7 }); set(t.querySelector(".pl-sh"), { x: x + 2, y: y + 5, width: W, height: h, rx: 7 });
+      set(t.querySelector(".pl-hi"), { x: x + 2, y: y + 2, width: W - 4, height: h * 0.45, rx: 5 }); set(t.querySelector(".pl-bar"), { x: x + 2, y: y + h - (tall ? 9 : 7), width: W - 4, height: tall ? 7 : 5, rx: 2 });
+      a.setAttribute("y", y + pad * 0.55 + fs1 * 0.82); b.setAttribute("y", y + pad * 0.55 + fs1 + fs2 * 0.95 + 2);
+      const sx0 = +tg.dataset.sx, sy0 = +tg.dataset.sy, up = +tg.dataset.r < 9, cy = sy0 + (up ? -1 : 1) * (sd * 0.5 + h / 2 + 12);   // toward the nearer edge
+      const cx = Math.max(W / 2 + 12, Math.min(vb[2] - W / 2 - 12, sx0)); tg.setAttribute("transform", `translate(${cx.toFixed(1)} ${cy.toFixed(1)})`); } };
+  const tryBuild = () => { const tall = innerWidth / innerHeight < 0.9; if (scene.dataset.gb !== (tall ? "tall" : "wide") || !scene.querySelector(".gb-svg")) build(); };
+  // the desk rebuilds its own scene when the screen turns; put the board back each time
+  new MutationObserver(() => { if (!scene.querySelector(".gb-svg")) build(); }).observe(scene, { childList: true });
+  addEventListener("resize", () => setTimeout(tryBuild, 30));
+  if (document.fonts) { document.fonts.ready.then(() => fit()); }
+  build();
+  desk.classList.add("gbh");
+  // the little sketch each page keeps of where it came from: now a corner of the board with a stone on it
+  const D = window.__desk || {}, art0 = D.art;
+  const SIZE = { laptop: 430, manga: 220, folder: 250, notebook: 270, letter: 180, note: 160 };
+  const mini = k => { const s = SIZE[k] || 200, h = s / 2, st = s / 6, d = s * 0.15, door = DOORS.find(q => q.k === k), col = door && door.stone ? door.stone.col : 1;
+    let l = ""; for (let i = 0; i < 6; i++) { l += `<path d="M${-h + st * 0.5 + i * st} ${-h} V${h}M${-h} ${-h + st * 0.5 + i * st} H${h}"/>`; }
+    return `<g><rect x="${-h}" y="${-h}" width="${s}" height="${s}" rx="${s * 0.02}" fill="#dcae6a" stroke="#6e4519" stroke-width="${s * 0.012}"/><g stroke="rgba(30,18,6,0.8)" stroke-width="${s * 0.008}">${l}</g>` +
+      `<image href="${col === 1 ? urlB : urlW}" x="${(st * 0.5 - d * 0.55).toFixed(1)}" y="${(-st * 0.5 - d * 0.55).toFixed(1)}" width="${(d * 1.1).toFixed(1)}" height="${(d * 1.1).toFixed(1)}"/>` +
+      `<image href="${col === 1 ? urlW : urlB}" x="${(-st * 1.5 - d * 0.55).toFixed(1)}" y="${(st * 0.5 - d * 0.55).toFixed(1)}" width="${(d * 1.1).toFixed(1)}" height="${(d * 1.1).toFixed(1)}"/></g>`; };
+  window.__desk = Object.assign({}, D, { art: k => (k === "pencil" && art0 ? art0(k) : mini(k)), board: true });
 })();
 
 
@@ -11358,13 +11365,13 @@ const AMB = window.AMB = (() => {
   const NS = "http://www.w3.org/2000/svg";
   const OBJ = { projects: "laptop", polymind: "laptop", go: "laptop", fraguessr: "laptop", muse: "laptop", goglobal: "laptop", story: "manga", resume: "folder", blog: "notebook", hello: "letter", home: "note" };
   const VB = { laptop: "-285 -235 570 570", manga: "-140 -180 280 360", folder: "-175 -180 350 315", notebook: "-140 -185 350 410", letter: "-165 -112 330 224", note: "-100 -100 200 200" };
-  const CAP = { laptop: "on my laptop", manga: "on my desk", folder: "in the folder", notebook: "in my notebook", letter: "a letter to me", note: "back to my desk" };
+  const CAP = { laptop: "back to the board", manga: "back to the board", folder: "back to the board", notebook: "back to the board", letter: "back to the board", note: "back to the board" };
   const sketch = (k, cls) => `<svg class="dk-svg ${cls}" viewBox="${VB[k]}" aria-hidden="true">${D.art(k)}</svg>`;
   // 1. the object each page came from, pinned beside its heading
   const HEADS = { projects: "projects", polymind: "polymind", gofilm: "go", fraguessr: "fraguessr", muse: "muse", goglobal: "goglobal", resume: "resume", blog: "blog", hello: "hello" };
   for (const [id, pg] of Object.entries(HEADS)) {
     const sec = document.getElementById(id), head = sec && sec.querySelector(".part-head"); if (!head || head.querySelector(".pc-obj")) continue;
-    const k = OBJ[pg], a = document.createElement("a"); a.className = "pc-obj pc-" + k; a.href = "#hub"; a.setAttribute("aria-label", "Back to my desk");
+    const k = OBJ[pg], a = document.createElement("a"); a.className = "pc-obj pc-" + k; a.href = "#hub"; a.setAttribute("aria-label", "Back to the board");
     a.innerHTML = sketch(k, "pc-svg") + `<span class="pc-cap">${CAP[k]}</span>`; head.classList.add("pc-has"); head.prepend(a);
   }
   // 2. each page ending shows the next thing you'll pick up off the desk
@@ -11417,622 +11424,6 @@ const AMB = window.AMB = (() => {
   addEventListener("load", () => { if (pt.classList.contains("on")) { measure(); draw(); } });
   setPage();
   window.__thread = { state: () => ({ on: pt.classList.contains("on"), page: cur, span, objs: document.querySelectorAll(".pc-obj").length, next: document.querySelectorAll(".fin-obj").length }) };
-})();
-
-
-// v85: coming home (cinematic). The first time the desk comes up in a visit, you walk to my front door at night, it swings open,
-// you step in and look around the room, and the camera settles over my desk, which then becomes the real one.
-// A small three.js scene; the desk top is painted with the actual desk (its wood and everything on it), so the
-// last frame of the film and the first frame of the page are the same picture.
-(() => {
-  const desk = document.querySelector(".desk"); if (!desk) return;
-  const force = /[?&]house\b/.test(location.search), RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let played = false; try { played = !force && sessionStorage.getItem("bgHouse") === "1"; } catch (e) {}
-  if (RM && !force) return;
-  const loadThree = () => new Promise((ok, no) => {
-    if (window.THREE) return ok(window.THREE);
-    let s = document.querySelector('script[src="lib/three.min.js"]');
-    if (!s) { s = document.createElement("script"); s.src = "lib/three.min.js"; s.async = true; document.head.append(s); }
-    s.addEventListener("load", () => ok(window.THREE)); s.addEventListener("error", no); setTimeout(() => window.THREE ? ok(window.THREE) : no(), 8000);
-  });
-  // the desk, flattened into one picture: the wood, then every object as drawn, styles and all
-  // The desk top's picture. Normal mode paints the desk's viewBox to fill the canvas (the 3D desk top). Full mode (v94)
-  // paints the screen exactly as the desk page shows it: the photo and the drawing fitted into the page's own scene
-  // box, lamp and plant included, so the film's last frame can become the page.
-  const paintDesk = async (tall, lap, full) => {
-    const src = desk.querySelector(".dk-svg"), vb = src && src.viewBox.baseVal, sr = (lap && lap.sr) || (src ? src.getBoundingClientRect() : { left: 0, top: 0, width: innerWidth, height: innerHeight });
-    const kS = Math.min(2, 2048 / Math.max(innerWidth, innerHeight));
-    const W = full ? Math.round(innerWidth * kS) : tall ? 1152 : 2048, H = full ? Math.round(innerHeight * kS) : tall ? 2048 : 1280, c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
-    // where the scene box lands on the canvas
-    const box = full ? [sr.left * kS, sr.top * kS, sr.width * kS, sr.height * kS] : [0, 0, W, H];
-    g.fillStyle = "#5a361d"; g.fillRect(0, 0, W, H);
-    const bg = (desk.querySelector(".dk-photo").style.backgroundImage || "").match(/url\("?(.*?)"?\)$/);
-    const img = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; });
-    if (bg) { const w = await img(bg[1]); if (w) { const [bx, by, bw, bh] = box, s = Math.max(bw / w.width, bh / w.height); g.drawImage(w, bx + (bw - w.width * s) / 2, by + (bh - w.height * s) / 2, w.width * s, w.height * s); } }
-    if (src) {
-      const cl = src.cloneNode(true); if (!full) cl.querySelectorAll(".dk-lamp, .dk-plant").forEach(n => n.remove());   // v93: the plaques stay, as on the desk page
-      if (lap) cl.querySelectorAll(".dk-laptop .dk-lift, .dk-laptop .glow").forEach(n => n.setAttribute("style", "opacity:0"));
-      const css = [...document.styleSheets].flatMap(s => { try { return [...s.cssRules]; } catch (e) { return []; } }).filter(r => r.selectorText && /dk-/.test(r.selectorText) && !/\.desk\b|:hover|:focus/.test(r.selectorText)).map(r => r.cssText).join("\n");
-      cl.setAttribute("xmlns", "http://www.w3.org/2000/svg"); cl.setAttribute("width", Math.round(box[2])); cl.setAttribute("height", Math.round(box[3])); cl.setAttribute("preserveAspectRatio", full ? "xMidYMid meet" : "xMidYMid slice");
-      cl.insertAdjacentHTML("afterbegin", `<style>svg{--font-ui:Helvetica,Arial,sans-serif;--font-display:Georgia,serif}${css}</style>${(document.querySelector(".dk-defs") || {}).innerHTML || ""}`);
-      const u = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(cl)], { type: "image/svg+xml" }));
-      const w = await img(u); if (w) g.drawImage(w, box[0], box[1], box[2], box[3]); URL.revokeObjectURL(u);
-      // v93: the laptop as the desk page shows it, the 3D one, laid in where it sits on the page. The page fits its
-      // viewBox into the scene box ("meet"); map screen points through that into this canvas.
-      if (lap) { let toX, toY;
-        if (full) { toX = x => x * kS; toY = y => y * kS; }
-        else { const K0 = Math.min(sr.width / vb.width, sr.height / vb.height), K = Math.max(W / vb.width, H / vb.height);
-          toX = x => ((x - sr.left - (sr.width - vb.width * K0) / 2) / K0) * K + (W - vb.width * K) / 2; toY = y => ((y - sr.top - (sr.height - vb.height * K0) / 2) / K0) * K + (H - vb.height * K) / 2; }
-        const x0 = toX(lap.r.left), y0 = toY(lap.r.top); g.drawImage(lap.snap, x0, y0, toX(lap.r.right) - x0, toY(lap.r.bottom) - y0); }
-    }
-    return c;
-  };
-  const noise = (w, h, f) => { const c = document.createElement("canvas"); c.width = w; c.height = h; const g = c.getContext("2d"); f(g, w, h); return c; };
-  async function play() {
-    const T3 = await loadThree(); if (!T3) { dispatchEvent(new Event("house:done")); return; }
-    const tall = innerWidth / innerHeight < 0.9, dW = tall ? 0.9 : 1.6, dD = tall ? 1.6 : 1.0, dX = 0.9, dZ = -2.5 + dD / 2 + 0.02, top = 0.77;
-    const deskPic = await paintDesk(tall);
-    const wrap = document.createElement("div"); wrap.className = "house"; wrap.setAttribute("aria-hidden", "true");
-    wrap.innerHTML = `<canvas></canvas><div class="hs-vig"></div><div class="hs-grain"></div><div class="hs-bar t"></div><div class="hs-bar b"></div><p class="hs-cap">Come in.</p><button class="hs-skip" type="button" aria-label="Skip the walk in">Skip <span aria-hidden="true">›</span></button>`;
-    document.body.append(wrap); const cv = wrap.querySelector("canvas");
-    { const c = noise(160, 160, (g, w, h) => { const im = g.createImageData(w, h); for (let i = 0; i < im.data.length; i += 4) { const v = Math.random() * 255; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255; } g.putImageData(im, 0, 0); });
-      wrap.querySelector(".hs-grain").style.backgroundImage = `url(${c.toDataURL()})`; }
-    const LOW = !!window.__lite && !force;   // software rendering: still the whole tour, just lighter on the pixels
-    const R = new T3.WebGLRenderer({ canvas: cv, antialias: !LOW, powerPreference: "high-performance" }); R.setPixelRatio(LOW ? Math.min(devicePixelRatio, 1) * 0.75 : Math.min(devicePixelRatio, 2)); R.setSize(innerWidth, innerHeight, false);
-    R.outputEncoding = T3.sRGBEncoding; R.toneMapping = T3.ACESFilmicToneMapping; R.toneMappingExposure = 0; R.shadowMap.enabled = !LOW; R.shadowMap.type = T3.PCFSoftShadowMap; R.physicallyCorrectLights = false;
-    const S = new T3.Scene(); S.background = new T3.Color(0x060912); S.fog = new T3.FogExp2(0x060912, 0.035);
-    const FOV = tall ? 64 : 44, cam = new T3.PerspectiveCamera(FOV, innerWidth / innerHeight, 0.02, 80);
-    const rnd = (() => { let q = 37; return () => (q = (q * 16807) % 2147483647) / 2147483647; })();
-    const tex = (c, rx = 1, ry = 1, srgb = true) => { const t = new T3.CanvasTexture(c); if (srgb) t.encoding = T3.sRGBEncoding; t.wrapS = t.wrapT = T3.RepeatWrapping; t.repeat.set(rx, ry); t.anisotropy = R.capabilities.getMaxAnisotropy(); return t; };
-    const lin = m => { if (m.color) m.color.convertSRGBToLinear(); if (m.emissive) m.emissive.convertSRGBToLinear(); return m; }, M = o => lin(new T3.MeshStandardMaterial(o)), P = o => lin(new T3.MeshPhysicalMaterial(o)), B = o => lin(new T3.MeshBasicMaterial(o));
-    // a box with softened edges, so nothing in the house is a raw cube
-    const rbox = (w, h, d, r = 0.01, seg = 4) => { const g = new T3.BoxGeometry(w, h, d, seg, seg, seg), p = g.attributes.position, v = new T3.Vector3(), c = new T3.Vector3();
-      r = Math.min(r, w / 2 - 1e-4, h / 2 - 1e-4, d / 2 - 1e-4); const hw = w / 2 - r, hh = h / 2 - r, hd = d / 2 - r;
-      for (let i = 0; i < p.count; i++) { v.fromBufferAttribute(p, i); c.set(Math.max(-hw, Math.min(hw, v.x)), Math.max(-hh, Math.min(hh, v.y)), Math.max(-hd, Math.min(hd, v.z)));
-        const n = v.clone().sub(c); if (n.lengthSq() > 1e-12) v.copy(c).add(n.normalize().multiplyScalar(r)); p.setXYZ(i, v.x, v.y, v.z); }
-      g.computeVertexNormals(); return g; };
-    const put = (geo, mat, x, y, z, o = {}) => { const m = new T3.Mesh(geo, mat); m.position.set(x, y, z); if (o.ry) m.rotation.y = o.ry; if (o.rx) m.rotation.x = o.rx; if (o.rz) m.rotation.z = o.rz;
-      m.castShadow = o.cast !== false; m.receiveShadow = true; (o.to || S).add(m); return m; };
-    const rb = (w, h, d, mat, x, y, z, o = {}) => put(o.r === 0 ? new T3.BoxGeometry(w, h, d) : rbox(w, h, d, o.r || 0.008, o.seg || 3), mat, x, y, z, o);
-    // ---- painted surfaces
-    const oakC = noise(1024, 1024, (g, w, h) => { const rows = 8, rh = h / rows; for (let i = 0; i < rows; i++) { const y = i * rh, cut = (i * 389) % w;
-      for (const [x0, x1] of [[0, cut], [cut, w]]) { const L = 26 + rnd() * 8; g.fillStyle = `hsl(${26 + rnd() * 6},${34 + rnd() * 10}%,${L}%)`; g.fillRect(x0, y, x1 - x0, rh);
-        for (let k = 0; k < 70; k++) { g.strokeStyle = `rgba(${rnd() < 0.5 ? "35,18,6" : "255,220,170"},${0.03 + rnd() * 0.09})`; g.lineWidth = 0.5 + rnd() * 1.6; g.beginPath(); const yy = y + rnd() * rh; g.moveTo(x0, yy);
-          g.bezierCurveTo(x0 + (x1 - x0) * 0.3, yy + rnd() * 8 - 4, x0 + (x1 - x0) * 0.7, yy + rnd() * 8 - 4, x1, yy + rnd() * 4 - 2); g.stroke(); }
-        if (rnd() < 0.5) { g.strokeStyle = "rgba(40,20,8,0.25)"; g.lineWidth = 1; const cx = x0 + rnd() * (x1 - x0), cy = y + rh / 2; for (let r = 3; r < 18; r += 3) { g.beginPath(); g.ellipse(cx, cy, r * 2.2, r * 0.7, 0, 0, 7); g.stroke(); } } }
-      g.fillStyle = "rgba(0,0,0,0.6)"; g.fillRect(0, y, w, 2); g.fillRect(cut, y, 2, rh); } });
-    const plasterC = noise(512, 512, (g, w, h) => { g.fillStyle = "#c9baa2"; g.fillRect(0, 0, w, h); for (let i = 0; i < 9000; i++) { g.fillStyle = `rgba(${rnd() < 0.5 ? "255,250,240" : "80,62,44"},${rnd() * 0.05})`; const s = 1 + rnd() * 4; g.fillRect(rnd() * w, rnd() * h, s, s); } });
-    const oak = tex(oakC, 2.4, 2.4), plaster = tex(plasterC, 3, 1.6);
-    const wallM = M({ map: plaster, color: 0xc9b08c, roughness: 0.95 }), trimM = M({ color: 0xece4d4, roughness: 0.5 }), floorM = M({ map: oak, roughness: 0.42, metalness: 0 });
-    const walnut = M({ color: 0x3e2414, roughness: 0.45 }), darkWood = M({ color: 0x2c1a0f, roughness: 0.55 }), brass = M({ color: 0xc9a253, metalness: 1, roughness: 0.28 }), steel = M({ color: 0x9aa0a8, metalness: 1, roughness: 0.3 });
-    const fabric = M({ color: 0x222b3a, roughness: 1 }), fabric2 = M({ color: 0x29344a, roughness: 1 }), black = M({ color: 0x111111, roughness: 0.4 });
-    // ---- the room shell: 6 x 5 m, 2.7 m; door in the near wall, window in the right wall, desk at the far wall
-    put(new T3.PlaneGeometry(6, 5), floorM, 0, 0, 0, { rx: -Math.PI / 2, cast: false });
-    put(new T3.PlaneGeometry(6, 5), M({ color: 0xd8cfbf, roughness: 1 }), 0, 2.7, 0, { rx: Math.PI / 2, cast: false });
-    const wall = (w, h, x, y, z, ry = 0) => rb(w, h, 0.12, wallM, x, y, z, { ry, r: 0, cast: false });
-    wall(6, 2.7, 0, 1.35, -2.56); wall(5, 2.7, -3.06, 1.35, 0, Math.PI / 2);
-    // right wall, with a real opening for the window: z from -1.15 to 0.35, y from 0.9 to 2.2
-    wall(2.35, 2.7, 3.06, 1.35, -2.325, Math.PI / 2); wall(2.15, 2.7, 3.06, 1.35, 1.425, Math.PI / 2); wall(1.5, 0.9, 3.06, 0.45, -0.4, Math.PI / 2); wall(1.5, 0.5, 3.06, 2.45, -0.4, Math.PI / 2);
-    wall(2.55, 2.7, -1.725, 1.35, 2.575); wall(2.55, 2.7, 1.725, 1.35, 2.575); wall(0.9, 0.6, 0, 2.4, 2.575);
-    // skirting and crown moulding all round
-    for (const [w, x, z, ry] of [[6, 0, -2.49, 0], [5, -2.99, 0, Math.PI / 2], [5, 2.99, 0, Math.PI / 2], [2.55, -1.725, 2.49, 0], [2.55, 1.725, 2.49, 0]]) {
-      rb(w, 0.12, 0.022, trimM, x, 0.06, z, { ry, cast: false, r: 0.005 }); rb(w, 0.08, 0.06, trimM, x, 2.66, z + (ry ? 0 : (z < 0 ? 0.02 : -0.02)), { ry, cast: false, r: 0.02 }); }
-    // ---- the front door: panelled, with a small lit window, hinged on its left
-    const hinge = new T3.Group(); hinge.position.set(-0.45, 0, 2.575); S.add(hinge);
-    const doorM = M({ color: 0x2b4166, roughness: 0.4 });
-    rb(0.9, 2.1, 0.05, doorM, 0.45, 1.05, 0, { to: hinge, r: 0.006 });
-    for (const [x, y, h] of [[0.22, 0.45, 0.6], [-0.22, 0.45, 0.6], [0.22, 1.2, 0.6], [-0.22, 1.2, 0.6]]) for (const z of [0.03, -0.03]) rb(0.3, h, 0.02, M({ color: 0x24344e, roughness: 0.45 }), 0.45 + x, y, z, { to: hinge, r: 0.008 });
-    const pane = put(new T3.PlaneGeometry(0.62, 0.32), B({ color: 0xffcf8a }), 0.45, 1.78, 0.027, { to: hinge, cast: false }); const pane2 = pane.clone(); pane2.rotation.y = Math.PI; pane2.position.z = -0.027; hinge.add(pane2);
-    for (const x of [-0.105, 0.105]) rb(0.02, 0.34, 0.06, doorM, 0.45 + x, 1.78, 0, { to: hinge, r: 0.004 });
-    const knob = new T3.SphereGeometry(0.032, 20, 14); put(knob, brass, 0.8, 1.0, 0.055, { to: hinge }); put(knob, brass, 0.8, 1.0, -0.055, { to: hinge });
-    rb(0.05, 0.16, 0.012, brass, 0.8, 1.0, 0.03, { to: hinge, r: 0.004 });
-    rb(0.08, 2.2, 0.22, trimM, -0.49, 1.1, 2.575, { r: 0.01, cast: false }); rb(0.08, 2.2, 0.22, trimM, 0.49, 1.1, 2.575, { r: 0.01, cast: false }); rb(1.06, 0.08, 0.22, trimM, 0, 2.14, 2.575, { r: 0.01, cast: false });
-    rb(0.08, 0.12, 0.012, trimM, -0.75, 1.25, 2.49, { cast: false, r: 0.004 });   // the light switch
-    // ---- outside: clapboard, eave and gutter, steps, mat, porch lamp, bushes, a path, a sky
-    const sidingC = noise(512, 512, (g, w, h) => { g.fillStyle = "#5d6b85"; g.fillRect(0, 0, w, h); for (let y = 0; y < h; y += 32) { const gr = g.createLinearGradient(0, y, 0, y + 32); gr.addColorStop(0, "rgba(255,255,255,0.08)"); gr.addColorStop(0.85, "rgba(0,0,0,0.1)"); gr.addColorStop(1, "rgba(0,0,0,0.5)"); g.fillStyle = gr; g.fillRect(0, y, w, 32); } });
-    const sideM = M({ map: tex(sidingC, 5, 3), roughness: 0.8 });
-    rb(3.05, 3.4, 0.05, sideM, -1.975, 1.7, 2.675, { r: 0, cast: false }); rb(3.05, 3.4, 0.05, sideM, 1.975, 1.7, 2.675, { r: 0, cast: false }); rb(0.9, 1.3, 0.05, sideM, 0, 2.75, 2.675, { r: 0, cast: false });
-    rb(7.4, 0.2, 0.9, M({ color: 0x1b202b, roughness: 0.8 }), 0, 3.45, 3.0, { r: 0.02 }); const gut = put(new T3.CylinderGeometry(0.06, 0.06, 7.4, 16), M({ color: 0x8a8f96, metalness: 0.7, roughness: 0.4 }), 0, 3.32, 3.42, { rz: Math.PI / 2 });
-    const stone = M({ color: 0x5a5650, roughness: 0.9 });
-    rb(1.8, 0.14, 0.5, stone, 0, 0.07, 2.95, { r: 0.02 }); rb(2.0, 0.14, 0.5, stone, 0, 0.0, 3.35, { r: 0.02 });
-    for (let i = 0; i < 9; i++) rb(0.9 + rnd() * 0.25, 0.04, 0.5 + rnd() * 0.15, M({ color: 0x48453f, roughness: 1 }), (rnd() - 0.5) * 0.15, 0, 4.0 + i * 0.7, { ry: (rnd() - 0.5) * 0.3, r: 0.03 });
-    put(new T3.PlaneGeometry(40, 30), M({ color: 0x0d140e, roughness: 1 }), 0, -0.02, 14, { rx: -Math.PI / 2, cast: false });
-    for (let i = 0; i < 260; i++) { const b = put(new T3.ConeGeometry(0.02, 0.12 + rnd() * 0.1, 3), M({ color: 0x1c331d, roughness: 1 }), (rnd() < 0.5 ? -1 : 1) * (0.65 + rnd() * 2.5), 0.05, 3.4 + rnd() * 6, { cast: false }); b.rotation.z = (rnd() - 0.5) * 0.5; }
-    for (const [x, r, z] of [[-1.25, 0.44, 3.05], [-1.85, 0.34, 3.0], [1.3, 0.42, 3.05], [1.9, 0.32, 3.0], [-2.5, 0.5, 3.1], [2.6, 0.46, 3.1]]) {
-      for (let k = 0; k < 4; k++) { const b = put(new T3.IcosahedronGeometry(r * (0.6 + rnd() * 0.3), 1), M({ color: k % 2 ? 0x1d3a21 : 0x234428, roughness: 1, flatShading: true }), x + (rnd() - 0.5) * r, r * 0.6 + rnd() * 0.1, z + (rnd() - 0.5) * 0.3); b.scale.y = 0.8; } }
-    const matC = noise(512, 256, (g, w, h) => { g.fillStyle = "#8a6a3e"; g.fillRect(0, 0, w, h); for (let i = 0; i < 16000; i++) { g.fillStyle = `rgba(${rnd() < 0.5 ? "50,30,10" : "200,160,100"},${rnd() * 0.25})`; g.fillRect(rnd() * w, rnd() * h, 1, 3); }
-      g.strokeStyle = "#2a1a0c"; g.lineWidth = 8; g.strokeRect(18, 18, w - 36, h - 36); g.fillStyle = "#2a1a0c"; g.font = "bold 92px Georgia, serif"; g.textAlign = "center"; g.fillText("MOVE 37", w / 2, h / 2 + 32); });
-    put(new T3.PlaneGeometry(0.9, 0.45), M({ map: tex(matC), roughness: 1 }), 0, 0.146, 2.95, { rx: -Math.PI / 2, cast: false });
-    const porch = new T3.PointLight(0xffbf72, 2.6, 8, 1.6); porch.position.set(0.82, 2.12, 2.92); S.add(porch);
-    rb(0.16, 0.26, 0.12, M({ color: 0x151515, metalness: 0.6, roughness: 0.4 }), 0.82, 2.12, 2.82, { r: 0.01, cast: false });
-    put(new T3.CylinderGeometry(0.055, 0.055, 0.14, 16), B({ color: 0xffe0a6 }), 0.82, 2.1, 2.9, { cast: false });
-    const numC = noise(256, 128, g => { g.fillStyle = "#151515"; g.fillRect(0, 0, 256, 128); g.fillStyle = "#d9b36c"; g.font = "bold 96px Georgia, serif"; g.textAlign = "center"; g.fillText("37", 128, 100); });
-    put(new T3.PlaneGeometry(0.24, 0.12), M({ map: tex(numC), roughness: 0.4, metalness: 0.3 }), -0.82, 1.78, 2.705, { cast: false });
-    // the mailbox, a letter sticking out (it's addressed to you)
-    rb(0.22, 0.3, 0.14, M({ color: 0x0f0f10, metalness: 0.5, roughness: 0.4 }), -0.82, 1.3, 2.76, { r: 0.015 }); rb(0.16, 0.08, 0.004, M({ color: 0xefe6d2, roughness: 1 }), -0.8, 1.47, 2.79, { r: 0.002, rz: 0.12 });
-    // the sky: stars and the moon
-    { const g = new T3.BufferGeometry(), n = 900, a = new Float32Array(n * 3); for (let i = 0; i < n; i++) { const th = rnd() * Math.PI * 2, ph = rnd() * 1.2, r = 60; a.set([Math.cos(th) * Math.cos(ph) * r, Math.sin(ph) * r + 2, Math.sin(th) * Math.cos(ph) * r], i * 3); }
-      g.setAttribute("position", new T3.BufferAttribute(a, 3)); S.add(new T3.Points(g, new T3.PointsMaterial({ color: 0xdfe6ff, size: 0.18, sizeAttenuation: true, fog: false }))); }
-    const glowC = noise(128, 128, (g, w) => { const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.25, "rgba(255,255,255,0.45)"); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); });
-    const glowT = tex(glowC, 1, 1, false);
-    const glow = (x, y, z, s, col, op = 0.6) => { const sp = new T3.Sprite(new T3.SpriteMaterial({ map: glowT, color: col, transparent: true, opacity: op, blending: T3.AdditiveBlending, depthWrite: false, fog: false })); sp.position.set(x, y, z); sp.scale.set(s, s, 1); S.add(sp); return sp; };
-    const moonM = put(new T3.SphereGeometry(1.4, 32, 20), B({ color: 0xf3f0dc, fog: false }), 22, 18, -30, { cast: false }); glow(22, 18, -30, 14, 0xbfd0ff, 0.35);
-    glow(0.82, 2.1, 2.95, 0.9, 0xffc27a, 0.55);
-    // ---- the window: frame, sill, mullions, glass; the night is really out there, so it moves as you do
-    const winX = 3.06, wz = -0.4;
-    rb(0.16, 0.06, 1.62, trimM, winX - 0.06, 0.88, wz, { r: 0.01 }); rb(0.1, 1.36, 0.06, trimM, winX, 1.55, wz - 0.75, { r: 0.008, cast: false }); rb(0.1, 1.36, 0.06, trimM, winX, 1.55, wz + 0.75, { r: 0.008, cast: false });
-    rb(0.1, 0.06, 1.56, trimM, winX, 2.2, wz, { r: 0.008, cast: false }); rb(0.05, 1.3, 0.04, trimM, winX, 1.55, wz, { r: 0.006, cast: false }); rb(0.05, 0.04, 1.5, trimM, winX, 1.55, wz, { r: 0.006, cast: false });
-    put(new T3.PlaneGeometry(1.5, 1.3), P({ color: 0x9fb4d8, roughness: 0.05, metalness: 0, transparent: true, opacity: 0.12, clearcoat: 1 }), winX + 0.01, 1.55, wz, { ry: -Math.PI / 2, cast: false });
-    rb(0.22, 0.04, 1.7, stone, winX + 0.14, 0.9, wz, { r: 0.008 });
-    // out the window: a hill, trees, the moon's light, and someone watching from the sill
-    const nightC = noise(1024, 512, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, "#0d1730"); gr.addColorStop(0.65, "#2a3d63"); gr.addColorStop(1, "#3f5580"); g.fillStyle = gr; g.fillRect(0, 0, w, h);
-      for (let i = 0; i < 260; i++) { g.fillStyle = `rgba(255,255,255,${0.3 + rnd() * 0.7})`; const s2 = rnd() < 0.1 ? 2 : 1; g.fillRect(rnd() * w, rnd() * h * 0.6, s2, s2); }
-      const mg = g.createRadialGradient(w * 0.62, h * 0.22, 0, w * 0.62, h * 0.22, 90); mg.addColorStop(0, "rgba(220,230,255,0.5)"); mg.addColorStop(1, "rgba(220,230,255,0)"); g.fillStyle = mg; g.fillRect(0, 0, w, h);
-      g.beginPath(); g.arc(w * 0.62, h * 0.22, 22, 0, 7); g.fillStyle = "#f4f1dc"; g.fill();
-      for (const [y0, col, amp] of [[0.7, "#16213a", 30], [0.8, "#0c1324", 22]]) { g.fillStyle = col; g.beginPath(); g.moveTo(0, h); for (let x = 0; x <= w; x += 8) g.lineTo(x, h * y0 - Math.sin(x * 0.006 + y0 * 9) * amp - Math.sin(x * 0.021) * amp * 0.4); g.lineTo(w, h); g.fill(); }
-      for (let i = 0; i < 3; i++) { g.fillStyle = "rgba(255,200,120,0.9)"; g.fillRect(w * (0.2 + i * 0.27), h * 0.83 + i * 4, 3, 2); } });
-    put(new T3.PlaneGeometry(16, 8), B({ map: tex(nightC), fog: false }), 9, 2.6, wz, { ry: -Math.PI / 2, cast: false });
-    for (let i = 0; i < 18; i++) { const h = 1.5 + rnd() * 2.5, t = put(new T3.ConeGeometry(0.4 + rnd() * 0.4, h, 7), M({ color: 0x0a1410, roughness: 1, flatShading: true, fog: false }), 4.2 + rnd() * 4, h / 2 - 0.2, wz + (rnd() - 0.5) * 16, { cast: false }); }
-    const crow = new T3.Group(); crow.position.set(winX + 0.16, 0.92, wz + 0.35); crow.rotation.y = -Math.PI / 2 - 0.5; S.add(crow);
-    const crowM = P({ color: 0x08080b, roughness: 0.35, clearcoat: 0.6 });
-    { const b = put(new T3.SphereGeometry(0.075, 20, 14), crowM, 0, 0.09, 0, { to: crow }); b.scale.set(1, 0.9, 1.6);
-      const hd = put(new T3.SphereGeometry(0.045, 18, 12), crowM, 0, 0.16, 0.1, { to: crow });
-      const bk = put(new T3.ConeGeometry(0.016, 0.07, 10), M({ color: 0x1d1d22, roughness: 0.4 }), 0, 0.155, 0.17, { to: crow, rx: Math.PI / 2 });
-      const tl = put(new T3.BoxGeometry(0.06, 0.012, 0.14), crowM, 0, 0.07, -0.15, { to: crow, rx: -0.3 });
-      for (const s of [-1, 1]) { const e = put(new T3.SphereGeometry(0.008, 8, 6), B({ color: 0xe0a03a }), s * 0.03, 0.17, 0.125, { to: crow, cast: false }); put(new T3.CylinderGeometry(0.004, 0.004, 0.05, 6), black, s * 0.02, 0.02, 0.01, { to: crow }); } }
-    // curtains with real folds, on a brass rod
-    for (const z of [wz - 0.95, wz + 0.95]) { const g = new T3.PlaneGeometry(0.5, 2.35, 40, 6), pa = g.attributes.position; for (let i = 0; i < pa.count; i++) { const x = pa.getX(i), y = pa.getY(i); pa.setZ(i, Math.sin(x * 40 + y * 0.6) * 0.04 * (0.6 + (1.17 - y) * 0.25)); } g.computeVertexNormals();
-      put(g, M({ color: 0x7a3333, roughness: 0.95, side: T3.DoubleSide }), 2.92, 1.4, z, { ry: -Math.PI / 2 }); }
-    put(new T3.CylinderGeometry(0.015, 0.015, 2.5, 12), brass, 2.94, 2.5, wz, { rx: Math.PI / 2 });
-    // ---- the bookshelf: every book its own size and colour, some leaning, and a few things that aren't books
-    const shX = -2.82, shZ = -0.6, shW = 1.9;
-    rb(0.38, 2.24, 0.04, walnut, shX, 1.12, shZ - shW / 2, { r: 0.006 }); rb(0.38, 2.24, 0.04, walnut, shX, 1.12, shZ + shW / 2, { r: 0.006 }); rb(0.03, 2.24, shW, walnut, shX - 0.18, 1.12, shZ, { r: 0.004, cast: false });
-    for (let i = 0; i < 6; i++) rb(0.38, 0.03, shW, walnut, shX, 0.06 + i * 0.43, shZ, { r: 0.006 });
-    const spineC = noise(64, 256, (g, w, h) => { g.fillStyle = "#fff"; g.fillRect(0, 0, w, h); g.fillStyle = "rgba(0,0,0,0.25)"; g.fillRect(0, 18, w, 4); g.fillRect(0, h - 26, w, 4); g.fillStyle = "rgba(255,230,160,0.9)"; g.fillRect(0, 30, w, 2); g.fillRect(0, h - 34, w, 2); g.fillStyle = "rgba(255,240,200,0.8)"; for (let k = 0; k < 7; k++) g.fillRect(w * 0.3, 70 + k * 14, w * 0.4, 6); });
-    const spineT = tex(spineC, 1, 1, true), cols = [0x7a2e2e, 0x2e4a7a, 0xb08a42, 0x3d6b4a, 0xd8cfbb, 0x5a3d6b, 0x8a5a2a, 0x1f2024, 0x9c4a2a, 0x2a5a5a];
-    const bookMats = cols.map(c => [M({ color: c, map: spineT, roughness: 0.7 }), M({ color: c, roughness: 0.8 }), M({ color: 0xeee6d6, roughness: 1 })]);
-    const book = (x, y, z, w, h, d, ci, lean = 0) => { const [sp, cv, pg] = bookMats[ci]; const m = new T3.Mesh(rbox(d, h, w, 0.004, 2), [sp, pg, pg, pg, cv, cv]); m.position.set(x, y + h / 2, z); m.rotation.x = lean; m.castShadow = m.receiveShadow = true; S.add(m); return m; };
-    const keep = { 1: [-1.0, -0.62], 2: [-0.25, 0.1], 3: [-1.45, -1.1], 4: [-0.6, -0.15] };
-    for (let s = 0; s < 5; s++) { let z = shZ - shW / 2 + 0.03; const end = shZ + shW / 2 - 0.03, sy = 0.075 + s * 0.43;
-      while (z < end - 0.03) { const k = keep[s]; if (k && z > shZ + k[0] && z < shZ + k[1]) { z = shZ + k[1] + 0.01; continue; }
-        const w = 0.022 + rnd() * 0.04, h = 0.24 + rnd() * 0.12, d = 0.17 + rnd() * 0.06; if (z + w > end) break;
-        if (rnd() < 0.05 && z + 0.12 < end) { book(shX + 0.06, sy, z + 0.06, w, h, d, (rnd() * cols.length) | 0, 0.32); z += 0.12; continue; }
-        book(shX + 0.08 - (0.23 - d) / 2, sy, z + w / 2, w, h, d, (rnd() * cols.length) | 0); z += w + 0.002; } }
-    // a stack lying flat, with the manga on top, face up
-    for (let i = 0; i < 4; i++) { const m = new T3.Mesh(rbox(0.2, 0.03, 0.27, 0.004, 2), bookMats[(i * 3) % cols.length][1]); m.position.set(shX + 0.06, 0.09 + 3 * 0.43 + i * 0.031, shZ + 0.82); m.rotation.y = (rnd() - 0.5) * 0.2; m.castShadow = true; S.add(m); }
-    const mangaC = noise(256, 352, (g, w, h) => { g.fillStyle = "#f4efe3"; g.fillRect(0, 0, w, h); g.fillStyle = "#b8322a"; g.fillRect(0, 0, 22, h); g.fillStyle = "#141210"; g.font = "900 46px Helvetica, Arial"; g.fillText("MOVE 37", 34, 70);
-      g.strokeStyle = "#141210"; g.lineWidth = 3; g.beginPath(); g.arc(150, 200, 60, 0, 7); g.stroke(); g.beginPath(); g.arc(160, 188, 14, 0, 7); g.fill(); g.font = "700 12px Helvetica"; g.fillText("A STORY IN PENCIL · VOL. 1", 40, 330); });
-    put(rbox(0.2, 0.012, 0.27, 0.003, 2), [M({ color: 0xf4efe3 }), M({ color: 0xf4efe3 }), M({ map: tex(mangaC), roughness: 0.7 }), M({ color: 0xf4efe3 }), M({ color: 0xf4efe3 }), M({ color: 0xf4efe3 })], shX + 0.06, 0.09 + 3 * 0.43 + 4 * 0.031 + 0.006, shZ + 0.82, { ry: -0.08 });
-    // easter eggs on the shelves: the trophy, the globe, the perfume, the little Polytopia island, the colour wheel
-    const lathe = (pts, mat, x, y, z, s = 1) => { const g = new T3.LatheGeometry(pts.map(([a, b]) => new T3.Vector2(a * s, b * s)), 40); return put(g, mat, x, y, z); };
-    const sy = i => 0.075 + i * 0.43;
-    { const gold = M({ color: 0xe0b34a, metalness: 1, roughness: 0.18 }); const tx = shX + 0.04, tz = shZ - 0.8;
-      rb(0.09, 0.05, 0.09, black, tx, sy(1) + 0.025, tz, { r: 0.004 }); lathe([[0, 0], [0.025, 0], [0.012, 0.02], [0.008, 0.08], [0.04, 0.1], [0.055, 0.16], [0.05, 0.19], [0, 0.19]], gold, tx, sy(1) + 0.05, tz);
-      for (const s of [-1, 1]) put(new T3.TorusGeometry(0.022, 0.005, 8, 20, Math.PI), gold, tx, sy(1) + 0.2, tz + s * 0.055, { ry: s * Math.PI / 2, rz: -Math.PI / 2 });
-      const pl = noise(128, 64, g => { g.fillStyle = "#c9a253"; g.fillRect(0, 0, 128, 64); g.fillStyle = "#2a1a08"; g.font = "bold 18px Georgia"; g.textAlign = "center"; g.fillText("WORLD YOUTH GO", 64, 26); g.fillText("2023 · TOP 8", 64, 50); });
-      put(new T3.PlaneGeometry(0.07, 0.035), M({ map: tex(pl), metalness: 0.6, roughness: 0.3 }), tx + 0.0455, sy(1) + 0.025, tz, { ry: Math.PI / 2, cast: false }); }
-    { const gz = shZ - 0.0, gx = shX + 0.04; const gc = noise(512, 256, (g, w, h) => { g.fillStyle = "#24507a"; g.fillRect(0, 0, w, h); g.fillStyle = "#c9b27a"; for (let i = 0; i < 26; i++) { g.beginPath(); g.ellipse(rnd() * w, h * 0.2 + rnd() * h * 0.6, 20 + rnd() * 50, 12 + rnd() * 30, rnd() * 3, 0, 7); g.fill(); }
-        g.fillStyle = "#e8d9a8"; for (let i = 0; i < 9; i++) { g.beginPath(); g.arc(rnd() * w, h * 0.25 + rnd() * h * 0.5, 4, 0, 7); g.fill(); } });
-      const glb = put(new T3.SphereGeometry(0.1, 40, 28), M({ map: tex(gc), roughness: 0.5 }), gx, sy(2) + 0.2, gz); glb.rotation.z = 0.41; S.userData.globe = glb;
-      put(new T3.TorusGeometry(0.115, 0.005, 8, 48, Math.PI * 1.3), brass, gx, sy(2) + 0.2, gz, { ry: Math.PI / 2, rz: 0.4 }); lathe([[0, 0], [0.06, 0], [0.05, 0.02], [0.01, 0.03], [0.008, 0.09], [0, 0.09]], brass, gx, sy(2), gz); }
-    { const px = shX + 0.05, pz = shZ - 1.25; rb(0.07, 0.11, 0.045, P({ color: 0xd9a24a, roughness: 0.05, transmission: 0.6, transparent: true, opacity: 0.75, clearcoat: 1, thickness: 0.02 }), px, sy(3) + 0.055, pz, { r: 0.012 });
-      put(new T3.CylinderGeometry(0.018, 0.018, 0.035, 20), M({ color: 0xd9b36c, metalness: 1, roughness: 0.2 }), px, sy(3) + 0.13, pz); put(new T3.CylinderGeometry(0.006, 0.006, 0.02, 10), brass, px, sy(3) + 0.105, pz);
-      rb(0.05, 0.075, 0.035, P({ color: 0x9ec7d9, roughness: 0.05, transparent: true, opacity: 0.6, clearcoat: 1 }), px, sy(3) + 0.0375, pz + 0.09, { r: 0.01 }); put(new T3.SphereGeometry(0.016, 16, 12), black, px, sy(3) + 0.09, pz + 0.09); }
-    { const ix = shX + 0.04, iz = shZ - 0.4; const colsT = [0x3e8a4a, 0x4f9a52, 0xd9c27a, 0x3e8a4a, 0x2f6fa8];
-      for (let a = -2; a <= 2; a++) for (let b = -1; b <= 1; b++) { if (Math.abs(a) + Math.abs(b) > 3) continue; const c = colsT[(a * 7 + b * 3 + 20) % colsT.length], h = 0.02 + ((a + b + 9) % 3) * 0.008;
-        rb(0.045, h, 0.045, M({ color: c, roughness: 0.8, flatShading: true }), ix + b * 0.047, sy(4) + h / 2, iz + a * 0.047, { r: 0.004 });
-        if ((a * b + 5) % 3 === 0) put(new T3.ConeGeometry(0.012, 0.04, 5), M({ color: 0x1f5a2a, flatShading: true }), ix + b * 0.047, sy(4) + h + 0.02, iz + a * 0.047); }
-      rb(0.03, 0.04, 0.03, M({ color: 0xc9b8a0, flatShading: true }), ix, sy(4) + 0.05, iz, { r: 0.002 }); put(new T3.ConeGeometry(0.024, 0.03, 4), M({ color: 0x8a2e2e, flatShading: true }), ix, sy(4) + 0.085, iz, { ry: Math.PI / 4 });
-      put(new T3.CylinderGeometry(0.0015, 0.0015, 0.05, 4), black, ix + 0.012, sy(4) + 0.12, iz); put(new T3.PlaneGeometry(0.02, 0.012), B({ color: 0xd9b36c, side: T3.DoubleSide }), ix + 0.012, sy(4) + 0.135, iz + 0.01, { ry: Math.PI / 2, cast: false }); }
-    { const wc = noise(256, 256, g => { for (let a = 0; a < 360; a += 2) { g.fillStyle = `hsl(${a},70%,55%)`; g.beginPath(); g.moveTo(128, 128); g.arc(128, 128, 124, a * Math.PI / 180, (a + 2.5) * Math.PI / 180); g.fill(); } g.fillStyle = "#111"; g.beginPath(); g.arc(128, 128, 30, 0, 7); g.fill(); g.fillStyle = "#e8e0cf"; g.beginPath(); g.arc(128, 128, 5, 0, 7); g.fill(); });
-      const d = put(new T3.CylinderGeometry(0.13, 0.13, 0.006, 48), [M({ color: 0x111 }), M({ map: tex(wc), roughness: 0.35 }), M({ color: 0x111 })], shX + 0.02, sy(0) + 0.13, shZ + 0.6, { rz: Math.PI / 2 - 0.12, rx: 0 }); d.rotation.order = "ZXY"; }
-    // ---- the sofa: soft arms, deep cushions, throw pillows, a deck of cards left on it
-    const sx = 2.42, sz = 1.25;
-    rb(0.9, 0.36, 2.1, fabric, sx, 0.22, sz, { r: 0.05, seg: 5 }); rb(0.24, 0.62, 2.1, fabric, sx + 0.36, 0.53, sz, { r: 0.08, seg: 5 });
-    for (const z of [sz - 1.0, sz + 1.0]) rb(0.92, 0.6, 0.2, fabric, sx, 0.34, z, { r: 0.08, seg: 5 });
-    for (const z of [sz - 0.45, sz + 0.45]) { rb(0.7, 0.16, 0.88, fabric2, sx - 0.06, 0.47, z, { r: 0.06, seg: 5 }); rb(0.16, 0.48, 0.88, fabric2, sx + 0.24, 0.72, z, { r: 0.07, seg: 5, rz: -0.12 }); }
-    rb(0.12, 0.38, 0.38, M({ color: 0xc9a253, roughness: 1 }), sx + 0.12, 0.72, sz - 0.62, { r: 0.08, seg: 5, rz: -0.25, ry: 0.3 }); rb(0.12, 0.36, 0.36, M({ color: 0x7a2e2e, roughness: 1 }), sx + 0.12, 0.72, sz + 0.66, { r: 0.08, seg: 5, rz: -0.2, ry: -0.25 });
-    for (const [x, z] of [[-0.38, -0.95], [-0.38, 0.95], [0.38, -0.95], [0.38, 0.95]]) put(new T3.CylinderGeometry(0.02, 0.015, 0.05, 10), darkWood, sx + x, 0.025, sz + z);
-    const backC = noise(128, 180, (g, w, h) => { g.fillStyle = "#5a1414"; g.fillRect(0, 0, w, h); g.strokeStyle = "#d9b36c"; g.lineWidth = 3; g.strokeRect(8, 8, w - 16, h - 16); g.beginPath(); g.arc(64, 90, 26, 0, 7); g.stroke(); g.fillStyle = "#d9b36c"; g.font = "bold 22px Georgia"; g.textAlign = "center"; g.fillText("BG", 64, 98); });
-    const cardM = [M({ color: 0xf4efe3 }), M({ color: 0xf4efe3 }), M({ map: tex(backC), roughness: 0.5 }), M({ color: 0xf4efe3 }), M({ color: 0xf4efe3 }), M({ color: 0xf4efe3 })];
-    for (let i = 0; i < 5; i++) { const c = put(new T3.BoxGeometry(0.063, 0.002, 0.088), cardM, sx - 0.12 + i * 0.012, 0.553 + i * 0.002, sz - 0.3 + i * 0.01, { ry: -0.5 + i * 0.22 }); }
-    // ---- the rug, with a fringe; the coffee table; the plant; the ceiling lamp; a clock that always says 3:37
-    const rugC = noise(1024, 1024, (g, w, h) => { g.fillStyle = "#5b2a2a"; g.fillRect(0, 0, w, h); g.strokeStyle = "#c9a46a"; g.lineWidth = 20; g.strokeRect(48, 48, w - 96, h - 96); g.lineWidth = 6; g.strokeRect(100, 100, w - 200, h - 200);
-      g.fillStyle = "#2d3f5c"; for (let i = 0; i < 7; i++) for (let j = 0; j < 7; j++) { g.save(); g.translate(176 + i * 112, 176 + j * 112); g.rotate(Math.PI / 4); g.fillRect(-26, -26, 52, 52); g.fillStyle = "#c9a46a"; g.fillRect(-8, -8, 16, 16); g.fillStyle = "#2d3f5c"; g.restore(); }
-      for (let i = 0; i < 60000; i++) { g.fillStyle = `rgba(${rnd() < 0.5 ? "0,0,0" : "255,230,200"},${rnd() * 0.08})`; g.fillRect(rnd() * w, rnd() * h, 1, 2); } });
-    put(new T3.PlaneGeometry(2.6, 1.8), M({ map: tex(rugC), roughness: 1 }), 0.4, 0.006, 0.9, { rx: -Math.PI / 2, cast: false });
-    for (const z of [0, 1]) for (let i = 0; i < 60; i++) put(new T3.BoxGeometry(0.006, 0.002, 0.05), M({ color: 0xd9c49a, roughness: 1 }), 0.4 - 1.28 + i * 0.0435, 0.007, 0.9 + (z ? 0.92 : -0.92), { cast: false });
-    rb(0.6, 0.04, 1.0, walnut, 1.45, 0.4, 1.25, { r: 0.012 }); for (const [x, z] of [[-0.26, -0.45], [0.26, -0.45], [-0.26, 0.45], [0.26, 0.45]]) rb(0.035, 0.38, 0.035, walnut, 1.45 + x, 0.19, 1.25 + z, { r: 0.006 });
-    { const cup = lathe([[0, 0], [0.035, 0], [0.04, 0.09], [0.037, 0.09], [0.032, 0.006], [0, 0.006]], M({ color: 0xefe9de, roughness: 0.3 }), 1.4, 0.42, 1.0); put(new T3.CircleGeometry(0.034, 24), M({ color: 0x2a1608, roughness: 0.2 }), 1.4, 0.495, 1.0, { rx: -Math.PI / 2, cast: false }); }
-    rb(0.2, 0.03, 0.28, bookMats[1][1], 1.5, 0.435, 1.45, { r: 0.004, ry: 0.3 });
-    put(new T3.CylinderGeometry(0.19, 0.15, 0.4, 28), M({ color: 0xb5643c, roughness: 0.75 }), 2.5, 0.2, -2.1); put(new T3.CylinderGeometry(0.17, 0.17, 0.02, 28), M({ color: 0x2a1a0e, roughness: 1 }), 2.5, 0.39, -2.1);
-    for (let i = 0; i < 16; i++) { const l = new T3.Mesh(new T3.SphereGeometry(0.2, 12, 8), M({ color: i % 3 ? 0x2f6b3a : 0x3f8a4a, roughness: 0.7, side: T3.DoubleSide })); l.scale.set(0.45, 1.5, 0.12);
-      const a = i * 2.4, r = 0.08 + (i % 4) * 0.04; l.position.set(2.5 + Math.cos(a) * r, 0.62 + (i % 5) * 0.16, -2.1 + Math.sin(a) * r); l.rotation.set(Math.cos(a) * 0.7, -a, Math.sin(a) * 0.7); l.castShadow = true; S.add(l); }
-    lathe([[0, 0.3], [0.1, 0.3], [0.3, 0.02], [0.28, 0], [0.09, 0.27], [0, 0.27]], M({ color: 0xf0e2c4, roughness: 0.9, side: T3.DoubleSide, emissive: 0x6a4a20, emissiveIntensity: 0.6 }), 0.3, 2.0, 0.6);
-    put(new T3.CylinderGeometry(0.004, 0.004, 0.4, 6), black, 0.3, 2.5, 0.6, { cast: false }); glow(0.3, 2.05, 0.6, 0.7, 0xffd6a0, 0.4);
-    const room = new T3.PointLight(0xffd2a0, 0.42, 8, 2); room.position.set(0.3, 2.0, 0.6); S.add(room);
-    { const cc = noise(256, 256, g => { g.fillStyle = "#f4efe3"; g.beginPath(); g.arc(128, 128, 124, 0, 7); g.fill(); g.strokeStyle = "#1a1a1a"; g.lineWidth = 6; g.stroke();
-        g.fillStyle = "#1a1a1a"; for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6; g.fillRect(128 + Math.sin(a) * 100 - 3, 128 - Math.cos(a) * 100 - 10, 6, 20); }
-        const hand = (a, l, w) => { g.save(); g.translate(128, 128); g.rotate(a); g.fillRect(-w / 2, -l, w, l + 12); g.restore(); };
-        hand((3 + 37 / 60) / 12 * Math.PI * 2, 60, 9); hand(37 / 60 * Math.PI * 2, 92, 6); g.fillStyle = "#b8322a"; hand(37 / 60 * Math.PI * 2 + 0.02, 98, 2); g.beginPath(); g.arc(128, 128, 7, 0, 7); g.fill(); });
-      put(new T3.CylinderGeometry(0.17, 0.17, 0.035, 48), [M({ color: 0x1a1a1a, metalness: 0.4 }), M({ map: tex(cc), roughness: 0.4 }), M({ color: 0x1a1a1a })], 2.0, 1.95, -2.48, { rx: Math.PI / 2 }); }
-    // the Go board on the wall: Move 37 itself, the shoulder hit marked in red
-    { const goC = noise(512, 512, (g, w, h) => { g.fillStyle = "#d9b26a"; g.fillRect(0, 0, w, h); for (let i = 0; i < 400; i++) { g.strokeStyle = `rgba(120,80,30,${rnd() * 0.08})`; g.beginPath(); const y = rnd() * h; g.moveTo(0, y); g.lineTo(w, y + rnd() * 6); g.stroke(); }
-        const N = 19, m = 26, s = (w - 2 * m) / (N - 1); g.strokeStyle = "#3a2a14"; g.lineWidth = 1.4; for (let i = 0; i < N; i++) { g.beginPath(); g.moveTo(m + i * s, m); g.lineTo(m + i * s, h - m); g.stroke(); g.beginPath(); g.moveTo(m, m + i * s); g.lineTo(w - m, m + i * s); g.stroke(); }
-        const st = [[3, 3, 1], [15, 3, 0], [3, 15, 0], [15, 15, 1], [2, 5, 1], [5, 2, 0], [16, 13, 0], [13, 16, 1], [9, 3, 0], [3, 9, 1], [15, 9, 0], [9, 15, 1], [12, 3, 1], [16, 6, 0], [14, 14, 0], [2, 14, 1], [4, 16, 0], [15, 4, 1], [13, 2, 0], [16, 10, 1]];
-        for (const [x, y, c] of st) { g.beginPath(); g.arc(m + x * s, m + y * s, s * 0.46, 0, 7); g.fillStyle = c ? "#f2efe6" : "#121212"; g.fill(); }
-        g.beginPath(); g.arc(m + 4 * s, m + 13 * s, s * 0.46, 0, 7); g.fillStyle = "#121212"; g.fill(); g.strokeStyle = "#c0302a"; g.lineWidth = 4; g.beginPath(); g.arc(m + 4 * s, m + 13 * s, s * 0.7, 0, 7); g.stroke();
-        g.fillStyle = "#c0302a"; g.font = "italic 700 18px Georgia"; g.fillText("37", m + 4 * s + 16, m + 13 * s - 14); });
-      rb(0.94, 0.94, 0.04, darkWood, -0.9, 1.62, -2.48, { r: 0.01 }); put(new T3.PlaneGeometry(0.8, 0.8), M({ map: tex(goC), roughness: 0.6 }), -0.9, 1.62, -2.457, { cast: false }); }
-    // ---- v88: cosy. Fairy lights strung along the walls, a floor lamp by the sofa, a knitted throw, candles on the
-    // coffee table, a few more cushions, and everything a shade warmer
-    const flick = [];
-    { const bulbM = B({ color: 0xffd28a, fog: false }), wireM = M({ color: 0x1a140e, roughness: 0.8 });
-      const strand = (a, b, n, sag) => { for (let i = 0; i <= n; i++) { const f = i / n, x = a[0] + (b[0] - a[0]) * f, z = a[2] + (b[2] - a[2]) * f, y = a[1] + (b[1] - a[1]) * f - Math.sin(f * Math.PI) * sag;
-          put(new T3.SphereGeometry(0.016, 8, 6), bulbM, x, y - 0.02, z, { cast: false }); glow(x, y - 0.02, z, 0.22, 0xffc070, 0.55);
-          if (i < n) { const f2 = (i + 1) / n, x2 = a[0] + (b[0] - a[0]) * f2, z2 = a[2] + (b[2] - a[2]) * f2, y2 = a[1] + (b[1] - a[1]) * f2 - Math.sin(f2 * Math.PI) * sag, L = Math.hypot(x2 - x, y2 - y, z2 - z);
-            const w = put(new T3.CylinderGeometry(0.003, 0.003, L, 4), wireM, (x + x2) / 2, (y + y2) / 2, (z + z2) / 2, { cast: false }); w.lookAt(x2, y2, z2); w.rotateX(Math.PI / 2); } } };
-      for (const [a, b] of [[[-2.95, 2.58, -2.45], [-0.95, 2.58, -2.45]], [[-0.95, 2.58, -2.45], [0.95, 2.58, -2.45]], [[0.95, 2.58, -2.45], [2.95, 2.58, -2.45]], [[2.95, 2.58, -2.45], [2.95, 2.58, -1.2]], [[2.95, 2.58, 0.45], [2.95, 2.58, 2.45]], [[-2.95, 2.58, -2.45], [-2.95, 2.58, -0.3]]])
-        strand(a, b, Math.round(Math.hypot(b[0] - a[0], b[2] - a[2]) / 0.16), 0.13);
-      const fairy = new T3.PointLight(0xffb25e, 0.35, 5, 2); fairy.position.set(0.5, 2.3, -2.0); S.add(fairy);
-      const fairy2 = new T3.PointLight(0xffb25e, 0.3, 4, 2); fairy2.position.set(2.6, 2.3, 1.4); S.add(fairy2); }
-    // the floor lamp in the corner behind the sofa, its linen shade glowing
-    { const fx = 2.62, fz = 2.3, brass = M({ color: 0xb08a3e, metalness: 0.8, roughness: 0.35 });
-      put(new T3.CylinderGeometry(0.16, 0.18, 0.03, 32), brass, fx, 0.015, fz); put(new T3.CylinderGeometry(0.012, 0.012, 1.5, 10), brass, fx, 0.77, fz);
-      lathe([[0.13, 0], [0.22, 0], [0.17, 0.3], [0.08, 0.3]], M({ color: 0xf3e2c0, roughness: 0.95, side: T3.DoubleSide, emissive: 0xffb866, emissiveIntensity: 0.9, transparent: true, opacity: 0.96 }), fx, 1.42, fz);
-      glow(fx, 1.56, fz, 1.6, 0xffc27a, 0.55); glow(fx, 1.3, fz, 0.6, 0xffe0b0, 0.6);
-      const fl = new T3.PointLight(0xffb56a, 1.15, 4.2, 1.8); fl.position.set(fx - 0.05, 1.5, fz - 0.05); fl.castShadow = !LOW; fl.shadow.mapSize.set(512, 512); fl.shadow.bias = -0.004; S.add(fl); }
-    // a knitted throw over the sofa back and down onto the seat
-    { const knitC = noise(256, 256, (g, w, h) => { g.fillStyle = "#e8d9bd"; g.fillRect(0, 0, w, h); for (let x = 0; x < w; x += 16) for (let y = 0; y < h; y += 12) { g.fillStyle = "rgba(120,90,50,0.22)"; g.beginPath(); g.ellipse(x + 4, y + 6, 4, 6, 0.5, 0, 7); g.ellipse(x + 12, y + 6, 4, 6, -0.5, 0, 7); g.fill(); }
-        g.fillStyle = "rgba(150,60,50,0.55)"; for (const y of [40, 52, 200, 212]) g.fillRect(0, y, w, 6); });
-      const knit = M({ map: tex(knitC, 2, 2), roughness: 1 });
-      rb(0.08, 0.5, 0.72, knit, sx + 0.33, 0.66, sz + 0.42, { r: 0.03, seg: 4, rz: -0.12 }); rb(0.56, 0.06, 0.74, knit, sx + 0.04, 0.565, sz + 0.44, { r: 0.03, seg: 4, rz: 0.06 });
-      rb(0.5, 0.05, 0.12, knit, sx - 0.3, 0.42, sz + 0.44, { r: 0.025, seg: 4, rz: 1.25 });
-      rb(0.12, 0.34, 0.34, M({ color: 0x3e5b47, roughness: 1 }), sx + 0.16, 0.72, sz - 0.2, { r: 0.08, seg: 5, rz: -0.3, ry: 0.15 });
-      rb(0.11, 0.3, 0.3, M({ color: 0xd6b98a, roughness: 1 }), sx + 0.14, 0.7, sz + 0.1, { r: 0.08, seg: 5, rz: -0.22, ry: -0.1 }); }
-    // candles on the coffee table, flickering
-    { const wax = M({ color: 0xf2e8d6, roughness: 0.6, emissive: 0x5a3010, emissiveIntensity: 0.25 }), fl = B({ color: 0xffd08a, fog: false });
-      for (const [x, z, h] of [[1.36, 1.5, 0.12], [1.46, 1.58, 0.08], [1.55, 1.47, 0.16]]) { put(new T3.CylinderGeometry(0.025, 0.026, h, 20), wax, x, 0.42 + h / 2, z);
-        const f = put(new T3.SphereGeometry(0.011, 10, 8), fl, x, 0.42 + h + 0.018, z, { cast: false }); f.scale.set(1, 2.2, 1); const sp = glow(x, 0.42 + h + 0.02, z, 0.32, 0xffb060, 0.7); flick.push([f, sp]); }
-      const cl = new T3.PointLight(0xff9a40, 0.8, 2.6, 2); cl.position.set(1.46, 0.66, 1.52); S.add(cl); flick.light = cl; }
-    room.intensity = 0.55; room.color.set(0xffc890);
-    // ---- the desk: the top is the real desk, painted on
-    const topT = new T3.CanvasTexture(deskPic); topT.encoding = T3.sRGBEncoding; topT.anisotropy = R.capabilities.getMaxAnisotropy();
-    // v93: once the desk page's 3D laptop is up, paint it into the desk top too, so the desk he walks up to is the one
-    // the page then shows
-    (async () => { await null; for (let i = 0; i < 60 && !(window.__laptop3d && window.__laptop3d.st()); i++) await new Promise(r => setTimeout(r, 150));
-      const st = window.__laptop3d && window.__laptop3d.st(), svg = desk.querySelector(".dk-svg"); if (!st || !svg || done || !st.cv.isConnected || st.cv.style.display === "none") return;
-      try { window.__laptop3d.place(); st.R.render(st.S, st.cam); const snap = document.createElement("canvas"); snap.width = st.cv.width; snap.height = st.cv.height; snap.getContext("2d").drawImage(st.cv, 0, 0);
-        const r = st.cv.getBoundingClientRect(), sr = svg.getBoundingClientRect(); if (!r.width || !sr.width) return;
-        const pic = await paintDesk(tall, { snap, r, sr }); if (done) return; deskPic.getContext("2d").drawImage(pic, 0, 0); topT.needsUpdate = true;
-        const pf = await paintDesk(tall, { snap, r, sr }, true); if (done) return; decC.getContext("2d").drawImage(pf, 0, 0); decT.needsUpdate = true; decReady = true; } catch (e) {} })();
-    const topMats = [walnut, walnut, M({ map: topT, roughness: 0.38, metalness: 0 }), walnut, walnut, walnut];
-    { const g = rbox(dW, 0.04, dD, 0.006, 2); const m = new T3.Mesh(g, topMats); m.position.set(dX, top - 0.02, dZ); m.receiveShadow = m.castShadow = true; S.add(m);
-      // flatten the top face's UVs onto the picture: rbox keeps BoxGeometry's per-face UVs, so the +y face is already 0..1
-    }
-    // v94: the desk page itself, unlit and exact, lamp and plant included. It fades in over the last of the top-down
-    // shot (drawn over the 3D lamp, which then goes), so the film's last frame is the page you land on.
-    const decC = document.createElement("canvas"); decC.width = Math.round(innerWidth * Math.min(2, 2048 / Math.max(innerWidth, innerHeight))); decC.height = Math.round(innerHeight * Math.min(2, 2048 / Math.max(innerWidth, innerHeight))); let decReady = false;
-    const decT = new T3.CanvasTexture(decC); decT.encoding = T3.sRGBEncoding;
-    const decM = new T3.MeshBasicMaterial({ map: decT, transparent: true, opacity: 0, depthTest: false, depthWrite: false, toneMapped: false, fog: false });
-    const dec = new T3.Mesh(new T3.PlaneGeometry(1, 1), decM); dec.rotation.x = -Math.PI / 2; dec.position.set(dX, top + 0.001, dZ); dec.renderOrder = 10; dec.visible = false; S.add(dec);
-    paintDesk(tall, null, true).then(pf => { if (decReady || done) return; decC.getContext("2d").drawImage(pf, 0, 0); decT.needsUpdate = true; decReady = true; }).catch(() => {});
-    for (const [sx2, sz2] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) rb(0.045, top - 0.04, 0.045, walnut, dX + sx2 * (dW / 2 - 0.05), (top - 0.04) / 2, dZ + sz2 * (dD / 2 - 0.05), { r: 0.008 });
-    rb(dW - 0.12, 0.08, 0.02, walnut, dX, top - 0.08, dZ + dD / 2 - 0.05, { r: 0.004 });
-    const chZ = dZ + dD / 2 + 0.36; rb(0.46, 0.06, 0.44, M({ color: 0x2a2f38, roughness: 0.9 }), dX, 0.47, chZ, { r: 0.025 }); rb(0.44, 0.48, 0.05, M({ color: 0x2a2f38, roughness: 0.9 }), dX, 0.78, chZ + 0.21, { r: 0.03, rx: -0.08 });
-    put(new T3.CylinderGeometry(0.025, 0.025, 0.4, 12), steel, dX, 0.24, chZ); for (let i = 0; i < 5; i++) { const a = i * Math.PI * 2 / 5; rb(0.3, 0.025, 0.035, steel, dX + Math.cos(a) * 0.14, 0.04, chZ + Math.sin(a) * 0.14, { ry: -a, r: 0.008 }); put(new T3.SphereGeometry(0.022, 10, 8), black, dX + Math.cos(a) * 0.28, 0.022, chZ + Math.sin(a) * 0.28); }
-    lathe([[0, 0], [0.11, 0], [0.13, 0.3], [0.125, 0.3], [0.105, 0.01], [0, 0.01]], M({ color: 0x3a3f46, roughness: 0.6, side: T3.DoubleSide }), dX + dW / 2 + 0.2, 0, dZ + 0.1);
-    for (let i = 0; i < 3; i++) put(new T3.IcosahedronGeometry(0.035, 0), M({ color: 0xefe6d2, roughness: 1, flatShading: true }), dX + dW / 2 + 0.2 + (rnd() - 0.5) * 0.08, 0.27 + i * 0.02, dZ + 0.1 + (rnd() - 0.5) * 0.08);
-    // its lamp, where the drawn one sits, lit for real, with a beam of light and dust in it
-    const lp = (px, py) => { const vb = tall ? [900, 1600] : [1600, 1000]; return [dX + (px / vb[0] - 0.5) * dW, dZ + (py / vb[1] - 0.5) * dD]; };
-    const [lx, lz] = lp(tall ? 40 : 70, tall ? 40 : 60), [bx, bz] = lp(tall ? 230 : 300, tall ? 210 : 270);
-    const nL0 = S.children.length;
-    lathe([[0, 0], [0.08, 0], [0.085, 0.01], [0.07, 0.022], [0, 0.022]], brass, bx, top, bz);
-    const joint = new T3.Vector3(bx + (lx - bx) * 0.35, top + 0.36, bz + (lz - bz) * 0.35), head = new T3.Vector3(lx, top + 0.42, lz);
-    const rod = (a, b) => { const d = b.clone().sub(a), m = put(new T3.CylinderGeometry(0.009, 0.009, d.length(), 12), brass, 0, 0, 0); m.position.copy(a).addScaledVector(d, 0.5); m.quaternion.setFromUnitVectors(new T3.Vector3(0, 1, 0), d.normalize()); };
-    rod(new T3.Vector3(bx, top + 0.02, bz), joint); rod(joint, head); put(new T3.SphereGeometry(0.016, 12, 10), brass, joint.x, joint.y, joint.z);
-    lathe([[0.02, 0.1], [0.035, 0.09], [0.11, -0.02], [0.105, -0.025], [0.03, 0.085], [0.016, 0.095]], M({ color: 0x23402e, metalness: 0.6, roughness: 0.35, side: T3.DoubleSide }), lx, top + 0.39, lz);
-    put(new T3.SphereGeometry(0.035, 16, 12), B({ color: 0xfff4d6 }), lx, top + 0.385, lz, { cast: false }); glow(lx, top + 0.37, lz, 0.5, 0xffd59a, 0.7);
-    const lampL = new T3.SpotLight(0xffd59a, 2.8, 5, 1.05, 0.65, 1.5); lampL.position.set(lx, top + 0.37, lz); lampL.target.position.set(dX, top, dZ); lampL.castShadow = true; lampL.shadow.mapSize.set(2048, 2048); lampL.shadow.bias = -0.0004; lampL.shadow.radius = 4; S.add(lampL); S.add(lampL.target);
-    { const bc = noise(8, 128, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, "rgba(255,255,255,0)"); gr.addColorStop(0.15, "rgba(255,255,255,1)"); gr.addColorStop(1, "rgba(255,255,255,0.05)"); g.fillStyle = gr; g.fillRect(0, 0, w, h); });
-      const beam = put(new T3.ConeGeometry(0.42, 0.42, 40, 1, true), B({ map: tex(bc, 1, 1, false), color: 0xffd59a, transparent: true, opacity: 0.09, blending: T3.AdditiveBlending, depthWrite: false, side: T3.DoubleSide }), lx, top + 0.2, lz, { cast: false }); beam.lookAt(dX, top - 0.5, dZ); beam.rotateX(Math.PI / 2); beam.rotateX(Math.PI); beam.position.set((lx + dX) / 2 * 0.3 + lx * 0.7, top + 0.17, (lz + dZ) / 2 * 0.3 + lz * 0.7); }
-    const lampObjs = S.children.slice(nL0);
-    // dust in the lamp light and in the moonlight
-    const dustN = 500, dg = new T3.BufferGeometry(), da = new Float32Array(dustN * 3), dseed = new Float32Array(dustN);
-    for (let i = 0; i < dustN; i++) { const inLamp = i < 300; da.set(inLamp ? [lx + (rnd() - 0.3) * 0.7, top + 0.05 + rnd() * 0.5, lz + (rnd() - 0.3) * 0.6] : [2.2 + rnd() * 0.8, 0.6 + rnd() * 1.6, wz + (rnd() - 0.5) * 1.6], i * 3); dseed[i] = rnd() * 100; }
-    dg.setAttribute("position", new T3.BufferAttribute(da, 3)); const dust = new T3.Points(dg, new T3.PointsMaterial({ map: glowT, color: 0xfff0d0, size: 0.008, transparent: true, opacity: 0.7, blending: T3.AdditiveBlending, depthWrite: false })); S.add(dust); const d0 = da.slice();
-    // the light of the night
-    S.add(new T3.HemisphereLight(0x8a7a90, 0x3a2410, 0.16));
-    const moon = new T3.DirectionalLight(0x8aa6ff, 0.4); moon.position.set(9, 4.5, -1.2); moon.target.position.set(1.5, 0, -0.3); moon.castShadow = true; moon.shadow.mapSize.set(1024, 1024); Object.assign(moon.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: 1, far: 20 }); S.add(moon); S.add(moon.target);
-    // ---- the walk: one continuous glide, paced by how far the eye travels, a little handheld drift, then straight down onto the desk
-    const fov = FOV * Math.PI / 180, asp = innerWidth / innerHeight, t2 = Math.tan(fov / 2), pgR = (desk.querySelector(".dk-svg") || desk).getBoundingClientRect(),
-      // v94: end exactly where the desk page puts its desk: the page fits its viewBox (the desk top) into its scene box
-      deskPx = (pgR.width > 0 ? Math.min(pgR.width / dW, pgR.height / dD) : Math.max(innerWidth / dW, innerHeight / dD)) * dW, mPx = dW / deskPx,
-      dist = dW * innerWidth / (deskPx * 2 * t2 * asp), offX = pgR.width > 0 ? (pgR.left + pgR.width / 2 - innerWidth / 2) * mPx : 0, offZ = pgR.width > 0 ? (pgR.top + pgR.height / 2 - innerHeight / 2) * mPx : 0;
-    dec.scale.set(2 * dist * t2 * asp, 2 * dist * t2, 1); dec.position.set(dX - offX, top + 0.001, dZ - offZ);
-    // v90: no floating tour. The stick figure from the bridge walks in through the open door and across the room to the
-    // desk, and the camera follows a step behind him, then rises over his shoulder and looks straight down onto the desk.
-    const V = a => new T3.Vector3(...a);
-    const chZ0 = dZ + dD / 2 + 0.36, STOP = [dX - 0.04, dZ + dD / 2 + 1.0];   // v95: he ends up in front of the desk, facing it, so the view never has to swing round
-    const path = new T3.CatmullRomCurve3([V([0.35, 0, 5.3]), V([0, 0, 3.7]), V([0, 0, 2.3]), V([0.25, 0, 1.05]), V([0.55, 0, 0.05]), V([STOP[0], 0, STOP[1]])], false, "centripetal", 0.5), PL = path.getLength();
-    // v93: he walks at an easy pace, slows right down once he is inside while he looks round the room, then goes on to
-    // the desk and eases to a stop; the distance he has covered is integrated once into a table.
-    const ss3 = x => x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x), ease = x => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
-    const T_W0 = 0.3, TA = 2.5, TZ = TA + 2.1, PAN = 4.1, WDT = 1 / 60, wS = [0];
-    { let sN = 0, tt = T_W0; while (sN < PL - 0.001 && wS.length < 4000) { const v0 = 0.95 * ss3((tt - T_W0) / 0.5) * (1 - 0.66 * ss3((tt - TZ + 0.3) / 0.6) * (1 - ss3((tt - TZ - PAN + 0.2) / 0.6))) + 0.05 * ss3((tt - TZ - PAN) / 0.6);
-        const v = Math.min(v0, Math.sqrt(2 * 0.7 * Math.max(0, PL - sN)) + 0.015); sN = Math.min(PL, sN + v * WDT); tt += WDT; wS.push(sN); } }
-    const T_W1 = T_W0 + (wS.length - 1) * WDT, TB = T_W1 + 1.2, END = TB + 3.0;
-    const manAt = t => { const f = Math.max(0, Math.min(1, (t - T_W0) / (T_W1 - T_W0))), x = Math.max(0, Math.min(wS.length - 1, (t - T_W0) / WDT)), i0 = Math.floor(x), i1 = Math.min(wS.length - 1, i0 + 1), uu = Math.max(0, Math.min(1, (wS[i0] + (wS[i1] - wS[i0]) * (x - i0)) / PL)), p = path.getPointAt(uu), d = path.getTangentAt(Math.min(0.999, uu)); return { p, d, moving: f > 0 && f < 1 }; };
-    // v93: the figure is one connected body now: every limb is a single smooth tube that grows out of the hips or the
-    // shoulders, a neck into a round head, and every part carries a dark outline, so he reads as drawn, like the one on
-    // the bridge. The scarf's tail is one continuous strip of cloth.
-    const man = new T3.Group(); man.scale.setScalar(0.92); S.add(man);
-    const manM = M({ color: 0xf1ebe0, roughness: 0.55, transparent: true }), inkM = new T3.MeshBasicMaterial({ color: 0x1a120c, side: T3.BackSide, transparent: true }),
-      eyeM = M({ color: 0x1c140e, roughness: 0.3, transparent: true }), scarfM = M({ color: 0xd2492f, roughness: 0.8, transparent: true, side: T3.DoubleSide }), shoeM = M({ color: 0x7a4a2e, roughness: 0.6, transparent: true });
-    const all = [manM, inkM, eyeM, scarfM, shoeM], OL = 0.011;
-    const tubes = {}; const tubeOf = (key, pts, r, mat = manM, ol = true) => { let t2 = tubes[key]; if (!t2) { t2 = tubes[key] = { m: new T3.Mesh(new T3.BufferGeometry(), mat), o: ol ? new T3.Mesh(new T3.BufferGeometry(), inkM) : null }; t2.m.castShadow = true; man.add(t2.m); if (t2.o) man.add(t2.o); }
-      const cv = new T3.CatmullRomCurve3(pts, false, "catmullrom", 0.35); t2.m.geometry.dispose(); t2.m.geometry = new T3.TubeGeometry(cv, 18, r, 10, false); if (t2.o) { t2.o.geometry.dispose(); t2.o.geometry = new T3.TubeGeometry(cv, 18, r + OL, 10, false); } };
-    const ball = (r, m = manM, ol = true) => { const g = new T3.Group(), b = new T3.Mesh(new T3.SphereGeometry(r, 18, 14), m); b.castShadow = true; g.add(b); if (ol) g.add(new T3.Mesh(new T3.SphereGeometry(r + OL, 18, 14), inkM)); man.add(g); return g; };
-    const caps = { hip: ball(0.05), nk: ball(0.044), hl: ball(0.034), hr: ball(0.034) };
-    const shoes = [0, 1].map(() => { const g = new T3.Group(), b = new T3.Mesh(rbox(0.08, 0.055, 0.14, 0.024, 2), shoeM); b.castShadow = true; g.add(b); const o = new T3.Mesh(rbox(0.08 + OL * 2, 0.055 + OL * 2, 0.14 + OL * 2, 0.03, 2), inkM); g.add(o); man.add(g); return g; });
-    const mHead = new T3.Group(); man.add(mHead);
-    { const h = new T3.Mesh(new T3.SphereGeometry(0.13, 32, 24), manM); h.castShadow = true; mHead.add(h); mHead.add(new T3.Mesh(new T3.SphereGeometry(0.13 + OL * 1.2, 32, 24), inkM));
-      for (const sx2 of [-1, 1]) { const e = new T3.Mesh(new T3.SphereGeometry(0.015, 12, 10), eyeM); e.scale.set(1, 1.45, 0.6); e.position.set(sx2 * 0.04, 0.014, 0.123); mHead.add(e); }
-      const sm = new T3.Mesh(new T3.TorusGeometry(0.027, 0.005, 6, 16, Math.PI * 0.7), eyeM); sm.rotation.z = Math.PI + Math.PI * 0.15; sm.position.set(0, -0.034, 0.12); mHead.add(sm); }
-    const scarf = new T3.Mesh(new T3.TorusGeometry(0.056, 0.026, 10, 24), scarfM); scarf.rotation.x = Math.PI / 2; scarf.castShadow = true; man.add(scarf);
-    const pose = (ph, amp, tt) => { const bob = Math.abs(Math.sin(ph)) * 0.03 * amp, lean = 0.07 * amp, hip = V([0, 0.84 + bob * 0.6, 0]), nk = V([0, hip.y + 0.5 * Math.cos(lean), 0.5 * Math.sin(lean)]);
-      const mid = hip.clone().lerp(nk, 0.5).add(V([0, 0, 0.012])); tubeOf("tor", [hip, mid, nk], 0.046);
-      caps.hip.position.copy(hip); caps.nk.position.copy(nk);
-      const hd = V([0, nk.y + 0.165, nk.z + 0.03]); mHead.position.copy(hd); mHead.rotation.x = -lean * 0.5; tubeOf("neck", [nk, nk.clone().lerp(hd, 0.5), hd.clone().add(V([0, -0.09, 0]))], 0.03);
-      scarf.position.set(0, nk.y + 0.005, nk.z);
-      { const sw = Math.sin(tt * 6.5) * 0.06 * (0.4 + amp), lift = 0.25 + 0.5 * amp, pts = []; for (let q = 0; q <= 4; q++) { const f = q / 4; pts.push(V([0.045 + Math.sin(tt * 5 + q) * 0.008 * f, nk.y - 0.03 - f * 0.26 * Math.cos(lift * f + sw * f), nk.z - 0.06 - f * 0.26 * Math.sin(lift * f) - Math.sin(tt * 7 - q) * 0.02 * f])); }
-        tubeOf("tail", pts, 0.022, scarfM, false); }
-      const leg = (q, side, key, shoe) => { const sw = Math.sin(ph + q) * 0.46 * amp, kb = Math.max(0, Math.sin(ph + q - 1.5)) * 0.95 * amp, h = V([side * 0.075, hip.y - 0.03, 0]), k3 = V([side * 0.08, hip.y - Math.cos(sw) * 0.42, Math.sin(sw) * 0.42]), f = V([side * 0.085, k3.y - Math.cos(sw - kb) * 0.42, k3.z + Math.sin(sw - kb) * 0.42]);
-        tubeOf(key, [hip, h, k3, f], 0.037); shoe.position.set(f.x, Math.max(0.028, f.y - 0.01), f.z + 0.035); shoe.rotation.x = -(sw - kb) * 0.6; };
-      const arm = (q, side, key, cap) => { const sw = Math.sin(ph + q) * 0.5 * amp, s0 = V([side * 0.12, nk.y - 0.05, nk.z]), e = V([side * 0.15, s0.y - Math.cos(sw) * 0.27, s0.z + Math.sin(sw) * 0.27]), h = V([side * 0.16, e.y - Math.cos(sw + 0.5) * 0.25, e.z + Math.sin(sw + 0.5) * 0.25]);
-        tubeOf(key, [nk.clone().add(V([0, -0.03, 0])), s0, e, h], 0.032); cap.position.copy(h); };
-      leg(0, -1, "ll", shoes[0]); leg(Math.PI, 1, "lr", shoes[1]); arm(Math.PI, -1, "al", caps.hl); arm(0, 1, "ar", caps.hr); };
-    // v93: first a wide third-person shot of him walking up to the house and in; then the camera closes in on him and
-    // passes into him, and from there it is his eyes: a slow look right across the sofa, the candles and the lights,
-    // then left along the shelves and the Go board, and on to the desk, where it rises and looks straight down.
-    const gauss = (t, c, w) => Math.exp(-((t - c) * (t - c)) / (2 * w * w));
-    const K7 = [V([dX, 1.5, dZ + dD / 2 + 1.05]), V([dX, top + 0.05, dZ - 0.05])], K8 = [V([dX - offX, top + dist, dZ - offZ + 0.002]), V([dX - offX, top, dZ - offZ])];
-    const eyeH = 1.43 * 0.92;
-    const wide = t => { const { p } = manAt(t), k = Math.min(1, t / TA); const e = k * k * (3 - 2 * k); return [V([3.3 - e * 1.3, 3.5 - e * 0.9, 11.8 - e * 3.2]), p.clone().add(V([0, 1.05, -0.6]))]; };
-    // his eyes: absolute headings (0 = straight at the far wall, + to the right), so the look sweeps the room in one
-    // smooth arc: the desk, right to the sofa and the floor lamp, the window, then all the way left along the bookshelf
-    // and the Go board, and back round to the desk he is walking to.
-    const HK = [[0, 0.12, -0.14], [0.22, 1.32, -0.28], [0.4, 1.0, -0.05], [0.9, -0.95, -0.1]];
-    const eyes = t => { const { p, d } = manAt(t), dir = V([d.x, 0, d.z]).normalize(), c = p.clone().add(V([0, eyeH + Math.abs(Math.sin((t - T_W0) * 3.1)) * 0.012, 0])).addScaledVector(dir, 0.06);
-      const span = PAN + 0.6, u0 = (t - TZ) / span, u = u0 <= 1 ? Math.max(0, u0) : 1 + Math.min(1, (t - TZ - span) / Math.max(0.5, T_W1 - 0.2 - TZ - span)), toDesk = K7[1].clone().sub(c), hEnd = Math.atan2(toDesk.x, -toDesk.z), pEnd = Math.atan2(toDesk.y, Math.hypot(toDesk.x, toDesk.z));
-      const ks = [...HK, [2, hEnd, pEnd]]; let q = 0; while (q < ks.length - 2 && u > ks[q + 1][0]) q++;
-      const a = ks[q], b = ks[q + 1], f = 0.5 - 0.5 * Math.cos(Math.PI * Math.max(0, Math.min(1, (u - a[0]) / (b[0] - a[0]))))   /* v95: sine ease, half the peak turn speed of a cubic */, h = a[1] + (b[1] - a[1]) * f, pt = a[2] + (b[2] - a[2]) * f;
-      const l = c.clone().add(V([Math.sin(h) * Math.cos(pt) * 5, Math.sin(pt) * 5, -Math.cos(h) * Math.cos(pt) * 5])); return [c, l]; };
-    const raw = t => {
-      if (t < TA) return [...wide(t), 0];
-      if (t < TZ) { const f = 0.5 - 0.5 * Math.cos(Math.PI * (t - TA) / (TZ - TA)), [c0, l0] = wide(t), [c1, l1] = eyes(t); return [c0.lerp(c1, f), l0.lerp(l1, f), 0]; }
-      if (t < T_W1 - 0.2) return [...eyes(t), 0];
-      const [c1, l1] = eyes(T_W1 - 0.2);
-      if (t < TB) { const f = ease((t - T_W1 + 0.2) / (TB - T_W1 + 0.2)); return [c1.clone().lerp(K7[0], f), l1.clone().lerp(K7[1], f), 0]; }
-      const f = ease(Math.min(1, (t - TB) / (END - TB))); return [K7[0].clone().lerp(K8[0], f), K7[1].clone().lerp(K8[1], f), f]; };
-    const DT = 1 / 30, NS = Math.ceil((END + 1) / DT), rawP = [], rawL = [];
-    for (let q = 0; q <= NS; q++) { const [c, l] = raw(q * DT); rawP.push(c); rawL.push(l); }
-    const blur = (arr, sig) => { const r = Math.ceil(sig * 3 / DT), wts = []; for (let q = -r; q <= r; q++) wts.push(Math.exp(-(q * DT) * (q * DT) / (2 * sig * sig)));
-      return arr.map((_, q) => { const o = V([0, 0, 0]); let ws = 0; for (let d2 = -r; d2 <= r; d2++) { const w = wts[d2 + r], v = arr[Math.max(0, Math.min(arr.length - 1, q + d2))]; o.addScaledVector(v, w); ws += w; } return o.multiplyScalar(1 / ws); }); };
-    const smP = blur(rawP, 0.32), smL = blur(rawL, 0.42);
-    const at2 = (arr, t) => { const x = Math.max(0, Math.min(NS, t / DT)), a = Math.floor(x), b = Math.min(NS, a + 1); return arr[a].clone().lerp(arr[b], x - a); };
-    const shot = t => { const [rc, rl, f] = raw(t), k2 = ss3((t - TB + 0.3) / 0.6); return [at2(smP, t).lerp(rc, k2), at2(smL, t).lerp(rl, k2), f]; };
-    window.__houseCam = t => { const [c, l, f] = shot(t); return [c.x, c.y, c.z, l.x, l.y, l.z, f, END]; };   // for tests
-    const upA = new T3.Vector3(0, 1, 0), upB = new T3.Vector3(0, 0, -1), hand = new T3.Vector3();
-    const cap = wrap.querySelector(".hs-cap");
-    let t0 = 0, raf = 0, done = false;
-    const stopKeys = e => { if (["ArrowDown", "ArrowUp", "PageDown", "PageUp", " ", "Home", "End"].includes(e.key)) e.preventDefault(); if (e.key === "Escape") finish(); };
-    const stopScroll = e => e.preventDefault();
-    addEventListener("wheel", stopScroll, { passive: false }); addEventListener("touchmove", stopScroll, { passive: false }); addEventListener("keydown", stopKeys);
-    const finish = () => { if (done) return; done = true; cancelAnimationFrame(raf); wrap.classList.add("out");
-      removeEventListener("wheel", stopScroll); removeEventListener("touchmove", stopScroll); removeEventListener("keydown", stopKeys);
-      try { localStorage.setItem("bgSeenHouse", "1"); } catch (e) {} dispatchEvent(new Event("house:done"));
-      setTimeout(() => { R.dispose(); try { R.forceContextLoss(); } catch (e) {} wrap.remove(); }, 1300); };   // v91: give the GPU back
-    wrap.querySelector(".hs-skip").addEventListener("click", finish);
-    const frame = now => {
-      if (!t0) t0 = now; const t = window.__houseT != null ? window.__houseT : (now - t0) / 1000;
-      R.toneMappingExposure = 1.42 * Math.min(1, t / 1.2);
-      if (flick.light) { const q = Math.sin(now * 0.023) * 0.5 + Math.sin(now * 0.061) * 0.3 + Math.sin(now * 0.11) * 0.2; flick.light.intensity = 0.8 + q * 0.18; for (const [f, sp] of flick) { f.scale.y = 2.2 + q * 0.35; sp.material.opacity = 0.62 + q * 0.12; } }
-      const [p, lk, endK] = shot(t), calm = 1 - endK;
-      { const m = manAt(t), wph = (t - T_W0) * 6.2; man.position.copy(m.p); man.rotation.y = Math.atan2(m.d.x, m.d.z); if (!m.moving && t > T_W1) man.rotation.y += (Math.PI / 2 - man.rotation.y) * Math.min(1, (t - T_W1) * 1.5);
-        const op = 1 - ss3((t - TZ + 0.55) / 0.4); if (op > 0.01) pose(wph, m.moving ? 1 : Math.max(0, 1 - (t - T_W1) * 3), t); /* v95: no rebuilding his limbs once he is out of shot */ for (const mm of all) mm.opacity = op; man.visible = op > 0.01; }
-      hand.set(Math.sin(t * 0.7) * 0.012 + Math.sin(t * 1.9) * 0.004, Math.sin(t * 0.9 + 1) * 0.008 + Math.sin(t * 2.3) * 0.003, Math.sin(t * 0.5 + 2) * 0.01).multiplyScalar(calm);
-      cam.position.copy(p).add(hand);
-      hinge.rotation.y = 1.9;
-      cam.up.copy(upA).lerp(upB, endK * endK * (3 - 2 * endK)).normalize(); cam.lookAt(lk); cam.rotateZ(Math.sin(t * 0.6) * 0.006 * calm);
-      cap.classList.toggle("on", t > 0.6 && t < 3.0);
-      wrap.classList.toggle("open", endK > 0.35);
-      { const o = decReady ? ss3((endK - 0.5) / 0.42) : 0; decM.opacity = o; dec.visible = o > 0.001; for (const ob of lampObjs) ob.visible = o < 0.97; }
-      const dp = dg.attributes.position; for (let i = 0; i < dustN; i++) { const s = dseed[i]; dp.setXYZ(i, d0[i * 3] + Math.sin(t * 0.3 + s) * 0.03, d0[i * 3 + 1] + Math.sin(t * 0.21 + s * 1.7) * 0.025, d0[i * 3 + 2] + Math.cos(t * 0.27 + s) * 0.03); } dp.needsUpdate = true;
-      if (S.userData.globe) S.userData.globe.rotation.y = t * 0.25;
-      R.render(S, cam);
-      if (t > END + 0.45 && window.__houseT == null) return finish();
-      raf = requestAnimationFrame(frame);
-    };
-    R.compile(S, cam); requestAnimationFrame(() => { wrap.classList.add("in"); raf = requestAnimationFrame(frame); setTimeout(() => dispatchEvent(new Event("house:in")), 650); });   // v95: tell the bridge when we cover the screen
-    window.__house.running = () => !done;
-  }
-  const GL = () => { try { const c = document.createElement("canvas"); return !!(c.getContext("webgl") || c.getContext("experimental-webgl")); } catch (e) { return false; } };
-  window.__house = { prep: () => { if (!RM) loadThree().catch(() => {}); }, play: () => play().catch(() => { dispatchEvent(new Event("house:done")); }), running: () => false, claim: () => { played = true; }, able: () => !RM && (force || !window.__lite || GL()) };
-  // v95: fetch and parse three.js in a quiet moment after the opening has played, not while he is walking
-  if (!played && window.__house.able()) { const idle = () => (window.requestIdleCallback || (f => setTimeout(f, 1)))(() => window.__house.prep(), { timeout: 4000 });
-    if (document.readyState === "complete") setTimeout(idle, 9000); else addEventListener("load", () => setTimeout(idle, 9000), { once: true }); }
-  if (played) return;
-  if (window.__lite && !force) return;
-  const go = () => { if (played) return; played = true; try { sessionStorage.setItem("bgHouse", "1"); } catch (e) {} play().catch(() => {}); };
-  const check = () => { if (desk.classList.contains("on") && (document.body.dataset.page || "home") === "home") go(); };
-  new MutationObserver(check).observe(desk, { attributes: true, attributeFilter: ["class"] }); check();
-})();
-
-
-// v86: from the opening to the desk, on foot. When you leave the opening (scroll on, or press the arrow under it), a
-// pencil bridge sketches itself out of that arrow and winds down into the next page to a door; a stick figure walks
-// it while the page follows him down. The first time, the door is lit and opens onto the walk through the house;
-// after that it opens onto the dark, and the wand's Lumos lights the desk as before.
-(() => {
-  const intro = document.getElementById("intro"), reveal = document.getElementById("reveal"); if (!intro || !reveal || !window.__hub) return;
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const force = /[?&]house\b/.test(location.search), H5 = window.__house;
-  let ran = false, busy = false, runs = 0, away = false;
-  const seen = () => { try { return localStorage.getItem("bgSeenHouse") === "1"; } catch (e) { return false; } };
-  const revealed = () => { const cs = getComputedStyle(reveal); return +cs.opacity > 0.5 && cs.visibility !== "hidden"; };
-  const home = () => (document.body.dataset.page || "home") === "home";
-  const ss = x => x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x), clamp = (x, a, b) => Math.max(a, Math.min(b, x));
-  const to = y => scrollTo({ top: y, behavior: "instant" });
-  function run() {
-    if (ran || busy) return; ran = busy = true;
-    const first = runs === 0 && !!H5 && H5.able(); runs++; if (H5) H5.claim(); if (first && H5.prep) H5.prep();   // v95: fetch three.js while he walks   // v87: the house every first time per load; the dark on a return to home
-    const W = innerWidth, H = innerHeight, k = clamp(Math.min(W, H) / 820, 0.62, 1.25), y0 = scrollY, land = window.__hub.landing(), lead = (window.__hub.state().lead || H), D = Math.max(y0, Math.min(y0 + H * 0.2, lead * 0.16));   // stay short of where the Lumos starts by itself
-    const cr = reveal.querySelector(".cue").getBoundingClientRect(), shown = revealed() && cr.width > 0 && cr.top > 0 && cr.top < H, cx = shown ? cr.left + cr.width / 2 : W / 2, cy = (shown ? cr.top + cr.height / 2 : H * 0.8) + y0;   // the opening may not have finished: start where the arrow will be
-    const wrap = document.createElement("div"); wrap.className = "trn"; wrap.innerHTML = `<canvas></canvas><button class="hs-skip" type="button">Skip <span aria-hidden="true">›</span></button>`; document.body.append(wrap);
-    const cv = wrap.querySelector("canvas"), g = cv.getContext("2d"), dpr = Math.min(devicePixelRatio || 1, 2); cv.width = W * dpr; cv.height = H * dpr;
-    // the bridge, in page coordinates, so it is fixed to the page as the page moves
-    const yS = cy + 14 * k, yE = D + H * 0.76, sp = yE - yS; const ctrl = [[cx, yS], [W * 0.2, yS + sp * 0.38], [W * 0.5, yS + sp * 0.78], [W * 0.76, yE]];
-    const pts = []; { const cr2 = (p0, p1, p2, p3, t) => { const t2 = t * t, t3 = t2 * t; return 0.5 * (2 * p1 + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3); };
-      const C = [ctrl[0], ...ctrl, ctrl[3]]; for (let i = 1; i < C.length - 2; i++) for (let j = 0; j < 40; j++) { const t = j / 40; pts.push([cr2(C[i - 1][0], C[i][0], C[i + 1][0], C[i + 2][0], t), cr2(C[i - 1][1], C[i][1], C[i + 1][1], C[i + 2][1], t)]); } pts.push(ctrl[3]); }
-    const acc = [0]; for (let i = 1; i < pts.length; i++) acc.push(acc[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])); const LEN = acc[acc.length - 1];
-    const at = s => { const d = clamp(s, 0, 1) * LEN; let i = 1; while (i < acc.length - 1 && acc[i] < d) i++; const f = (d - acc[i - 1]) / ((acc[i] - acc[i - 1]) || 1); return [pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * f, pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * f, Math.sign(pts[i][0] - pts[i - 1][0]) || 1]; };
-    const RAIL = 34 * k, WALK = clamp(LEN / (230 * k), 3.4, 5.6), T_SK = 1.3, T_W0 = T_SK + 0.1, T_W1 = T_W0 + WALK;
-    let seed = 1, boil = 0; const jr = () => (seed = (seed * 16807) % 2147483647) / 2147483647 - 0.5;
-    let inkC = "236,229,214"; const ink = (a = 0.9) => `rgba(${inkC},${a})`;
-    const line = (pa, w = 1.4, a = 0.85, j = 0.8) => { for (let pass = 0; pass < 2; pass++) { g.strokeStyle = ink(pass ? a * 0.45 : a); g.lineWidth = pass ? w * 0.6 : w; g.beginPath(); pa.forEach(([x, y], i) => { const X = x + jr() * j * k, Y = y + jr() * j * k; i ? g.lineTo(X, Y) : g.moveTo(X, Y); }); g.stroke(); } };
-    const door = E => { const [ex, ey] = E, dw = 52 * k, dh = 102 * k, x0 = ex + 46 * k, y1 = ey; return { x0, y0: y1 - dh, dw, dh }; };
-    // v91: the character. The same little figure walks into the house in 3D: cream limbs with rounded ends and real
-    // knees and elbows, a round head with two eyes looking where he goes, and a red scarf that trails as he walks.
-    const BODY = "#f1ebe0", FAR = "#bdb4a6", EDGE = "rgba(20,14,10,0.9)", SCARF = "#d2492f", SCARF2 = "#9e3221", SHOE = "#8a5a3c";
-    let silh = false;   // against the light of the open door he is a dark silhouette
-    const stick = (x, y, ph, dir, a = 1, reach = null, lean = 0) => {   // feet at (x, y)
-      const s = k * 1.3, now = performance.now() / 1000, walk = Math.abs(Math.sin(ph)) > 0 || ph !== 0, bob = Math.abs(Math.cos(ph)) * 2.4 * s;
-      const tilt = (walk ? 0.07 : 0) - lean * 0.18, hip = [x, y - 30 * s + Math.abs(Math.sin(ph)) * 1.7 * s], nk = [hip[0] + dir * Math.sin(tilt) * 22 * s, hip[1] - Math.cos(tilt) * 22 * s], hd = [nk[0] + dir * (2 + Math.sin(tilt) * 10) * s, nk[1] - 10.5 * s];
-      const body = silh ? "#1e160f" : BODY, far = silh ? "#2a1f16" : FAR;
-      const limb = (pts, col, w) => { g.lineCap = "round"; g.lineJoin = "round"; g.beginPath(); pts.forEach(([px, py], q) => q ? g.lineTo(px, py) : g.moveTo(px, py));
-        if (!silh) { g.strokeStyle = EDGE; g.lineWidth = w + 2.2 * s; g.stroke(); } g.strokeStyle = col; g.lineWidth = w; g.stroke(); };
-      const leg = q => { const sw = Math.sin(ph + q) * 0.48, kb = Math.max(0, Math.sin(ph + q - 1.5)) * 0.95 * (ph === 0 ? 0 : 1), knee = [hip[0] + dir * Math.sin(sw) * 15 * s, hip[1] + Math.cos(sw) * 15 * s], foot = [knee[0] + dir * Math.sin(sw - kb) * 15 * s, knee[1] + Math.cos(sw - kb) * 15 * s]; return [hip, knee, foot]; };
-      const sh = [nk[0], nk[1] + 3 * s];
-      const arm = q => { const sw = Math.sin(ph + q) * 0.5, el = [sh[0] + dir * Math.sin(sw) * 10.5 * s, sh[1] + Math.cos(sw) * 10.5 * s], hn = [el[0] + dir * Math.sin(sw + 0.55) * 9.5 * s, el[1] + Math.cos(sw + 0.55) * 9.5 * s]; return [sh, el, hn]; };
-      const reachArm = () => { const L1 = 10.5 * s, L2 = 9.5 * s, dx = reach[0] - sh[0], dy = reach[1] - sh[1], d = Math.min(Math.hypot(dx, dy), L1 + L2 - 0.01), a0 = Math.atan2(dy, dx), c = Math.acos(clamp((L1 * L1 + d * d - L2 * L2) / (2 * L1 * d), -1, 1)); return [sh, [sh[0] + Math.cos(a0 + c) * L1, sh[1] + Math.sin(a0 + c) * L1], [sh[0] + Math.cos(a0) * d, sh[1] + Math.sin(a0) * d]]; };
-      const shoe = (f, col) => { g.fillStyle = silh ? "#140e09" : col; g.beginPath(); g.ellipse(f[0] + dir * 2 * s, f[1] - 0.6 * s, 3.6 * s, 2 * s, 0, 0, 7); g.fill(); };
-      g.globalAlpha = a;
-      // a soft shadow on the boards
-      g.fillStyle = "rgba(0,0,0,0.28)"; g.beginPath(); g.ellipse(x, y + 1.5 * s, 11 * s, 2.4 * s, 0, 0, 7); g.fill();
-      // far side first, a shade darker, then the scarf tail behind him, the body, the near side
-      const lb = leg(Math.PI), ab = arm(0); limb(lb, far, 3.6 * s); shoe(lb[2], "#5e3d29"); limb(ab, far, 3.1 * s);
-      { const wv = Math.sin(now * 7) * 2.2 * s, wv2 = Math.sin(now * 7 + 1.4) * 3 * s, base = [nk[0] - dir * 1 * s, nk[1] + 1.5 * s];
-        g.fillStyle = silh ? "#2a1f16" : SCARF2; g.beginPath(); g.moveTo(base[0], base[1] - 1.5 * s); g.quadraticCurveTo(base[0] - dir * 8 * s, base[1] + wv, base[0] - dir * 15 * s, base[1] + 3 * s + wv2);
-        g.lineTo(base[0] - dir * 14 * s, base[1] + 7 * s + wv2); g.quadraticCurveTo(base[0] - dir * 7 * s, base[1] + 4 * s + wv, base[0], base[1] + 2.5 * s); g.closePath(); g.fill(); }
-      limb([hip, nk], body, 4.6 * s);
-      const lf = leg(0); limb(lf, body, 3.9 * s); shoe(lf[2], SHOE);
-      limb(reach ? reachArm() : arm(Math.PI), body, 3.4 * s);
-      // the scarf wrapped at his neck
-      g.fillStyle = silh ? "#2a1f16" : SCARF; g.beginPath(); g.ellipse(nk[0], nk[1] + 1 * s, 4.6 * s, 2.6 * s, dir * 0.15, 0, 7); g.fill();
-      // head: a full circle, outlined, two eyes toward where he is going
-      g.beginPath(); g.arc(hd[0], hd[1], 8.4 * s, 0, 7); g.fillStyle = body; g.fill(); if (!silh) { g.strokeStyle = EDGE; g.lineWidth = 1.6 * s; g.stroke();
-        g.fillStyle = "rgba(255,255,255,0.35)"; g.beginPath(); g.arc(hd[0] - dir * 3 * s, hd[1] - 3.2 * s, 2.4 * s, 0, 7); g.fill();
-        g.fillStyle = "#1c140e"; for (const e of [1.6, 5.4]) { g.beginPath(); g.ellipse(hd[0] + dir * e * s, hd[1] - 0.8 * s, 1.05 * s, 1.5 * s, 0, 0, 7); g.fill(); }
-        g.strokeStyle = "rgba(28,20,14,0.7)"; g.lineWidth = 1 * s; g.beginPath(); g.arc(hd[0] + dir * 3.6 * s, hd[1] + 2.6 * s, 1.8 * s, 0.2 * Math.PI, 0.8 * Math.PI); g.stroke(); }
-      g.globalAlpha = 1; };
-    const stopKeys = e => { if (["ArrowDown", "ArrowUp", "PageDown", "PageUp", " ", "Home", "End"].includes(e.key)) e.preventDefault(); if (e.key === "Escape") skip(); };
-    const stopScroll = e => e.preventDefault();
-    addEventListener("wheel", stopScroll, { passive: false }); addEventListener("touchmove", stopScroll, { passive: false }); addEventListener("keydown", stopKeys);
-    const unlock = () => { if (typeof off === "function") off(); removeEventListener("wheel", stopScroll); removeEventListener("touchmove", stopScroll); removeEventListener("keydown", stopKeys); busy = false; };
-    let t0 = 0, raf = 0, phase = "walk", done = false;
-    const glide = (from, toY, ms, after) => { const s0 = performance.now(); const st = now => { const f = Math.min(1, (now - s0) / ms), e = f < 0.5 ? 2 * f * f : 1 - Math.pow(-2 * f + 2, 2) / 2; to(from + (toY - from) * e); if (f < 1) requestAnimationFrame(st); else after && after(); }; requestAnimationFrame(st); };
-    const toHouse = () => { to(land); if (first) { H5.play();
-        // v95: the bridge's last frame stays up until the house is actually covering the screen, then fades; no flash of
-        // the page underneath while the house is still building
-        let gone = false; const rm = () => { if (gone) return; gone = true; wrap.classList.add("out"); setTimeout(() => wrap.remove(), 1300); };
-        addEventListener("house:in", rm, { once: true }); addEventListener("house:done", rm, { once: true }); setTimeout(rm, 20000);
-        addEventListener("house:done", unlock, { once: true }); } else { wrap.remove(); unlock(); } };
-    const toLumos = () => { to(land); unlock(); requestAnimationFrame(() => wrap.classList.add("out")); setTimeout(() => wrap.remove(), 1800); };
-    const skip = () => { if (done) return; done = true; cancelAnimationFrame(raf); if (first) { g.fillStyle = "#000"; g.fillRect(0, 0, cv.width, cv.height); toHouse(); } else { wrap.remove(); to(land); unlock(); } };
-    wrap.querySelector(".hs-skip").addEventListener("click", skip);
-    // leaving mid-walk (a link, back/forward) or the window changing shape: stop cleanly, never leave the page locked
-    const abort = () => { if (done) return; done = true; cancelAnimationFrame(raf); wrap.remove(); unlock(); off(); };
-    const onHash = () => { if (!home()) abort(); else if (!done) skip(); }, w0 = innerWidth, onSize = () => { if (Math.abs(innerWidth - w0) > 40) skip(); };
-    const off = () => { removeEventListener("hashchange", onHash); removeEventListener("resize", onSize); };
-    addEventListener("hashchange", onHash); addEventListener("resize", onSize); addEventListener("pagehide", abort, { once: true });
-    const E = ctrl[3], Dr = door(E);
-    // v88: he walks off the bridge onto the step, stops at the door, reaches for the handle, pulls it open, and goes in
-    const STAND = Dr.x0 - 15 * k, T_ARR = T_W1 + (STAND - E[0]) / (95 * k), T_REACH = T_ARR + 0.2, T_GRAB = T_REACH + 0.4, T_PULL = T_GRAB + 0.95, T_SWING = T_PULL + 0.4, T_OPEN = T_GRAB, T_IN = T_SWING + 0.85, T_END = T_IN + 0.8;
-    const theta = t => t < T_GRAB ? 0 : t < T_PULL ? ss((t - T_GRAB) / (T_PULL - T_GRAB)) * 1.2 : 1.2 + ss(clamp((t - T_PULL) / (T_SWING - T_PULL), 0, 1)) * 0.72;
-    const panel = th => { const { x0, y0: dy0, dw, dh } = Dr, xh = x0 + dw, fx = xh - dw * Math.cos(th), sn = Math.sin(th); return { xh, fx, top: dy0 - dh * 0.1 * sn, bot: E[1] + dh * 0.035 * sn, back: th > Math.PI / 2 }; };
-    const knob = th => { const P = panel(th), f = 7 * k / Dr.dw, y = Dr.y0 + Dr.dh * 0.56; return [P.fx + (P.xh - P.fx) * f, y + (P.top - Dr.y0) * (1 - f) * 0.4]; };
-    const walker = (t, th) => { if (t <= T_W0 - 0.2) return;
-      if (t < T_W1) { const wf = clamp((t - T_W0) / WALK, 0, 1), we = wf < 0.5 ? 2 * wf * wf : 1 - Math.pow(-2 * wf + 2, 2) / 2, [x, y, dir] = at(we); return stick(x, y, (t - T_W0) * 7.5, dir, ss(clamp((t - T_W0 + 0.2) / 0.3, 0, 1))); }
-      if (t < T_ARR) { const f = (t - T_W1) / (T_ARR - T_W1); return stick(E[0] + (STAND - E[0]) * f, E[1], (t - T_W0) * 7.5, 1); }
-      const hold = knob(Math.min(th, 1.2)), rest = [STAND + 9 * k, E[1] - 30 * k];
-      if (t < T_PULL + 0.05) { const r = ss(clamp((t - T_REACH) / (T_GRAB - T_REACH), 0, 1)), pull = clamp((t - T_GRAB) / (T_PULL - T_GRAB), 0, 1), x = STAND - 7 * k * ss(pull);
-        const tgt = [rest[0] + (hold[0] - rest[0]) * r, rest[1] + (hold[1] - rest[1]) * r]; return stick(x, E[1], 0, 1, 1, tgt, ss(pull) * 0.8); }
-      // lets go and walks in, getting smaller and fainter into the doorway
-      const f = clamp((t - T_PULL - 0.05) / (T_IN - T_PULL - 0.05), 0, 1), x0 = STAND - 7 * k, x = x0 + (Dr.x0 + Dr.dw * 0.5 - x0) * ss(f);
-      if (f < 1) { if (first && x > Dr.x0 - 6 * k) silh = true;   // a silhouette against the light inside
-        stick(x, E[1] - 2 * k * ss(f), (t - T_PULL) * 7.5, 1, 1 - ss(clamp((f - 0.6) / 0.4, 0, 1))); silh = false; }
-    };
-    const frame = now => {
-      if (!t0) t0 = now; const t = window.__trnT != null ? window.__trnT : (now - t0) / 1000; if (now - boil > 90) { boil = now; seed = 1 + ((now / 90) | 0) % 7 * 977; }
-      // the camera: the page follows the walker down
-      const wf = clamp((t - T_W0) / WALK, 0, 1), we = wf < 0.5 ? 2 * wf * wf : 1 - Math.pow(-2 * wf + 2, 2) / 2;
-      to(y0 + (D - y0) * ss(clamp((t - T_W0 + 0.3) / (WALK + 0.3), 0, 1)));
-      const sy = scrollY; g.setTransform(dpr, 0, 0, dpr, 0, -sy * dpr); g.clearRect(0, sy, W, H);
-      // the bridge sketches itself out of the arrow, then its rail, hangers and planks
-      const rv = ss(clamp(t / T_SK, 0, 1)), n = Math.max(2, Math.round(pts.length * rv));
-      const deck = pts.slice(0, n); line(deck, 2.2, 0.95, 0.6);
-      line(deck.map(([x, y]) => [x, y + 6 * k]), 1.1, 0.5, 0.6);
-      const rail = []; for (let s = 0; s <= rv + 1e-6; s += 0.01) { const [x, y] = at(s), sag = Math.sin((s * LEN / (90 * k)) * Math.PI) * 5 * k; rail.push([x, y - RAIL + Math.abs(sag)]); } if (rail.length > 1) line(rail, 1.3, 0.7, 0.7);
-      for (let d = 0; d < rv * LEN; d += 15 * k) { const [x, y] = at(d / LEN); line([[x - 1.5 * k, y + 1 * k], [x + 1.5 * k, y + 6 * k]], 1, 0.55, 0.3); }
-      for (let d = 0; d < rv * LEN; d += 45 * k) { const [x, y] = at(d / LEN), sag = Math.abs(Math.sin((d / (90 * k)) * Math.PI) * 5 * k); line([[x, y], [x, y - RAIL + sag]], 0.9, 0.45, 0.4); }
-      { const [x, y] = at(0); line([[x - 4 * k, y + 8 * k], [x - 4 * k, y - RAIL - 10 * k]], 3, 0.9, 0.4); }
-      // the door at the far end, on the next page; lit the first time, dark after
-      const da = ss(clamp((t - T_SK * 0.7) / 0.6, 0, 1));
-      if (da > 0) { g.globalAlpha = da; const { x0, y0: dy0, dw, dh } = Dr;
-        line([[x0 - 6 * k, E[1] + 1], [x0 + dw + 14 * k, E[1] + 1]], 2, 0.9, 0.5);
-        const th = theta(t), open = clamp(th / 1.6, 0, 1), P = panel(th);
-        if (first) { const gl = g.createRadialGradient(x0 + dw / 2, dy0 + dh / 2, 0, x0 + dw / 2, dy0 + dh / 2, dh * (1.1 + open)); gl.addColorStop(0, `rgba(255,205,130,${0.18 + 0.5 * open})`); gl.addColorStop(1, "rgba(255,190,110,0)"); g.fillStyle = gl; g.fillRect(x0 + dw / 2 - dh * 2.3, dy0 + dh / 2 - dh * 2.3, dh * 4.6, dh * 4.6); }
-        // the step he arrives on, and the doorway (warm inside the first time, black after)
-        line([[E[0] - 4 * k, E[1] + 1], [x0 + dw + 16 * k, E[1] + 1]], 2, 0.9, 0.5); line([[E[0], E[1] + 6 * k], [x0 + dw + 12 * k, E[1] + 6 * k]], 1, 0.5, 0.5);
-        g.fillStyle = first ? `rgba(255,214,150,${0.3 + 0.7 * open})` : "#000"; g.fillRect(x0, dy0, dw, dh);
-        if (first && th < 0.05) { g.fillStyle = "rgba(255,210,140,0.8)"; g.fillRect(x0 + 2, E[1] - 2, dw - 4, 2); }
-        line([[x0, E[1]], [x0, dy0], [x0 + dw, dy0], [x0 + dw, E[1]]], 2.4, 0.95, 0.5);
-        g.fillStyle = ink(0.85); g.font = `italic 700 ${Math.round(11 * k)}px Georgia, serif`; g.textAlign = "center"; g.fillText("37", x0 + dw / 2, dy0 - 6 * k);
-        // the walker: across the bridge, onto the step, a hand to the handle, a pull, then in
-        walker(t, th);
-        // the door itself, swinging out toward us on its hinge (the right edge)
-        const quad = [[P.xh, dy0], [P.fx, P.top], [P.fx, P.bot], [P.xh, E[1]]];
-        g.fillStyle = P.back ? "#0d0b09" : "#16120e"; g.beginPath(); quad.forEach(([x, y], q) => q ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.fill();
-        if (Math.abs(P.xh - P.fx) > 3 * k) { line([...quad, quad[0]], 1.8, 0.9, 0.5);
-          if (!P.back) { const inset = (a, b, f) => [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f]; const pa = inset(quad[1], quad[0], 0.2), pb = inset(quad[0], quad[1], 0.2), pc = inset(quad[3], quad[2], 0.2), pd = inset(quad[2], quad[3], 0.2);
-            const mid = (a, b, f) => [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f]; line([mid(pa, pd, 0.1), mid(pb, pc, 0.1), mid(pb, pc, 0.42), mid(pa, pd, 0.42), mid(pa, pd, 0.1)], 0.9, 0.5, 0.3); line([mid(pa, pd, 0.55), mid(pb, pc, 0.55), mid(pb, pc, 0.9), mid(pa, pd, 0.9), mid(pa, pd, 0.55)], 0.9, 0.5, 0.3);
-            const [kx, ky] = knob(th); g.fillStyle = "#d9b36c"; g.beginPath(); g.arc(kx, ky, 2.2 * k, 0, 7); g.fill(); } }
-        g.globalAlpha = 1; }
-      // through the door
-      if (t > T_IN) { const f = clamp((t - T_IN) / (T_END - T_IN), 0, 1);
-        if (first) { const cx2 = Dr.x0 + Dr.dw / 2, cy2 = Dr.y0 + Dr.dh / 2, R2 = Math.hypot(W, H) * ss(f) * 1.1 + Dr.dh * 0.6; const gr = g.createRadialGradient(cx2, cy2, 0, cx2, cy2, R2); gr.addColorStop(0, `rgba(255,236,200,${ss(f)})`); gr.addColorStop(0.6, `rgba(255,205,130,${ss(f)})`); gr.addColorStop(1, `rgba(255,190,110,${ss(f) * 0.6})`); g.fillStyle = gr; g.fillRect(0, sy, W, H);
-          if (f > 0.75) { g.fillStyle = `rgba(0,0,0,${ss((f - 0.75) / 0.25)})`; g.fillRect(0, sy, W, H); } }
-        else { g.fillStyle = `rgba(0,0,0,${ss(f)})`; g.fillRect(0, sy, W, H); } }
-      if (t >= T_END) { done = true; return first ? toHouse() : toLumos(); }
-      raf = requestAnimationFrame(frame);
-    };
-    raf = requestAnimationFrame(frame);
-    window.__trn = { first, D, LEN, WALK, T_W1, T_ARR, T_GRAB, T_PULL, T_SWING, T_IN, T_END };
-  }
-  // leaving the opening: a scroll down from it, or the arrow/tagline under it
-  const inPanel = t => { for (let n = t; n && n !== document.body && n.nodeType === 1; n = n.parentElement) { const o = getComputedStyle(n).overflowY; if ((o === "auto" || o === "scroll") && n.scrollHeight > n.clientHeight + 2) return true; if (n.getAttribute("role") === "dialog" || n.getAttribute("aria-modal") === "true") return true; } return false; };
-  addEventListener("wheel", e => { if (!ran && !busy && home() && e.deltaY > 0 && scrollY < 40 && !inPanel(e.target)) { e.preventDefault(); run(); } }, { passive: false });
-  let ty = null; addEventListener("touchstart", e => { ty = e.touches[0].clientY; }, { passive: true });
-  addEventListener("touchmove", e => { if (!ran && !busy && ty != null && home() && !inPanel(e.target) && ty - e.touches[0].clientY > 12 && scrollY < 40) { e.preventDefault(); run(); } }, { passive: false });
-  addEventListener("keydown", e => { if (!ran && !busy && home() && ["ArrowDown", "PageDown", " "].includes(e.key) && scrollY < 40 && !(e.target.closest && e.target.closest("input, textarea, select, [contenteditable]")) && !e.altKey && !e.ctrlKey && !e.metaKey) { e.preventDefault(); run(); } });
-  addEventListener("click", e => { const a = e.target.closest && e.target.closest('#reveal a[href="#hub"]'); if (a && !ran && !busy && home()) { e.preventDefault(); e.stopImmediatePropagation(); run(); } }, true);
-  // dragging the scrollbar (or a middle-click autoscroll) away from the top counts too
-  let held = false; addEventListener("pointerdown", () => { held = true; }, true); addEventListener("pointerup", () => { held = false; }, true);
-  addEventListener("scroll", () => { if (held && !ran && !busy && home() && scrollY > 0 && scrollY < window.__hub.landing() * 0.6) { to(0); run(); } }, { passive: true });
-  // coming back to the home page from another part of the site: the walk is offered again, this time into the dark
-  addEventListener("hashchange", () => { if (!home()) away = true; else if (away && !busy) { away = false; ran = false; } });
-  window.__transit = { run, state: () => ({ ran, busy }) };
 })();
 
 // v93: the project cards, set like a finished product card: a category line over the title, the description always
