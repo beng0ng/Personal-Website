@@ -491,7 +491,17 @@ body.pj-listed[data-page="projects"] #projects .part-head { opacity: 1 !importan
 }
 /* the little descriptions under each page in the end-of-page index are gone */
 .fin-tx > span, .fin-nl { display: none !important; }
+/* v99: no filler lines: the "me, on the team" notes on project pages, the resume's "short version" line, the end-of-page index blurbs */
+.org-me, #resume .part-head .lede, #resume .part-head > p, .fin-l { display: none !important; }
 
+/* v99: the page change, as a soft cross-fade with the new page rising a touch; the bar stays put */
+::view-transition-old(root) { animation: vtOut 0.38s cubic-bezier(0.4, 0, 1, 1) both; }
+::view-transition-new(root) { animation: vtIn 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) 0.08s both; }
+@keyframes vtOut { to { opacity: 0; transform: scale(0.985); filter: blur(4px); } }
+@keyframes vtIn { from { opacity: 0; transform: translateY(14px) scale(1.01); filter: blur(4px); } }
+#topbar { view-transition-name: topbar; }
+::view-transition-group(topbar) { animation: none; }
+@media (prefers-reduced-motion: reduce) { ::view-transition-old(root), ::view-transition-new(root) { animation: none; } }
 .hero .robot { position: absolute; transform: translateZ(0.7px); visibility: hidden; pointer-events: none; }
 .edge { position: absolute; backface-visibility: hidden; background: linear-gradient(180deg, #c99e5a, #8f6a33); }
 .edge.e-b { transform-origin: top; transform: rotateX(-90deg); background: linear-gradient(180deg, #b5884a, #7c5a2c); }
@@ -7168,6 +7178,7 @@ document.addEventListener("click", e => {
 const WARP = { el: null, t: 0 };
 function warp(fn) {
   if (reduceMotion) { fn(); return; }
+  if (document.startViewTransition) { try { document.startViewTransition(() => fn()); return; } catch (e) {} }
   if (!WARP.el) { WARP.el = h("div", { id: "warp", "aria-hidden": "true" }); document.body.append(WARP.el); void WARP.el.offsetWidth; }
   const w = WARP.el; clearTimeout(WARP.t); w.classList.add("on");
   WARP.t = setTimeout(() => { fn(); requestAnimationFrame(() => requestAnimationFrame(() => w.classList.remove("on"))); }, 200);
@@ -10270,7 +10281,7 @@ function pageRoute(hash) {   // on load and on back or forward: show the page th
 }
 window.__pages = { of: pageOfEl, current: () => PG.cur, show: pageShow, route: pageRoute,
   remember: (t, push) => { const url = t && t.id && t.id !== "intro" ? "#" + t.id : location.pathname + location.search; try { history[push ? "pushState" : "replaceState"](null, "", url); } catch (e) {} } };
-window.addEventListener("popstate", () => pageRoute(location.hash));
+window.addEventListener("popstate", () => { if (document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches) { try { document.startViewTransition(() => pageRoute(location.hash)); return; } catch (e) {} } pageRoute(location.hash); });
 pageRoute(location.hash);
 // v60: the five cards are painted, edge to edge, as SVG built here: a 250 x 350 scene each, with a few things that
 // move (stars, mist, a pulse in the network, a swirl in the sky) and the card's index in the corners.
@@ -11356,7 +11367,7 @@ const AMB = window.AMB = (() => {
   };
   const w = (fx, text) => `<span class="hv hv-${fx}" tabindex="0">${text}<span class="hv-pop" aria-hidden="true">${POP[fx]}<em>click for a surprise</em></span></span>`;
   const arrow = `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"/></svg>`;
-  const stop = (d, i, dup) => `<a class="dk-o dk-${d.k} pr-stop" href="${d.href}"${dup ? ' tabindex="-1" aria-hidden="true"' : ""} style="--i:${i}"><span class="dk-art"><span class="pr-node"></span><span class="pr-n">${d.n}</span><span class="pr-t">${d.name}</span><span class="pr-s">${d.sub}</span><span class="pr-a">${arrow}</span></span></a>`;
+  const stop = (d, i, dup) => `<a class="dk-o dk-${d.k} pr-stop" data-dove="1" href="${d.href}"${dup ? ' tabindex="-1" aria-hidden="true"' : ""} style="--i:${i}"><span class="dk-art"><span class="pr-node"></span><span class="pr-n">${d.n}</span><span class="pr-t">${d.name}</span><span class="pr-s">${d.sub}</span><span class="pr-a">${arrow}</span></span></a>`;
   const build = () => {
     scene.innerHTML = `<div class="pr" role="group" aria-label="Home"><canvas class="pr-fx" aria-hidden="true"></canvas><div class="pr-wrap">` +
       `<div class="pr-top"><div class="pr-text"><div class="pr-h" role="heading" aria-level="1">Ben Gong</div>` +
@@ -11437,253 +11448,224 @@ const AMB = window.AMB = (() => {
     if (live.length) raf = requestAnimationFrame(loop); else last = 0; };
   const start = e => { e.t = 0; live.push(e); if (!raf) raf = requestAnimationFrame(loop); };
   const fade = (t, dur, inT = 0.4, outT = 0.8) => Math.max(0, Math.min(1, t / inT, (dur - t) / outT));
-  // ---- shared drawing helpers ----
+  // ---- helpers ----
   const ease = k => k < 0 ? 0 : k > 1 ? 1 : k * k * (3 - 2 * k), clamp = (v, a, b) => Math.max(a, Math.min(b, v)), lerp = (a, b, k) => a + (b - a) * k;
   const dim = a => { g.fillStyle = `rgba(0,0,0,${a})`; g.fillRect(0, 0, W, H); };
-  // soft glows are drawn from one cached sprite per colour, so a scene can have hundreds without slowing down
-  const SPR = {}; const sprite = rgb => SPR[rgb] || (SPR[rgb] = (() => { const c = document.createElement("canvas"); c.width = c.height = 64; const x = c.getContext("2d"), gr = x.createRadialGradient(32, 32, 0, 32, 32, 32);
-    gr.addColorStop(0, `rgba(${rgb},1)`); gr.addColorStop(0.35, `rgba(${rgb},0.35)`); gr.addColorStop(1, `rgba(${rgb},0)`); x.fillStyle = gr; x.fillRect(0, 0, 64, 64); return c; })());
-  const glowDot = (x, y, r, rgb, a) => { if (r <= 0 || a <= 0) return; const pa = g.globalAlpha; g.globalAlpha = pa * Math.min(1, a); g.drawImage(sprite(rgb), x - r, y - r, r * 2, r * 2); g.globalAlpha = pa; };
-  const sparkle = (x, y, s, a, rgb = "255,240,210") => { g.save(); g.globalCompositeOperation = "lighter"; g.globalAlpha = a; glowDot(x, y, s * 1.6, rgb, 0.7); g.strokeStyle = `rgba(${rgb},0.9)`; g.lineWidth = 1.2; g.beginPath(); g.moveTo(x - s * 2.2, y); g.lineTo(x + s * 2.2, y); g.moveTo(x, y - s * 2.2); g.lineTo(x, y + s * 2.2); g.stroke(); g.restore(); };
-  const FONT = () => (getComputedStyle(document.body).getPropertyValue("--font-ui") || "sans-serif").trim();
-  // a person in profile, built from joint angles so a stride reads properly; ph runs the gait
-  const person = (x, y, s, ph, o = {}) => { const leg = s * 0.52, arm = s * 0.4, hip = [x, y - leg * 2], sh = [hip[0] + s * 0.06, hip[1] - s * 0.62];
-    const swing = o.run ? 0.95 : 0.5, kneeB = o.run ? 1.3 : 0.5;
+  const HAND = '"Caveat", "Segoe Print", "Bradley Hand", cursive', INK = "rgba(243,236,220,0.92)";
+  // hand-drawn ink: every line wobbles a little and is gone over twice, and the wobble re-draws itself about nine
+  // times a second, like a pencil animation ("boiling" lines)
+  let SEED = 1; const srnd = () => (SEED = (SEED * 16807) % 2147483647) / 2147483647, jit = a => (srnd() - 0.5) * 2 * a;
+  const boil = (t, id) => { SEED = ((Math.floor(t * 9) + 1) * 7919 + id * 104729) % 2147483647 || 1; for (let i = 0; i < 3; i++) srnd(); };
+  const pen = (w = 1.7, c = INK) => { g.strokeStyle = c; g.lineWidth = w; g.lineCap = "round"; g.lineJoin = "round"; };
+  const rline = (x1, y1, x2, y2, j = 1.4, n = 2) => { for (let p = 0; p < n; p++) { g.beginPath(); g.moveTo(x1 + jit(j), y1 + jit(j)); g.quadraticCurveTo((x1 + x2) / 2 + jit(j * 1.6), (y1 + y2) / 2 + jit(j * 1.6), x2 + jit(j), y2 + jit(j)); g.stroke(); } };
+  const rcirc = (x, y, rx, ry = rx, j = 1.4, n = 2, rot = 0) => { for (let p = 0; p < n; p++) { const k = Math.max(14, Math.min(60, rx * 0.7 | 0)), a0 = srnd() * TAU, over = 0.12 + srnd() * 0.25; g.beginPath();
+      for (let i = 0; i <= k; i++) { const a = a0 + (TAU + over) * i / k, ex = Math.cos(a) * (rx + jit(j)), ey = Math.sin(a) * (ry + jit(j)); g.lineTo(x + ex * Math.cos(rot) - ey * Math.sin(rot), y + ex * Math.sin(rot) + ey * Math.cos(rot)); } g.stroke(); } };
+  const rpath = (pts, j = 1.4, n = 2, close = false) => { for (let p = 0; p < n; p++) { const q = pts.map(([x, y]) => [x + jit(j), y + jit(j)]); if (close) q.push(q[0]); g.beginPath(); g.moveTo(...q[0]);
+      for (let i = 1; i < q.length - 1; i++) g.quadraticCurveTo(q[i][0], q[i][1], (q[i][0] + q[i + 1][0]) / 2, (q[i][1] + q[i + 1][1]) / 2); g.lineTo(...q[q.length - 1]); g.stroke(); } };
+  const hatch = (clip, x, y, w, h, gap = 6, j = 1) => { g.save(); g.beginPath(); clip(); g.clip(); for (let k = -h; k < w; k += gap) rline(x + k, y + h, x + k + h, y, j, 1); g.restore(); };
+  // a watercolour wash: a few soft, irregular blots laid over each other
+  const wash = (x, y, r, rgb, a, id = 0) => { const s0 = SEED; SEED = (id * 9973 + 17) % 2147483647 || 1; for (let l = 0; l < 3; l++) { g.fillStyle = `rgba(${rgb},${a / 2.4})`; g.beginPath(); const n = 14; for (let i = 0; i <= n; i++) { const ang = i / n * TAU, rr = r * (0.78 + srnd() * 0.32); g.lineTo(x + Math.cos(ang) * rr + jit(r * 0.06), y + Math.sin(ang) * rr * 0.85 + jit(r * 0.06)); } g.fill(); } SEED = s0; };
+  const scrawl = (txt, x, y, size, c = INK, rot = 0) => { g.save(); g.translate(x, y); g.rotate(rot); g.fillStyle = c; g.font = `700 ${size}px ${HAND}`; g.textAlign = "center"; g.fillText(txt, 0, 0); g.restore(); };
+  // a stick person in ink, from joint angles
+  const inkPerson = (x, y, s, ph, o = {}) => { const leg = s * 0.52, arm = s * 0.4, hip = [x, y - leg * 2], sh = [hip[0] + s * 0.05, hip[1] - s * 0.62];
     const limb = (p, a1, a2, l) => { const k = [p[0] + Math.sin(a1) * l, p[1] + Math.cos(a1) * l]; return [k, [k[0] + Math.sin(a1 - a2) * l, k[1] + Math.cos(a1 - a2) * l]]; };
+    const side = sd => { const p = ph + sd * Math.PI, th = Math.sin(p) * 0.5, kn = Math.max(0, -Math.cos(p)) * 0.5 + 0.08, ar = -Math.sin(p) * 0.45;
+      const [k, f] = limb(hip, th, -kn, leg); rpath([hip, k, f, [f[0] + s * 0.14, f[1]]], 1, 2); const [e, h] = limb(sh, ar, -0.3, arm); rpath([sh, e, h], 1, 2); };
+    side(1); rline(...hip, ...sh, 1, 2); rcirc(sh[0] + s * 0.05, sh[1] - s * 0.26, s * 0.17, s * 0.17, 1, 2);
+    if (o.hair) { g.beginPath(); g.moveTo(sh[0] - s * 0.17, sh[1] - s * 0.22); for (let i = 0; i <= 10; i++) { const a = Math.PI + i / 10 * Math.PI; g.lineTo(sh[0] + s * 0.05 + Math.cos(a) * s * 0.22 + jit(1.5), sh[1] - s * 0.3 + Math.sin(a) * s * 0.16 + jit(1.5)); } g.stroke(); for (let i = 0; i < 5; i++) rline(sh[0] - s * 0.14 + i * s * 0.07, sh[1] - s * 0.42, sh[0] - s * 0.16 + i * s * 0.07, sh[1] - s * 0.2, 0.8, 1); }
+    side(0); };
+  const inkBeetle = (x, y, s, a, t) => { g.save(); g.translate(x, y); g.rotate(a); const leg = Math.sin(t * 26) * s * 0.18; pen(1.3);
+    for (const k of [-0.35, 0.05, 0.4]) { rpath([[s * k, 0], [s * k + leg, -s * 0.55], [s * k + leg - s * 0.18, -s * 0.85]], 0.6, 1); rpath([[s * k, 0], [s * k - leg, s * 0.55], [s * k - leg - s * 0.18, s * 0.85]], 0.6, 1); }
+    rpath([[s * 0.8, -s * 0.05], [s * 1.05, -s * 0.3], [s * 1.25, -s * 0.42]], 0.5, 1); rpath([[s * 0.8, s * 0.05], [s * 1.05, s * 0.3], [s * 1.25, s * 0.42]], 0.5, 1);
+    wash(0, 0, s * 0.62, "80,190,140", 0.55, Math.round(x)); pen(1.5); rcirc(-s * 0.05, 0, s * 0.62, s * 0.45, 0.8, 2); rline(-s * 0.66, 0, s * 0.5, 0, 0.6, 1);
+    hatch(() => g.ellipse(-s * 0.05, -s * 0.2, s * 0.6, s * 0.25, 0, 0, TAU), -s * 0.7, -s * 0.5, s * 1.3, s * 0.5, 4, 0.4);
+    rcirc(s * 0.62, 0, s * 0.2, s * 0.25, 0.6, 1); g.fillStyle = INK; g.beginPath(); g.arc(s * 0.84, 0, s * 0.13, 0, TAU); g.fill(); g.restore(); };
+
+  // ---- the runner: a sprint cycle from keyframes, interpolated smoothly, with a proper hurdle technique ----
+  const CR = (arr, ph) => { const n = arr.length, x = ((ph % 1) + 1) % 1 * n, i = Math.floor(x), k = x - i, p0 = arr[(i - 1 + n) % n], p1 = arr[i], p2 = arr[(i + 1) % n], p3 = arr[(i + 2) % n];
+    return 0.5 * ((2 * p1) + (-p0 + p2) * k + (2 * p0 - 5 * p1 + 4 * p2 - p3) * k * k + (-p0 + 3 * p1 - 3 * p2 + p3) * k * k * k); };
+  const D = Math.PI / 180;
+  const GAIT = { thigh: [-38, -18, 18, 50, 62, 44, 12, -22], knee: [22, 80, 125, 105, 55, 18, 12, 14], ankle: [-25, -10, 15, 20, 10, 0, -5, -30], arm: [48, 34, -6, -42, -52, -26, 16, 44], elbow: [70, 85, 100, 95, 80, 95, 100, 85] };
+  const sprinter = (x, ground, s, ph, hurdle, col, dark) => {
+    // angles in degrees, forward is positive
+    const pose = side => { const p = ph + side * 0.5; let th = CR(GAIT.thigh, p), kn = CR(GAIT.knee, p), an = CR(GAIT.ankle, p), ar = CR(GAIT.arm, p + 0.5), el = CR(GAIT.elbow, p + 0.5);
+      if (hurdle > 0) { const w = hurdle; if (side === 0) { th = lerp(th, 82, w); kn = lerp(kn, 10, w); an = lerp(an, 5, w); ar = lerp(ar, 20, w); el = lerp(el, 60, w); } else { th = lerp(th, 35, w); kn = lerp(kn, 125, w); an = lerp(an, 10, w); ar = lerp(ar, -60, w); el = lerp(el, 70, w); } }
+      return { th: th * D, kn: kn * D, an: an * D, ar: ar * D, el: el * D }; };
+    const lean = (12 + hurdle * 22) * D, bob = Math.abs(Math.sin(ph * TAU)) * s * 0.05, thighL = s * 0.5, shinL = s * 0.5, footL = s * 0.2, upL = s * 0.34, foreL = s * 0.32;
+    const A = pose(0), B = pose(1), legH = th => Math.cos(th.th) * thighL + Math.cos(th.th - th.kn) * shinL;
+    const hipY = ground - Math.max(legH(A), legH(B)) - bob * 0.3 + s * 0.02, hip = [x, hipY], sh = [x + Math.sin(lean) * s * 0.62, hipY - Math.cos(lean) * s * 0.62];
+    const leg = (P, c, wt) => { const k = [hip[0] + Math.sin(P.th) * thighL, hip[1] + Math.cos(P.th) * thighL], a2 = P.th - P.kn, f = [k[0] + Math.sin(a2) * shinL, k[1] + Math.cos(a2) * shinL], a3 = a2 + Math.PI / 2 + P.an, t2 = [f[0] + Math.sin(a3) * footL, f[1] + Math.cos(a3) * footL];
+      g.strokeStyle = c; g.lineWidth = s * 0.17 * wt; g.beginPath(); g.moveTo(...hip); g.lineTo(...k); g.stroke(); g.lineWidth = s * 0.13 * wt; g.beginPath(); g.moveTo(...k); g.lineTo(...f); g.stroke(); g.lineWidth = s * 0.08 * wt; g.beginPath(); g.moveTo(...f); g.lineTo(...t2); g.stroke(); return f; };
+    const armD = (P, c, wt) => { const a1 = P.ar + lean * 0.3, e = [sh[0] + Math.sin(a1) * upL, sh[1] + Math.cos(a1) * upL], a2 = a1 + P.el, h = [e[0] + Math.sin(a2) * foreL, e[1] + Math.cos(a2) * foreL];
+      g.strokeStyle = c; g.lineWidth = s * 0.11 * wt; g.beginPath(); g.moveTo(...sh); g.lineTo(...e); g.stroke(); g.lineWidth = s * 0.09 * wt; g.beginPath(); g.moveTo(...e); g.lineTo(...h); g.stroke(); };
     g.lineCap = "round"; g.lineJoin = "round";
-    const draw = (side) => { const p = ph + side * Math.PI, th = Math.sin(p) * swing, kn = Math.max(0, -Math.cos(p)) * kneeB + 0.08, ar = -Math.sin(p) * swing * 0.9, el = (o.run ? 1.5 : 0.3);
-      const [k, f] = limb(hip, th, -kn, leg); g.lineWidth = s * 0.16; g.beginPath(); g.moveTo(...hip); g.lineTo(...k); g.lineTo(...f); g.lineTo(f[0] + s * 0.14, f[1]); g.stroke();
-      const [e, h] = limb(sh, ar, -el, arm); g.lineWidth = s * 0.12; g.beginPath(); g.moveTo(...sh); g.lineTo(...e); g.lineTo(...h); g.stroke(); };
-    g.strokeStyle = o.back || o.col; draw(1);
-    g.strokeStyle = o.col; g.lineWidth = s * (o.suit ? 0.3 : 0.2); g.beginPath(); g.moveTo(...hip); g.lineTo(...sh); g.stroke();
-    g.fillStyle = o.col; g.beginPath(); g.arc(sh[0] + s * 0.05, sh[1] - s * 0.26, s * 0.17, 0, TAU); g.fill();
-    if (o.hair) { g.fillStyle = o.hair; g.beginPath(); g.ellipse(sh[0] + s * 0.02, sh[1] - s * 0.33, s * 0.22, s * 0.15, -0.1, Math.PI * 0.95, TAU * 1.02); g.fill(); g.beginPath(); g.ellipse(sh[0] - s * 0.08, sh[1] - s * 0.24, s * 0.1, s * 0.16, 0, 0, TAU); g.fill(); }
-    draw(0); return sh; };
-  const beetle = (x, y, s, a, t) => { g.save(); g.translate(x, y); g.rotate(a); const leg = Math.sin(t * 28) * s * 0.18;
-    g.strokeStyle = "#1a2a22"; g.lineWidth = Math.max(1, s * 0.09); g.lineCap = "round"; g.beginPath();
-    for (const [k, i] of [[-0.35, 0], [0.05, 1], [0.4, 2]]) { const l = i % 2 ? leg : -leg; g.moveTo(s * k, 0); g.lineTo(s * k + l, -s * 0.55); g.lineTo(s * k + l - s * 0.15, -s * 0.8); g.moveTo(s * k, 0); g.lineTo(s * k - l, s * 0.55); g.lineTo(s * k - l - s * 0.15, s * 0.8); } g.stroke();
-    g.beginPath(); g.moveTo(s * 0.75, -s * 0.08); g.quadraticCurveTo(s * 1.05, -s * 0.3, s * 1.2, -s * 0.45); g.moveTo(s * 0.75, s * 0.08); g.quadraticCurveTo(s * 1.05, s * 0.3, s * 1.2, s * 0.45); g.stroke();
-    const el = g.createLinearGradient(-s * 0.6, -s * 0.5, s * 0.4, s * 0.5); el.addColorStop(0, "#1f6f5a"); el.addColorStop(0.45, "#3fb38a"); el.addColorStop(0.7, "#5a7bd8"); el.addColorStop(1, "#7b4bb0");
-    g.fillStyle = el; g.beginPath(); g.ellipse(-s * 0.05, 0, s * 0.62, s * 0.46, 0, 0, TAU); g.fill();
-    g.strokeStyle = "rgba(0,0,0,0.55)"; g.lineWidth = Math.max(0.8, s * 0.05); g.beginPath(); g.moveTo(-s * 0.66, 0); g.lineTo(s * 0.5, 0); g.stroke();
-    g.fillStyle = "rgba(255,255,255,0.35)"; g.beginPath(); g.ellipse(-s * 0.15, -s * 0.22, s * 0.28, s * 0.08, -0.15, 0, TAU); g.fill();
-    g.fillStyle = "#15211b"; g.beginPath(); g.ellipse(s * 0.6, 0, s * 0.2, s * 0.26, 0, 0, TAU); g.fill(); g.beginPath(); g.arc(s * 0.82, 0, s * 0.14, 0, TAU); g.fill(); g.restore(); };
+    armD(B, dark, 1); const fb = leg(B, dark, 1);
+    g.strokeStyle = col; g.lineWidth = s * 0.24; g.beginPath(); g.moveTo(...hip); g.lineTo(...sh); g.stroke();
+    g.fillStyle = col; g.beginPath(); g.arc(sh[0] + Math.sin(lean) * s * 0.26, sh[1] - Math.cos(lean) * s * 0.26, s * 0.15, 0, TAU); g.fill();
+    const fa = leg(A, col, 1); armD(A, col, 1);
+    return [fa, fb]; };
+
   const EGG = {
-    // a record rises out of the word and plays: grooves catching the light, the arm dropping, rings of sound,
-    // beetles circling it, and four friends crossing a zebra crossing below
-    beatles: (x0, y0) => { const dur = 7.5, rings = [], bugs = Array.from({ length: 11 }, (_, i) => ({ a: i / 11 * TAU, v: R(0.35, 0.6) * (i % 2 ? 1 : -1), r: R(1.12, 1.3), s: R(9, 15) }));
-      return { step(dt, t) { const f = fade(t, dur, 0.4, 1), up = ease(t / 1.1), Rr = Math.min(W, H * 1.3) * 0.2, cx = lerp(x0, W / 2, up), cy = lerp(y0, H * 0.42, up), rr = Rr * lerp(0.15, 1, up), rot = t * 3.5;
-        g.globalAlpha = f; dim(0.78);
-        // sound rings
-        if (t > 1.3 && (!rings.length || t - rings[rings.length - 1] > 0.45)) rings.push(t);
-        for (const r0 of rings) { const k = (t - r0) / 2.4; if (k > 1) continue; g.strokeStyle = `rgba(217,179,108,${(1 - k) * 0.5})`; g.lineWidth = 2 * (1 - k) + 0.5; g.beginPath(); g.arc(cx, cy, rr * (1 + k * 1.6), 0, TAU); g.stroke(); }
-        // the disc and its grooves
-        g.save(); g.translate(cx, cy); g.shadowColor = "rgba(0,0,0,0.8)"; g.shadowBlur = 40; g.fillStyle = "#0a0a0c"; g.beginPath(); g.arc(0, 0, rr, 0, TAU); g.fill(); g.shadowBlur = 0;
-        for (let i = 0; i < 34; i++) { const r = rr * (0.36 + i * 0.0185); g.strokeStyle = `rgba(255,255,255,${0.035 + (i % 5 === 0 ? 0.05 : 0)})`; g.lineWidth = 1; g.beginPath(); g.arc(0, 0, r, 0, TAU); g.stroke(); }
-        if (g.createConicGradient) { const cg = g.createConicGradient(-0.6, 0, 0); cg.addColorStop(0, "rgba(255,255,255,0)"); cg.addColorStop(0.06, "rgba(255,240,210,0.16)"); cg.addColorStop(0.12, "rgba(255,255,255,0)"); cg.addColorStop(0.5, "rgba(255,255,255,0)"); cg.addColorStop(0.56, "rgba(160,190,255,0.12)"); cg.addColorStop(0.62, "rgba(255,255,255,0)"); cg.addColorStop(1, "rgba(255,255,255,0)");
-          g.fillStyle = cg; g.beginPath(); g.arc(0, 0, rr, 0, TAU); g.arc(0, 0, rr * 0.34, 0, TAU, true); g.fill(); }
-        g.rotate(rot); const lb = g.createRadialGradient(0, 0, 0, 0, 0, rr * 0.33); lb.addColorStop(0, "#f0d08f"); lb.addColorStop(1, "#c9973f"); g.fillStyle = lb; g.beginPath(); g.arc(0, 0, rr * 0.33, 0, TAU); g.fill();
-        g.fillStyle = "#3a2a10"; g.textAlign = "center"; g.font = `700 ${Math.max(8, rr * 0.07)}px ${FONT()}`; g.fillText("BEN GONG", 0, -rr * 0.13); g.font = `500 ${Math.max(7, rr * 0.05)}px ${FONT()}`; g.fillText("SIDE A · 33⅓", 0, rr * 0.18);
-        g.strokeStyle = "rgba(58,42,16,0.6)"; g.lineWidth = 1; g.beginPath(); g.arc(0, 0, rr * 0.27, 0, TAU); g.stroke(); g.fillStyle = "#0a0a0c"; g.beginPath(); g.arc(0, 0, rr * 0.03, 0, TAU); g.fill(); g.restore();
-        // the tone arm
-        const arm = ease((t - 0.9) / 0.7), px = cx + rr * 1.15, py = cy - rr * 0.95, aa = lerp(-0.2, 0.42, arm), L = rr * 1.45;
-        g.strokeStyle = "#cfd2d8"; g.lineWidth = Math.max(2, rr * 0.03); g.lineCap = "round"; g.beginPath(); g.moveTo(px, py); g.lineTo(px - Math.sin(aa) * L * 0.2, py + Math.cos(aa) * L * 0.5); g.lineTo(px - Math.sin(aa + 0.35) * L, py + Math.cos(aa + 0.35) * L * 0.92); g.stroke();
-        g.fillStyle = "#9aa0aa"; g.beginPath(); g.arc(px, py, rr * 0.08, 0, TAU); g.fill(); g.fillStyle = "#e7e9ee"; g.beginPath(); g.arc(px, py, rr * 0.035, 0, TAU); g.fill();
-        // beetles circling the record
-        for (const b of bugs) { b.a += b.v * dt; const r = rr * b.r, bx = cx + Math.cos(b.a) * r, by = cy + Math.sin(b.a) * r; beetle(bx, by, b.s * up, b.a + (b.v > 0 ? Math.PI / 2 : -Math.PI / 2), t + b.a); }
-        // the crossing, in perspective, and four friends walking it
-        const yb = H * 0.93, yt = H * 0.8, n = 9; g.fillStyle = "rgba(245,243,238,0.85)";
-        for (let i = 0; i < n; i++) { const a = (i + 0.15) / n, b = (i + 0.6) / n, sx = W * 0.5; g.beginPath(); g.moveTo(sx + (a - 0.5) * W * 1.1, yb); g.lineTo(sx + (b - 0.5) * W * 1.1, yb); g.lineTo(sx + (b - 0.5) * W * 0.7, yt); g.lineTo(sx + (a - 0.5) * W * 0.7, yt); g.closePath(); g.fill(); }
-        const s = Math.min(70, H * 0.085), walk = (t * W * 0.16) % (W + s * 9);
-        ["#f5f3ee", "#16161a", "#16161a", "#16161a"].forEach((c, i) => { const x = walk - s * 1.6 * i - s; g.save(); if (c !== "#f5f3ee") { g.shadowColor = "rgba(245,243,238,0.6)"; g.shadowBlur = 4; }
-          person(x, yt + s * 0.45, s, t * 6.2 + i * 0.3, { col: c, back: c === "#f5f3ee" ? "#d8d4cc" : "#222228", hair: c === "#f5f3ee" ? "#e9e4d8" : "#2a1f18", suit: true }); g.restore(); });
-        g.globalAlpha = 1; return t < dur; } }; },
-    // a gold saxophone breathing smoke, notes riding it, under the lights of a city at night
-    jazz: (x0, y0) => { const dur = 7, smoke = [], notes = [], blds = []; let x = 0; while (x < W) { const w = R(30, 90); blds.push({ x, w, h: R(H * 0.08, H * 0.32), win: Array.from({ length: 30 }, () => [R(0, 1), R(0, 1), R(0, 1) > 0.55, R(0, TAU)]) }); x += w + R(2, 8); }
-      return { step(dt, t) { const f = fade(t, dur, 0.5, 1.2); g.globalAlpha = f; dim(0.8);
-        // two spotlights sweeping
-        g.save(); g.globalCompositeOperation = "lighter"; for (const [sx, ph] of [[W * 0.15, 0], [W * 0.85, 1.7]]) { const a = Math.sin(t * 0.7 + ph) * 0.35, gr = g.createLinearGradient(sx, 0, sx, H); gr.addColorStop(0, "rgba(255,225,170,0.22)"); gr.addColorStop(1, "rgba(255,225,170,0)"); g.fillStyle = gr;
-          g.beginPath(); g.moveTo(sx - 6, -10); g.lineTo(sx + 6, -10); g.lineTo(sx + Math.sin(a) * H + H * 0.25, H); g.lineTo(sx + Math.sin(a) * H - H * 0.25, H); g.closePath(); g.fill(); } g.restore();
-        // skyline with lit windows
-        g.globalAlpha = f * ease(t / 0.8); g.fillStyle = "rgba(240,230,210,0.9)"; g.beginPath(); g.arc(W * 0.78, H * 0.2, Math.min(W, H) * 0.045, 0, TAU); g.fill(); glowDot(W * 0.78, H * 0.2, Math.min(W, H) * 0.16, "240,225,190", 0.25);
-        for (const b of blds) { g.fillStyle = "#07070b"; g.fillRect(b.x, H - b.h, b.w, b.h); g.strokeStyle = "rgba(217,179,108,0.15)"; g.strokeRect(b.x + 0.5, H - b.h + 0.5, b.w - 1, b.h);
-          for (const [u, v, on, ph] of b.win) if (on) { const fl = 0.55 + 0.45 * Math.sin(t * 2 + ph); g.fillStyle = `rgba(255,${190 + (ph * 10 % 40)},120,${0.75 * fl})`; g.fillRect(b.x + 4 + u * (b.w - 12), H - b.h + 6 + v * (b.h - 14), 4, 6); } }
-        // the saxophone
-        const S = Math.min(W, H) * 0.42, up = ease(t / 1), sx = lerp(x0, W * (W > H ? 0.32 : 0.3), up), sy = lerp(y0, H * 0.58, up), sw = Math.sin(t * 2.2) * 0.08;
-        g.globalAlpha = f; g.save(); g.translate(sx, sy); g.rotate(-0.25 + sw); g.scale(up * 0.6 + 0.4, up * 0.6 + 0.4);
-        const brass = g.createLinearGradient(-S * 0.2, 0, S * 0.2, 0); brass.addColorStop(0, "#7a5a22"); brass.addColorStop(0.35, "#f3d38a"); brass.addColorStop(0.55, "#d9b36c"); brass.addColorStop(1, "#6e4f1c");
-        g.lineCap = "round"; g.strokeStyle = brass; g.lineWidth = S * 0.11; g.beginPath(); g.moveTo(0, -S * 0.5); g.lineTo(0, S * 0.18); g.quadraticCurveTo(0, S * 0.42, S * 0.17, S * 0.42); g.quadraticCurveTo(S * 0.3, S * 0.42, S * 0.3, S * 0.2); g.stroke();
-        g.fillStyle = brass; g.beginPath(); g.ellipse(S * 0.31, S * 0.12, S * 0.1, S * 0.06, -0.25, 0, TAU); g.fill(); g.fillStyle = "#3b2a0e"; g.beginPath(); g.ellipse(S * 0.31, S * 0.1, S * 0.07, S * 0.035, -0.25, 0, TAU); g.fill();
-        g.lineWidth = S * 0.04; g.beginPath(); g.moveTo(0, -S * 0.5); g.quadraticCurveTo(-S * 0.02, -S * 0.62, -S * 0.12, -S * 0.66); g.stroke(); g.strokeStyle = "#1a1a1e"; g.lineWidth = S * 0.03; g.beginPath(); g.moveTo(-S * 0.12, -S * 0.66); g.lineTo(-S * 0.2, -S * 0.68); g.stroke();
-        for (let i = 0; i < 7; i++) { const ky = -S * 0.36 + i * S * 0.075; g.fillStyle = "#f6e4b5"; g.beginPath(); g.arc(S * 0.05, ky, S * 0.022, 0, TAU); g.fill(); g.strokeStyle = "#7a5a22"; g.lineWidth = 1; g.stroke(); g.strokeStyle = "rgba(122,90,34,0.8)"; g.beginPath(); g.moveTo(S * 0.05, ky); g.lineTo(S * 0.075, ky + S * 0.02); g.stroke(); }
-        g.strokeStyle = "rgba(255,255,255,0.45)"; g.lineWidth = S * 0.012; g.beginPath(); g.moveTo(-S * 0.03, -S * 0.45); g.lineTo(-S * 0.03, S * 0.15); g.stroke();
-        const bell = [S * 0.31, S * 0.1], m = g.getTransform(); g.restore();
-        const bx = m.a * bell[0] + m.c * bell[1] + m.e, by = m.b * bell[0] + m.d * bell[1] + m.f;
-        // smoke ribbons out of the bell, notes riding them
-        if (t < dur - 1.4) { smoke.push({ x: bx / dpr, y: by / dpr, vx: R(20, 60), vy: R(-90, -50), b: t, w: R(0, TAU) }); if (Math.random() < dt * 5) notes.push({ x: bx / dpr, y: by / dpr, b: t, ch: "♪♫♩♬"[Math.floor(R(0, 4))], s: R(20, 36), w: R(0, TAU), c: ["217,179,108", "245,243,238", "143,180,255"][Math.floor(R(0, 3))] }); }
-        for (const p of smoke) { const k = t - p.b; p.x += (p.vx + Math.sin(k * 2 + p.w) * 40) * dt; p.y += p.vy * dt; }
-        while (smoke.length && t - smoke[0].b > 3.5) smoke.shift();
-        g.save(); g.globalCompositeOperation = "lighter"; g.lineCap = "round";
-        for (let i = 1; i < smoke.length; i++) { const p = smoke[i], q = smoke[i - 1], k = (t - p.b) / 3.5; g.strokeStyle = `rgba(230,225,215,${0.12 * (1 - k)})`; g.lineWidth = 4 + k * 40; g.beginPath(); g.moveTo(q.x, q.y); g.lineTo(p.x, p.y); g.stroke(); }
-        for (const n of notes) { const k = t - n.b; if (k > 3.2) continue; const nx = n.x + k * 60 + Math.sin(k * 3 + n.w) * 30, ny = n.y - k * 80; glowDot(nx, ny - n.s * 0.3, n.s, n.c, 0.35 * (1 - k / 3.2)); g.fillStyle = `rgba(${n.c},${1 - k / 3.2})`; g.font = `${n.s}px serif`; g.textAlign = "center"; g.fillText(n.ch, nx, ny); }
-        g.restore(); g.globalAlpha = 1; return t < dur; } }; },
-    // night under the floodlights: a sprinter in chronophotograph, three hurdles, the photo-finish beam and the clock
-    track: () => { const dur = 6.4, conf = []; let stopT = 0;
-      return { step(dt, t) { const f = fade(t, dur, 0.4, 1); g.globalAlpha = f; dim(0.8);
-        const y0 = H * 0.8, s = Math.min(78, H * 0.1), run = clamp((t - 0.4) / 3.4, 0, 1), fx = W * 0.84, x = lerp(-s * 2, W + s * 2, run), hs = [0.26, 0.46, 0.66].map(k => k * W);
-        // floodlights
-        g.save(); g.globalCompositeOperation = "lighter"; for (const lx of [W * 0.08, W * 0.92]) { for (let i = 0; i < 4; i++) glowDot(lx + (i - 1.5) * 16, H * 0.1, 26, "255,250,235", 0.55); glowDot(lx, H * 0.1, Math.min(W, H) * 0.35, "255,245,220", 0.12);
-          g.strokeStyle = "rgba(255,250,235,0.25)"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(lx - 120, H * 0.1); g.lineTo(lx + 120, H * 0.1); g.stroke(); } g.restore();
-        // the track: lanes in perspective
-        const top = H * 0.66; g.fillStyle = "#0e2a1c"; g.fillRect(0, H * 0.58, W, top - H * 0.58);
-        const tg = g.createLinearGradient(0, top, 0, H); tg.addColorStop(0, "#7a2e20"); tg.addColorStop(1, "#b84a35"); g.fillStyle = tg; g.fillRect(0, top, W, H - top);
-        g.strokeStyle = "rgba(255,255,255,0.75)"; g.lineWidth = 1.5; for (let i = 0; i <= 6; i++) { const yy = top + (H - top) * Math.pow(i / 6, 1.35); g.beginPath(); g.moveTo(0, yy); g.lineTo(W, yy); g.stroke(); }
-        g.lineWidth = 4; g.beginPath(); g.moveTo(fx, top); g.lineTo(fx + (H - top) * 0.25, H); g.stroke();
-        // hurdles
-        for (const h of hs) { g.strokeStyle = "#e9e6df"; g.lineWidth = 3; g.beginPath(); g.moveTo(h - s * 0.32, y0); g.lineTo(h - s * 0.32, y0 - s * 0.62); g.moveTo(h + s * 0.32, y0); g.lineTo(h + s * 0.32, y0 - s * 0.62); g.stroke(); g.fillStyle = "#f5f3ee"; g.fillRect(h - s * 0.42, y0 - s * 0.7, s * 0.84, s * 0.1); g.fillStyle = "#c4553d"; g.fillRect(h - s * 0.14, y0 - s * 0.7, s * 0.28, s * 0.1); }
-        // the runner, with ghosts of where they were (a chronophotograph)
-        const liftAt = xx => { let l = 0; for (const h of hs) { const d = Math.abs(xx - h); if (d < s * 1.3) l = Math.max(l, Math.cos(d / (s * 1.3) * Math.PI / 2) * s * 0.85); } return l; };
-        for (let i = 6; i >= 0; i--) { const xx = x - i * s * 0.38, ph = (t - i * 0.03) * 15; if (xx < -s) continue; g.globalAlpha = f * (i ? 0.08 + (6 - i) * 0.04 : 1);
-          person(xx, y0 - liftAt(xx), s, ph, { col: i ? "#d9b36c" : "#f5f3ee", back: i ? "#b38e47" : "#bdb9b0", run: true }); }
-        g.globalAlpha = f;
-        // photo-finish beam and the clock
-        const crossed = x > fx; if (crossed && !stopT) { stopT = t; for (let i = 0; i < 140; i++) conf.push({ x: fx, y: y0 - s, vx: R(-320, 320), vy: R(-620, -160), c: ["#d9b36c", "#f08a6c", "#8fb4ff", "#6fd3b8", "#f5f3ee"][i % 5], r: R(0, TAU), w: R(4, 9) }); }
-        if (crossed) { const k = clamp((t - stopT) / 0.6, 0, 1); g.save(); g.globalCompositeOperation = "lighter"; const bg = g.createLinearGradient(fx - 40, 0, fx + 40, 0); bg.addColorStop(0, "rgba(143,180,255,0)"); bg.addColorStop(0.5, `rgba(190,215,255,${0.5 * (1 - k)})`); bg.addColorStop(1, "rgba(143,180,255,0)"); g.fillStyle = bg; g.fillRect(fx - 40, 0, 80, H); g.restore(); }
-        const clock = Math.max(0, (stopT || t) - 0.4) * 3.6 + (run > 0 ? 0 : 0), secs = clock.toFixed(2).padStart(5, "0");
-        g.font = `600 ${Math.min(54, W * 0.05)}px ui-monospace, Menlo, monospace`; g.textAlign = "center"; g.fillStyle = crossed ? "#d9b36c" : "#f5f3ee"; g.fillText(secs, W / 2, H * 0.24);
-        g.font = `600 12px ${FONT()}`; g.fillStyle = "rgba(245,243,238,0.6)"; g.fillText(crossed ? "PERSONAL BEST" : "110 M HURDLES", W / 2, H * 0.24 + 24);
-        for (const c of conf) { c.vy += 700 * dt; c.vx *= 0.99; c.x += c.vx * dt; c.y += c.vy * dt; c.r += dt * 9; g.fillStyle = c.c; g.save(); g.translate(c.x, c.y); g.rotate(c.r); g.scale(1, Math.cos(c.r * 1.3)); g.fillRect(-c.w / 2, -2.5, c.w, 5); g.restore(); }
-        g.globalAlpha = 1; return t < dur; } }; },
-    // one great coin turns in the light, then bursts into a spiral galaxy of coins
-    coins: () => { const dur = 7, bits = [];
-      const face = (r, sx, t) => { const gold = g.createRadialGradient(-r * 0.3, -r * 0.35, r * 0.1, 0, 0, r); gold.addColorStop(0, "#fff0c4"); gold.addColorStop(0.45, "#e2bd72"); gold.addColorStop(1, "#8a6526");
-        g.fillStyle = gold; g.beginPath(); g.arc(0, 0, r, 0, TAU); g.fill();
-        g.strokeStyle = "rgba(90,62,18,0.7)"; g.lineWidth = Math.max(1, r * 0.012); for (let i = 0; i < 120; i++) { const a = i / 120 * TAU; g.beginPath(); g.moveTo(Math.cos(a) * r * 0.93, Math.sin(a) * r * 0.93); g.lineTo(Math.cos(a) * r, Math.sin(a) * r); g.stroke(); }
-        g.lineWidth = r * 0.02; g.beginPath(); g.arc(0, 0, r * 0.86, 0, TAU); g.stroke(); g.beginPath(); g.arc(0, 0, r * 0.62, 0, TAU); g.stroke();
-        g.fillStyle = "rgba(110,78,24,0.85)"; for (const side of [-1, 1]) for (let i = 0; i < 11; i++) { const a = Math.PI / 2 + side * (0.35 + i * 0.2), lx = Math.cos(a) * r * 0.74, ly = Math.sin(a) * r * 0.74; g.save(); g.translate(lx, ly); g.rotate(a + side * 0.9); g.beginPath(); g.ellipse(0, 0, r * 0.07, r * 0.028, 0, 0, TAU); g.fill(); g.restore(); }
-        g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "rgba(90,62,18,0.9)"; g.font = `700 ${r * 0.42}px ${FONT()}`; g.fillText("BG", 0, -r * 0.02);
-        g.font = `600 ${r * 0.1}px ${FONT()}`; for (const [ch, i] of [..."★ COLLECTED ★ MMXXVI ★"].map((c, i) => [c, i])) { const a = -Math.PI * 0.95 + i * 0.087 * Math.PI; g.save(); g.rotate(a + Math.PI / 2); g.fillText(ch, 0, -r * 0.74); g.restore(); }
-        g.textBaseline = "alphabetic";
-        const sweep = ((t * 0.7) % 1.6) - 0.3, lg = g.createLinearGradient(-r, -r, r, r); lg.addColorStop(clamp(sweep - 0.12, 0, 1), "rgba(255,255,255,0)"); lg.addColorStop(clamp(sweep, 0, 1), "rgba(255,255,255,0.45)"); lg.addColorStop(clamp(sweep + 0.12, 0, 1), "rgba(255,255,255,0)");
-        g.fillStyle = lg; g.beginPath(); g.arc(0, 0, r, 0, TAU); g.fill(); };
-      return { step(dt, t) { const f = fade(t, dur, 0.3, 1); g.globalAlpha = f; dim(0.8);
-        const r = Math.min(W, H) * 0.2, cx = W / 2, cy = H * 0.48, burstT = 2.6;
-        if (t < burstT + 0.1) { const k = ease(t / 0.9), spin = Math.cos(t * 2.6), th = r * 0.09;
-          g.save(); g.translate(cx, cy); g.scale(k, k); g.globalCompositeOperation = "lighter"; glowDot(0, 0, r * 2.2, "226,189,114", 0.18 * f); g.globalCompositeOperation = "source-over";
-          // the edge shows as the coin turns
-          g.fillStyle = "#6e4f1c"; g.beginPath(); g.ellipse(Math.sign(spin) * -th * Math.sqrt(1 - spin * spin), 0, Math.max(1, Math.abs(spin) * r), r, 0, 0, TAU); g.fill();
-          g.scale(Math.max(0.02, Math.abs(spin)), 1); if (spin < 0) g.scale(-1, 1); face(r, spin, t); g.restore(); }
-        if (t >= burstT && !bits.length) for (let i = 0; i < 170; i++) { const arm = i % 3, k = i / 170; bits.push({ a: arm / 3 * TAU + k * 5, d: 0, dd: r * (0.4 + k * 2.4), s: R(6, 13), sp: R(4, 12), ph: R(0, TAU), gold: i % 4 !== 0 }); }
-        for (const b of bits) { const k = ease((t - burstT) / 1.6), rot = (t - burstT) * 0.6, d = b.dd * k, a = b.a + rot * (1.2 - k * 0.5), x = cx + Math.cos(a) * d, y = cy + Math.sin(a) * d * 0.62, sx = Math.cos(t * b.sp + b.ph);
-          g.fillStyle = b.gold ? (sx > 0 ? "#e9c77f" : "#9d7632") : (sx > 0 ? "#e8eaef" : "#9a9ea8"); g.beginPath(); g.ellipse(x, y, Math.max(0.8, Math.abs(sx) * b.s), b.s, 0, 0, TAU); g.fill();
-          if (sx > 0.92) sparkle(x - b.s * 0.3, y - b.s * 0.3, 3, f); }
-        if (t > burstT) { g.save(); g.globalCompositeOperation = "lighter"; glowDot(cx, cy, r * 1.4 * (1 - ease((t - burstT) / 1.2)) + 1, "255,230,170", 0.6 * f); g.restore(); }
-        g.globalAlpha = 1; return t < dur; } }; },
-    // a cut-glass bottle sprays; the mist curls and the notes inside it grow as drawings: a rose, lavender, an orange
-    scent: (x0, y0) => { const dur = 7.5, mist = [], pet = Array.from({ length: 40 }, () => ({ x: R(0, W), y: R(-H * 0.8, -10), vy: R(25, 60), ph: R(0, TAU), s: R(6, 11), c: ["#f4b6c8", "#e7c6ff", "#ffd6a0", "#f8d0dc"][Math.floor(R(0, 4))] }));
-      const pen = (p, len, draw) => { g.setLineDash([len * p, len]); g.lineDashOffset = 0; g.beginPath(); draw(); g.stroke(); g.setLineDash([]); };
-      return { step(dt, t) { const f = fade(t, dur, 0.4, 1.4); g.globalAlpha = f; dim(0.78);
-        const S = Math.min(W, H) * 0.24, up = ease(t / 1), bx = lerp(x0, W * 0.3, up), by = lerp(y0, H * 0.55, up);
-        // mist
-        if (t > 0.9 && t < 4.5) for (let i = 0, n = Math.round(dt * 55 + Math.random() * 0.6); i < n; i++) mist.push({ x: bx + S * 0.18, y: by - S * 0.72, vx: R(120, 320), vy: R(-80, 30), b: t, c: ["255,170,195", "200,170,255", "255,205,140", "170,230,215"][Math.floor(R(0, 4))], r: R(10, 26) });
-        g.save(); g.globalCompositeOperation = "lighter";
-        for (const m of mist) { const k = t - m.b; m.vx *= 0.985; m.vy -= 6 * dt; m.x += (m.vx + Math.sin(m.y * 0.02 + t) * 40) * dt; m.y += (m.vy + Math.cos(m.x * 0.015 + t) * 30) * dt; glowDot(m.x, m.y, Math.min(110, m.r * (1.4 + k * 1.1)), m.c, 0.2 * Math.max(0, 1 - k / 3)); }
-        g.restore(); while (mist.length && t - mist[0].b > 3) mist.shift();
-        // the bottle: faceted glass, pink liquid, ribbed gold cap and atomiser
-        g.save(); g.translate(bx, by); g.scale(0.5 + up * 0.5, 0.5 + up * 0.5); const w = S * 0.55, h = S * 0.62;
-        const facets = [[-w / 2, -h / 2, -w * 0.2, -h / 2, -w * 0.28, h / 2, -w / 2, h / 2, "rgba(255,255,255,0.10)"], [-w * 0.2, -h / 2, w * 0.2, -h / 2, w * 0.28, h / 2, -w * 0.28, h / 2, "rgba(255,255,255,0.04)"], [w * 0.2, -h / 2, w / 2, -h / 2, w / 2, h / 2, w * 0.28, h / 2, "rgba(255,255,255,0.16)"]];
-        const liq = g.createLinearGradient(0, -h * 0.1, 0, h / 2); liq.addColorStop(0, "rgba(255,150,180,0.75)"); liq.addColorStop(1, "rgba(200,70,120,0.85)"); g.fillStyle = liq; g.fillRect(-w / 2 + 3, -h * 0.05 + Math.sin(t * 3) * 2, w - 6, h * 0.55 - 3);
-        for (const [a, b, c, d, e, ff, gg, hh, col] of facets) { g.fillStyle = col; g.beginPath(); g.moveTo(a, b); g.lineTo(c, d); g.lineTo(e, ff); g.lineTo(gg, hh); g.closePath(); g.fill(); }
-        g.strokeStyle = "rgba(255,255,255,0.75)"; g.lineWidth = 1.6; g.strokeRect(-w / 2, -h / 2, w, h); g.strokeStyle = "rgba(255,255,255,0.3)"; g.beginPath(); g.moveTo(-w * 0.2, -h / 2); g.lineTo(-w * 0.28, h / 2); g.moveTo(w * 0.2, -h / 2); g.lineTo(w * 0.28, h / 2); g.stroke();
-        g.fillStyle = "rgba(255,255,255,0.6)"; g.fillRect(-w * 0.42, -h * 0.4, w * 0.06, h * 0.6);
-        g.fillStyle = "rgba(20,14,10,0.75)"; g.fillRect(-w * 0.26, h * 0.06, w * 0.52, h * 0.2); g.fillStyle = "#d9b36c"; g.font = `600 ${h * 0.08}px ${FONT()}`; g.textAlign = "center"; g.fillText("N° 37", 0, h * 0.19);
-        const cap = g.createLinearGradient(-w * 0.2, 0, w * 0.2, 0); cap.addColorStop(0, "#8a6526"); cap.addColorStop(0.5, "#f3d38a"); cap.addColorStop(1, "#8a6526"); g.fillStyle = cap; g.fillRect(-w * 0.16, -h * 0.72, w * 0.32, h * 0.22);
-        g.strokeStyle = "rgba(90,62,18,0.6)"; g.lineWidth = 1; for (let i = 1; i < 8; i++) { g.beginPath(); g.moveTo(-w * 0.16 + i * w * 0.04, -h * 0.72); g.lineTo(-w * 0.16 + i * w * 0.04, -h * 0.5); g.stroke(); }
-        g.fillStyle = "#cfd2d8"; g.fillRect(w * 0.16, -h * 0.66, w * 0.18, h * 0.05); g.restore();
-        // botanical drawings growing out of the mist
-        const ink = "rgba(245,236,220,0.9)"; g.strokeStyle = ink; g.lineWidth = 1.6; g.lineCap = "round";
-        const p1 = ease((t - 1.6) / 1.8), p2 = ease((t - 2.2) / 1.8), p3 = ease((t - 2.8) / 1.8), u = Math.min(W, H);
-        const rx = W * 0.62, ry = H * 0.36; if (p1 > 0) { pen(p1, 1600, () => { g.moveTo(rx, ry + u * 0.28); g.quadraticCurveTo(rx - u * 0.02, ry + u * 0.12, rx, ry + u * 0.02); for (let i = 0; i < 70; i++) { const a = i * 0.42, r = u * 0.004 * (1 + i * 0.5); g.lineTo(rx + Math.cos(a) * r, ry + Math.sin(a) * r * 0.8 - u * 0.02); } });
-          if (p1 > 0.5) { g.fillStyle = `rgba(244,150,175,${0.25 * (p1 - 0.5) * 2})`; g.beginPath(); g.ellipse(rx, ry - u * 0.02, u * 0.07, u * 0.055, 0, 0, TAU); g.fill(); }
-          pen(p1, 400, () => { g.moveTo(rx, ry + u * 0.16); g.quadraticCurveTo(rx + u * 0.06, ry + u * 0.1, rx + u * 0.09, ry + u * 0.13); g.quadraticCurveTo(rx + u * 0.05, ry + u * 0.17, rx, ry + u * 0.16); }); }
-        const lx = W * 0.8, ly = H * 0.62; if (p2 > 0) { pen(p2, 600, () => { g.moveTo(lx, ly + u * 0.2); g.quadraticCurveTo(lx - u * 0.03, ly, lx - u * 0.01, ly - u * 0.18); });
-          for (let i = 0; i < 12; i++) { const k = i / 12; if (p2 < k) break; const yy = ly - u * 0.02 - k * u * 0.16, xx = lx - u * 0.01 - k * u * 0.01; g.fillStyle = `rgba(190,160,255,${0.85})`; for (const sd of [-1, 1]) { g.beginPath(); g.ellipse(xx + sd * u * 0.012, yy, u * 0.009, u * 0.006, sd * 0.6, 0, TAU); g.fill(); } } }
-        const ox = W * 0.66, oy = H * 0.8, orr = u * 0.075; if (p3 > 0) { g.fillStyle = `rgba(255,190,90,${0.18 * p3})`; g.beginPath(); g.arc(ox, oy, orr, 0, TAU); g.fill(); pen(p3, 2 * Math.PI * orr + 10, () => g.arc(ox, oy, orr, -Math.PI / 2, TAU * 0.999 - Math.PI / 2));
-          for (let i = 0; i < 10; i++) { if (p3 < i / 10) break; const a = i / 10 * TAU; g.beginPath(); g.moveTo(ox, oy); g.lineTo(ox + Math.cos(a) * orr * 0.88, oy + Math.sin(a) * orr * 0.88); g.stroke(); } }
-        g.font = `italic 400 ${Math.max(13, u * 0.02)}px ${getComputedStyle(document.body).getPropertyValue("--font-display") || "serif"}`; g.fillStyle = "rgba(245,236,220,0.75)"; g.textAlign = "center";
-        if (p1 > 0.9) g.fillText("rose", rx, ry - u * 0.1); if (p2 > 0.9) g.fillText("lavender", lx, ly - u * 0.21); if (p3 > 0.9) g.fillText("orange", ox, oy - orr - 10);
-        for (const p of pet) { p.y += p.vy * dt; const x = p.x + Math.sin(t * 1.3 + p.ph) * 34; g.save(); g.translate(x, p.y); g.rotate(Math.sin(t * 2 + p.ph) * 1.4); g.fillStyle = p.c; g.beginPath(); g.moveTo(0, -p.s); g.quadraticCurveTo(p.s * 0.8, 0, 0, p.s * 0.7); g.quadraticCurveTo(-p.s * 0.8, 0, 0, -p.s); g.fill(); g.restore(); }
-        g.globalAlpha = 1; return t < dur; } }; },
-    // a network wakes up layer by layer, data racing through it, while a terminal works through a day's chores
-    ai: () => { const dur = 7.5, L = [5, 7, 7, 4, 2], packets = [], u = Math.min(W, H), nodes = L.map((n, i) => Array.from({ length: n }, (_, j) => ({ x: W * (0.12 + 0.76 * i / (L.length - 1)), y: H * 0.38 + (j - (n - 1) / 2) * Math.min(64, H * 0.075) })));
-      const edges = []; for (let i = 0; i < L.length - 1; i++) for (const a of nodes[i]) for (const b of nodes[i + 1]) edges.push({ a, b, i });
-      const LINES = ["> reading this week's inbox", "✓ 214 emails sorted", "✓ 3 reports drafted", "✓ meetings moved off Friday", "> done. time for a game of Go"];
+    // ink and watercolour: a record spinning, scribbled sound, beetles wandering, four friends on a crossing
+    beatles: (x0, y0) => { const dur = 7.5, bugs = Array.from({ length: 9 }, (_, i) => ({ a: i / 9 * TAU, v: R(0.3, 0.55) * (i % 2 ? 1 : -1), r: R(1.15, 1.35), s: R(12, 18) }));
       return { step(dt, t) { const f = fade(t, dur, 0.4, 1); g.globalAlpha = f; dim(0.82);
-        g.strokeStyle = "rgba(143,180,255,0.06)"; g.lineWidth = 1; for (let x = (t * 12) % 40; x < W; x += 40) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); } for (let y = 0; y < H; y += 40) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
-        const on = i => clamp((t - 0.3 - i * 0.35) * 2.5, 0, 1);
-        for (const e of edges) { const k = on(e.i + 1); if (!k) continue; const mx = (e.a.x + e.b.x) / 2; g.strokeStyle = `rgba(143,180,255,${0.13 * k})`; g.beginPath(); g.moveTo(e.a.x, e.a.y); g.bezierCurveTo(mx, e.a.y, mx, e.b.y, e.b.x, e.b.y); g.stroke(); }
-        if (t > 1.6 && t < dur - 1) for (let i = 0; i < 3; i++) { const e = edges[Math.floor(R(0, edges.length))]; packets.push({ e, b: t, sp: R(0.5, 0.9) }); }
-        g.save(); g.globalCompositeOperation = "lighter";
-        for (let i = packets.length - 1; i >= 0; i--) { const p = packets[i], k = (t - p.b) / p.sp; if (k > 1) { packets.splice(i, 1); continue; } const { a, b } = p.e, mx = (a.x + b.x) / 2, bz = (q, k) => { const m = 1 - k; return m * m * m * q[0] + 3 * m * m * k * q[1] + 3 * m * k * k * q[2] + k * k * k * q[3]; };
-          for (let j = 0; j < 5; j++) { const kk = Math.max(0, k - j * 0.035); const x = bz([a.x, mx, mx, b.x], kk), y = bz([a.y, a.y, b.y, b.y], kk); g.fillStyle = `rgba(190,215,255,${(1 - j / 5) * 0.8})`; g.fillRect(x - 1.5, y - 1.5, 3, 3); } }
-        nodes.forEach((col, i) => col.forEach((n, j) => { const k = on(i); if (!k) return; const pulse = 0.5 + 0.5 * Math.sin(t * 4 - i * 0.8 - j); glowDot(n.x, n.y, 26 + pulse * 10, i === L.length - 1 ? "217,179,108" : "143,180,255", 0.35 * k); g.fillStyle = `rgba(235,240,255,${k})`; g.beginPath(); g.arc(n.x, n.y, 3.5 + pulse * 1.5, 0, TAU); g.fill(); }));
-        g.restore();
-        // the terminal
-        const tw = Math.min(520, W * 0.9), th = 150, tx = (W - tw) / 2, ty = Math.min(H - th - 20, H * 0.62); const k = ease((t - 1) / 0.5); if (k > 0) { g.globalAlpha = f * k;
-          g.fillStyle = "rgba(10,10,14,0.92)"; g.strokeStyle = "rgba(255,255,255,0.14)"; g.beginPath(); g.roundRect ? g.roundRect(tx, ty, tw, th, 12) : g.rect(tx, ty, tw, th); g.fill(); g.stroke();
-          ["#f08a6c", "#d9b36c", "#6fd3b8"].forEach((c, i) => { g.fillStyle = c; g.beginPath(); g.arc(tx + 16 + i * 14, ty + 14, 4, 0, TAU); g.fill(); });
-          g.font = `500 ${W < 500 ? 12 : 14}px ui-monospace, Menlo, monospace`; g.textAlign = "left"; let chars = Math.floor((t - 1.4) * 34);
-          LINES.forEach((ln, i) => { if (chars <= 0) return; const shown = ln.slice(0, chars); chars -= ln.length + 6; g.fillStyle = ln.startsWith("✓") ? "#6fd3b8" : "#e9e6df"; g.fillText(shown + (chars < 0 && Math.floor(t * 3) % 2 ? "▍" : ""), tx + 18, ty + 44 + i * 21); }); }
+        const up = ease(t / 1), Rr = Math.min(W, H * 1.3) * 0.18, cx = lerp(x0, W / 2, up), cy = lerp(y0, H * 0.4, up), rr = Rr * lerp(0.2, 1, up), rot = t * 2.2;
+        boil(t, 1); wash(cx, cy, rr * 1.08, "30,30,40", 0.9, 3); pen(2); rcirc(cx, cy, rr, rr, 1.6, 2);
+        pen(1, "rgba(243,236,220,0.35)"); for (let i = 0; i < 9; i++) { const r = rr * (0.42 + i * 0.06), a0 = rot + i * 0.7; g.beginPath(); g.arc(cx, cy, r + jit(0.8), a0, a0 + 4.2); g.stroke(); }
+        wash(cx, cy, rr * 0.32, "217,170,90", 0.75, 5); pen(1.6); rcirc(cx, cy, rr * 0.32, rr * 0.32, 1, 2); g.fillStyle = INK; g.beginPath(); g.arc(cx, cy, 3, 0, TAU); g.fill();
+        g.save(); g.translate(cx, cy); g.rotate(rot); scrawl("Ben's mix", 0, -rr * 0.08, Math.max(12, rr * 0.13), "#2a2018"); scrawl("side A", 0, rr * 0.16, Math.max(10, rr * 0.09), "#2a2018"); g.restore();
+        // the arm
+        const arm = ease((t - 0.9) / 0.7), px = cx + rr * 1.12, py = cy - rr * 0.95, aa = lerp(-0.25, 0.4, arm), L = rr * 1.4; pen(2.2); rpath([[px, py], [px - Math.sin(aa) * L * 0.2, py + Math.cos(aa) * L * 0.5], [px - Math.sin(aa + 0.35) * L, py + Math.cos(aa + 0.35) * L * 0.92]], 1.2, 2); rcirc(px, py, rr * 0.07, rr * 0.07, 1, 2);
+        // scribbled sound: little arcs and notes drifting off the rim
+        if (t > 1.4) { pen(1.4, "rgba(217,179,108,0.85)"); for (let i = 0; i < 6; i++) { const a = i / 6 * TAU + t * 0.4, k = ((t * 0.6 + i / 6) % 1), r = rr * (1.08 + k * 0.5); g.globalAlpha = f * (1 - k); g.beginPath(); g.arc(cx, cy, r, a - 0.25, a + 0.25); g.stroke(); if (i % 2 === 0) scrawl("♪", cx + Math.cos(a) * r * 1.08, cy + Math.sin(a) * r * 1.08, 22, "#d9b36c", Math.sin(t + i) * 0.4); } g.globalAlpha = f; }
+        for (const [i, b] of bugs.entries()) { b.a += b.v * dt; boil(t, 20 + i); inkBeetle(cx + Math.cos(b.a) * rr * b.r, cy + Math.sin(b.a) * rr * b.r, b.s * up, b.a + (b.v > 0 ? Math.PI / 2 : -Math.PI / 2), t + i); }
+        // the crossing and the walk
+        boil(t, 50); const yb = H * 0.95, yt = H * 0.8, n = 8; pen(1.6);
+        for (let i = 0; i < n; i++) { const a = (i + 0.15) / n, b2 = (i + 0.62) / n, sx = W * 0.5, q = [[sx + (a - 0.5) * W * 1.1, yb], [sx + (b2 - 0.5) * W * 1.1, yb], [sx + (b2 - 0.5) * W * 0.72, yt], [sx + (a - 0.5) * W * 0.72, yt]];
+          rpath(q, 1.2, 1, true); hatch(() => { g.moveTo(...q[0]); q.slice(1).forEach(p => g.lineTo(...p)); g.closePath(); }, q[3][0] - 10, yt, q[1][0] - q[3][0] + 20, yb - yt, 5, 0.8); }
+        const s = Math.min(70, H * 0.085), walk = (t * W * 0.15) % (W + s * 9);
+        for (let i = 0; i < 4; i++) { boil(t, 60 + i); pen(2.2, i === 0 ? INK : "rgba(243,236,220,0.75)"); inkPerson(walk - s * 1.6 * i - s, yt + s * 0.4, s, t * 6 + i * 0.3, { hair: true }); }
         g.globalAlpha = 1; return t < dur; } }; },
-    // an arcade cabinet's screen: stars streaming, a fleet in formation, a ship that follows you, explosions, a score
-    games: () => { const dur = 10, px = Math.max(3, Math.min(6, W / 240)), SP = [["0011100", "0111110", "1101011", "1111111", "0101010", "1000001"], ["0100010", "0011100", "0111110", "1101011", "1111111", "0100010"], ["0001000", "0011100", "0111110", "1011101", "1111111", "0010100"]];
-      const cols = Math.min(10, Math.floor(W * 0.8 / (px * 13))), fleet = [], stars = Array.from({ length: 140 }, () => ({ x: R(0, W), y: R(0, H), z: R(0.2, 1) })), shots = [], bits = [], booms = []; let ship = W / 2, cd = 0, score = 0, clear = 0;
-      for (let r = 0; r < 4; r++) for (let c = 0; c < cols; c++) fleet.push({ c, r, alive: true, sp: SP[r % 3], col: ["#6fd3b8", "#8fb4ff", "#f08a6c", "#d9b36c"][r] });
+    // the night race, drawn fluidly: the camera runs with the sprinter, hurdles sweep past, the tape breaks
+    track: () => { const dur = 6.6, conf = []; let dist = 0, ph = 0, stopT = 0, lastPlant = [0, 0];
+      return { step(dt, t) { const f = fade(t, dur, 0.4, 1); g.globalAlpha = f; dim(0.82);
+        const s = Math.min(96, H * 0.13), ground = H * 0.8, speed = s * 7.2, k = clamp((t - 0.5) / 0.6, 0, 1), runX = W * 0.36, hs = [s * 6, s * 15, s * 24], finish = s * 33;
+        if (!stopT) { dist += speed * ease(k) * dt; ph += speed * ease(k) * dt / (s * 2.3); }
+        if (dist > finish + s * 2 && !stopT) stopT = t;
+        if (stopT) { const e = clamp((t - stopT) / 1.2, 0, 1); dist += speed * (1 - e) * dt; ph += speed * (1 - e) * dt / (s * 2.3); }
+        const cam = dist;
+        // stadium: floodlights, a few lit stands, lanes rushing by
+        boil(t, 70); for (const lx of [W * 0.1, W * 0.9]) { pen(1.4, "rgba(243,236,220,0.6)"); rline(lx, H * 0.1, lx, H * 0.6, 1, 1); for (let i = 0; i < 4; i++) { wash(lx + (i - 1.5) * 14, H * 0.1, 18, "255,245,220", 0.7, 80 + i); } }
+        pen(1.3, "rgba(243,236,220,0.35)"); for (let i = 0; i < 26; i++) { const xx = ((i * 97 - cam * 0.2) % (W + 100) + W + 100) % (W + 100) - 50; rline(xx, ground - s * 2.6, xx + 30, ground - s * 2.6, 1, 1); }
+        g.fillStyle = "rgba(160,60,40,0.55)"; g.fillRect(0, ground, W, H - ground); pen(1.6, "rgba(243,236,220,0.8)");
+        for (const yy of [ground, ground + (H - ground) * 0.45, H - 2]) rline(0, yy, W, yy, 1.2, 1);
+        pen(1.2, "rgba(243,236,220,0.45)"); for (let i = 0; i < 30; i++) { const xx = ((i * s * 1.3 - cam) % (s * 39) + s * 39) % (s * 39) - s; rline(xx, ground + (H - ground) * 0.22, xx + s * 0.5, ground + (H - ground) * 0.22, 0.5, 1); }
+        // hurdles sweep past, drawn in ink
+        let hb = 0; for (const [i, hx] of hs.entries()) { const sx = runX + hx - cam; const d = (cam - hx) / s; if (Math.abs(d) < 1.5) hb = Math.max(hb, Math.cos(clamp(d / 1.5, -1, 1) * Math.PI / 2));
+          if (sx < -s || sx > W + s) continue; boil(t, 90 + i); pen(2.4); rline(sx - s * 0.3, ground, sx - s * 0.3, ground - s * 0.62, 1, 2); rline(sx + s * 0.3, ground, sx + s * 0.3, ground - s * 0.62, 1, 2);
+          pen(2.2); rline(sx - s * 0.45, ground - s * 0.66, sx + s * 0.45, ground - s * 0.66, 1, 2); hatch(() => g.rect(sx - s * 0.12, ground - s * 0.72, s * 0.24, s * 0.12), sx - s * 0.15, ground - s * 0.74, s * 0.3, s * 0.16, 3, 0.4); }
+        const fxs = runX + finish - cam; if (fxs > -20 && fxs < W + 40) { pen(3, "rgba(217,179,108,0.95)"); boil(t, 99); if (!stopT && dist < finish) rline(fxs, ground - s * 1.7, fxs, ground, 1, 1); else { rpath([[fxs, ground - s * 1.7], [fxs + 18, ground - s * 1.2], [fxs + 36, ground - s * 0.9]], 1, 1); rpath([[fxs, ground], [fxs + 20, ground - s * 0.3]], 1, 1); } pen(4, "rgba(243,236,220,0.85)"); rline(fxs, ground, fxs + s * 0.4, H, 1, 1); }
+        if (dist >= finish && !conf.length) for (let i = 0; i < 120; i++) conf.push({ x: fxs, y: ground - s, vx: R(-300, 300), vy: R(-600, -150), c: ["#d9b36c", "#f08a6c", "#8fb4ff", "#6fd3b8", "#f3ecdc"][i % 5], r: R(0, TAU), w: R(4, 9) });
+        // the runner: smooth, filled, with the lift over each hurdle
+        const lift = hb * s * 0.72, ground2 = ground - lift;
+        for (let i = 1; i <= 4; i++) { g.globalAlpha = f * (0.06 + (4 - i) * 0.03); sprinter(runX - i * s * 0.22 * ease(k), ground2, s, ph - i * 0.035, hb, "#d9b36c", "#b38e47"); }
+        g.globalAlpha = f; const feet = sprinter(runX, ground2, s, ph, hb, "#f3ecdc", "#a9a296");
+        // a puff of dust each time a foot lands
+        feet.forEach((p, i) => { if (p[1] > ground - 3 && t - lastPlant[i] > 0.2 && k > 0.5 && !stopT) { lastPlant[i] = t; for (let j = 0; j < 6; j++) conf.push({ x: p[0], y: ground, vx: R(-120, -30), vy: R(-80, -10), c: "rgba(243,236,220,0.6)", r: 0, w: R(2, 4), dust: 1 }); } });
+        pen(1.6, "rgba(243,236,220,0.4)"); if (!stopT) for (let i = 0; i < 4; i++) { boil(t, 120 + i); const yy = ground2 - s * (0.6 + i * 0.32); rline(runX - s * (0.7 + i * 0.15), yy, runX - s * (1.6 + i * 0.3), yy, 1, 1); }
+        for (let i = conf.length - 1; i >= 0; i--) { const c = conf[i]; c.vy += (c.dust ? 120 : 700) * dt; c.x += (c.vx - (c.dust ? 0 : 0)) * dt; c.y += c.vy * dt; c.r += dt * 9; if (c.dust) { c.w += dt * 6; g.fillStyle = c.c; g.globalAlpha = f * clamp(1 - (c.w - 2) / 6, 0, 1); g.beginPath(); g.arc(c.x, c.y, c.w, 0, TAU); g.fill(); g.globalAlpha = f; if (c.w > 8) conf.splice(i, 1); continue; }
+          g.fillStyle = c.c; g.save(); g.translate(c.x, c.y); g.rotate(c.r); g.scale(1, Math.cos(c.r * 1.3)); g.fillRect(-c.w / 2, -2.5, c.w, 5); g.restore(); }
+        // the clock, scrawled
+        const secs = (Math.max(0, (dist / speed)) * 1.38).toFixed(2); scrawl(secs + "s", W / 2, H * 0.22, Math.min(64, W * 0.07), stopT ? "#d9b36c" : INK); scrawl(stopT ? "personal best!" : "110m hurdles", W / 2, H * 0.22 + 34, 22, "rgba(243,236,220,0.7)");
+        g.globalAlpha = 1; return t < dur; } }; },
+    // a sketchbook saxophone: ink lines, a gold wash, curly smoke and notes floating off
+    jazz: (x0, y0) => { const dur = 7, notes = [];
+      return { step(dt, t) { const f = fade(t, dur, 0.4, 1.2); g.globalAlpha = f; dim(0.82);
+        const S = Math.min(W, H) * 0.5, up = ease(t / 1), sx = lerp(x0, W * 0.34, up), sy = lerp(y0, H * 0.52, up), sw = Math.sin(t * 2) * 0.07;
+        // a spotlight puddle
+        g.save(); g.translate(sx, sy); g.rotate(-0.22 + sw); g.scale(0.5 + up * 0.5, 0.5 + up * 0.5); boil(t, 200);
+        const body = [[0, -S * 0.5], [0, -S * 0.1], [0, S * 0.2], [S * 0.03, S * 0.38], [S * 0.17, S * 0.43], [S * 0.29, S * 0.36], [S * 0.31, S * 0.18]];
+        g.lineCap = "round"; g.strokeStyle = "rgba(217,170,90,0.55)"; g.lineWidth = S * 0.1; g.beginPath(); g.moveTo(...body[0]); body.slice(1).forEach(p => g.lineTo(...p)); g.stroke();
+        pen(2.2); rpath(body.map(([x, y]) => [x - S * 0.05, y]), 1.4, 2); rpath(body.map(([x, y], i) => [x + S * 0.05 * (i < 3 ? 1 : 0.4), y - (i > 3 ? S * 0.05 : 0)]), 1.4, 2);
+        rcirc(S * 0.31, S * 0.11, S * 0.11, S * 0.06, 1.2, 2, -0.25); hatch(() => g.ellipse(S * 0.31, S * 0.1, S * 0.08, S * 0.04, -0.25, 0, TAU), S * 0.2, S * 0.04, S * 0.22, S * 0.12, 3, 0.4);
+        rpath([[0, -S * 0.5], [-S * 0.03, -S * 0.6], [-S * 0.13, -S * 0.66], [-S * 0.22, -S * 0.68]], 1.2, 2);
+        for (let i = 0; i < 7; i++) rcirc(S * 0.06, -S * 0.36 + i * S * 0.075, S * 0.022, S * 0.022, 0.6, 1);
+        hatch(() => { g.moveTo(-S * 0.05, -S * 0.45); g.lineTo(0.0, -S * 0.45); g.lineTo(0, S * 0.25); g.lineTo(-S * 0.05, S * 0.2); g.closePath(); }, -S * 0.08, -S * 0.5, S * 0.12, S * 0.8, 5, 0.6);
+        const m = g.getTransform(); g.restore(); const bx = (m.a * S * 0.31 + m.c * S * 0.1 + m.e) / dpr, by = (m.b * S * 0.31 + m.d * S * 0.1 + m.f) / dpr;
+        // curly smoke: ink spirals drifting up and away
+        boil(t, 210); pen(1.5, "rgba(243,236,220,0.6)"); for (let i = 0; i < 5; i++) { const k = ((t * 0.35 + i / 5) % 1); if (t < 1) break; const cx = bx + k * W * 0.35, cy = by - k * H * 0.4 + Math.sin(k * 6 + i) * 30, r = 10 + k * 26; g.globalAlpha = f * (1 - k);
+          g.beginPath(); for (let a = 0; a < TAU * 1.6; a += 0.3) { const rr2 = r * (a / (TAU * 1.6)); g.lineTo(cx + Math.cos(a + t) * rr2 + jit(0.8), cy + Math.sin(a + t) * rr2 * 0.7 + jit(0.8)); } g.stroke(); }
+        g.globalAlpha = f; if (t > 1 && t < dur - 1.5 && Math.random() < dt * 6) notes.push({ x: bx, y: by, b: t, ch: "♪♫♩♬"[Math.floor(R(0, 4))], s: R(26, 44), w: R(0, TAU), c: ["#d9b36c", INK, "#8fb4ff", "#f08a6c"][Math.floor(R(0, 4))] });
+        for (const n of notes) { const k = t - n.b; if (k > 3.4) continue; g.globalAlpha = f * clamp(1 - k / 3.4, 0, 1); scrawl(n.ch, n.x + k * 90 + Math.sin(k * 3 + n.w) * 30, n.y - k * 90, n.s, n.c, Math.sin(k * 4 + n.w) * 0.4); }
+        g.globalAlpha = f; scrawl("so what?", W * 0.72, H * 0.3, 40, "rgba(243,236,220,0.8)", -0.08);
+        g.globalAlpha = 1; return t < dur; } }; },
+    // coins doodled in ink with gold washes, raining and bouncing; one big one with my initials
+    coins: () => { const dur = 6.5, cs = Array.from({ length: 46 }, (_, i) => ({ x: R(0, W), y: R(-H * 1.2, -30), vy: R(0, 100), vx: R(-40, 40), r: R(14, 26), sp: R(3, 8), ph: R(0, TAU), gold: i % 3 !== 0, id: i }));
+      return { step(dt, t) { const f = fade(t, dur, 0.3, 1); g.globalAlpha = f; dim(0.82);
+        const R0 = Math.min(W, H) * 0.17, k = ease(t / 0.8), spin = Math.cos(t * 2.2), cx = W / 2, cy = H * 0.42;
+        boil(t, 300); g.save(); g.translate(cx, cy); g.scale(k * Math.max(0.05, Math.abs(spin)), k); wash(0, 0, R0, "217,170,90", 0.75, 9); pen(2.4); rcirc(0, 0, R0, R0, 1.6, 2); pen(1.4); rcirc(0, 0, R0 * 0.8, R0 * 0.8, 1.2, 1);
+        for (let i = 0; i < 40; i++) { const a = i / 40 * TAU; rline(Math.cos(a) * R0 * 0.86, Math.sin(a) * R0 * 0.86, Math.cos(a) * R0 * 0.97, Math.sin(a) * R0 * 0.97, 0.5, 1); }
+        if (spin > 0) { scrawl("BG", 0, R0 * 0.18, R0 * 0.62, "#2a2018"); scrawl("2026", 0, R0 * 0.55, R0 * 0.2, "#2a2018"); } else { pen(1.6, "#2a2018"); for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + i * TAU / 5, a2 = a + TAU / 10; rline(Math.cos(a) * R0 * 0.45, Math.sin(a) * R0 * 0.45, Math.cos(a2) * R0 * 0.2, Math.sin(a2) * R0 * 0.2, 0.8, 1); rline(Math.cos(a2) * R0 * 0.2, Math.sin(a2) * R0 * 0.2, Math.cos(a + TAU / 5) * R0 * 0.45, Math.sin(a + TAU / 5) * R0 * 0.45, 0.8, 1); } }
+        hatch(() => g.arc(0, 0, R0, 0.2, Math.PI * 0.9), -R0, 0, R0 * 2, R0, 6, 0.6); g.restore();
+        if (t > 0.6) for (const c of cs) { c.vy += 900 * dt; c.x += c.vx * dt; c.y += c.vy * dt; const fl = H - c.r * 0.5 - 6; if (c.y > fl) { c.y = fl; c.vy *= -0.42; c.vx *= 0.8; c.sp *= 0.7; }
+          const sx = Math.cos(t * c.sp + c.ph); boil(t, 310 + c.id); g.save(); g.translate(c.x, c.y); g.scale(Math.max(0.06, Math.abs(sx)), 1); wash(0, 0, c.r, c.gold ? "217,170,90" : "200,205,215", 0.6, c.id + 400); pen(1.6); rcirc(0, 0, c.r, c.r, 1, 1); rcirc(0, 0, c.r * 0.7, c.r * 0.7, 0.8, 1); g.restore(); }
+        scrawl("ka-ching!", W * 0.75, H * 0.2, 42, "#d9b36c", 0.1);
+        g.globalAlpha = 1; return t < dur; } }; },
+    // a sketched bottle with a rose wash, a curl of scent, and the notes inside it drawn from life
+    scent: (x0, y0) => { const dur = 7.5, pet = Array.from({ length: 26 }, (_, i) => ({ x: R(0, W), y: R(-H * 0.8, -10), vy: R(25, 55), ph: R(0, TAU), s: R(8, 13), c: ["244,182,200", "231,198,255", "255,214,160"][i % 3], id: i }));
+      const draw = (p, L, fn) => { if (p <= 0) return; g.setLineDash([L * p, L]); fn(); g.setLineDash([]); };
+      return { step(dt, t) { const f = fade(t, dur, 0.4, 1.4); g.globalAlpha = f; dim(0.82);
+        const S = Math.min(W, H) * 0.28, up = ease(t / 1), bx = lerp(x0, W * 0.28, up), by = lerp(y0, H * 0.56, up), w = S * 0.55, h = S * 0.62;
+        boil(t, 500); g.save(); g.translate(bx, by); g.scale(0.5 + up * 0.5, 0.5 + up * 0.5);
+        wash(0, h * 0.18, w * 0.5, "240,120,160", 0.6, 11); pen(2.2); rpath([[-w / 2, -h / 2], [w / 2, -h / 2], [w / 2, h / 2], [-w / 2, h / 2]], 1.4, 2, true);
+        rpath([[-w / 2, -h * 0.05], [0, -h * 0.02], [w / 2, -h * 0.06]], 1, 1); pen(1.2, "rgba(243,236,220,0.6)"); rline(-w * 0.36, -h * 0.4, -w * 0.36, h * 0.3, 1, 1); rline(-w * 0.3, -h * 0.4, -w * 0.3, -h * 0.1, 1, 1);
+        pen(2); rpath([[-w * 0.16, -h / 2], [-w * 0.16, -h * 0.72], [w * 0.16, -h * 0.72], [w * 0.16, -h / 2]], 1, 2); hatch(() => g.rect(-w * 0.16, -h * 0.72, w * 0.32, h * 0.22), -w * 0.2, -h * 0.75, w * 0.4, h * 0.28, 4, 0.5);
+        rpath([[w * 0.16, -h * 0.64], [w * 0.36, -h * 0.64]], 1, 2); scrawl("N° 37", 0, h * 0.28, h * 0.16, "#2a2018"); g.restore();
+        // scent: curling ink ribbons, then the notes drawn as if from a sketchbook
+        boil(t, 510); pen(1.6, "rgba(243,236,220,0.7)"); const p0 = ease((t - 0.9) / 1.6);
+        if (p0 > 0) for (let i = 0; i < 3; i++) draw(p0, 1400, () => { g.beginPath(); for (let k = 0; k <= 60; k++) { const u = k / 60, x = bx + S * 0.2 + u * W * 0.42, y = by - S * 0.5 - u * H * 0.15 + Math.sin(u * 9 + i * 1.7 + t) * (20 + i * 12) - i * 18; g.lineTo(x + jit(0.6), y + jit(0.6)); } g.stroke(); });
+        const u = Math.min(W, H), p1 = ease((t - 1.6) / 1.8), p2 = ease((t - 2.2) / 1.8), p3 = ease((t - 2.8) / 1.8);
+        const rx = W * 0.64, ry = H * 0.36; if (p1 > 0) { wash(rx, ry, u * 0.08 * p1, "240,120,150", 0.6, 12); pen(1.8); boil(t, 520);
+          draw(p1, 1800, () => { g.beginPath(); for (let i = 0; i < 80; i++) { const a = i * 0.38, r = u * 0.004 * (1 + i * 0.42); g.lineTo(rx + Math.cos(a) * r + jit(0.8), ry + Math.sin(a) * r * 0.8 + jit(0.8)); } g.stroke(); });
+          draw(p1, 500, () => rpath([[rx, ry + u * 0.07], [rx - u * 0.02, ry + u * 0.18], [rx, ry + u * 0.3]], 1, 1)); if (p1 > 0.6) { wash(rx + u * 0.05, ry + u * 0.15, u * 0.035, "110,170,110", 0.6, 13); rpath([[rx, ry + u * 0.16], [rx + u * 0.06, ry + u * 0.1], [rx + u * 0.09, ry + u * 0.14], [rx + u * 0.04, ry + u * 0.18], [rx, ry + u * 0.16]], 0.8, 1); } }
+        const lx = W * 0.82, ly = H * 0.62; if (p2 > 0) { boil(t, 530); pen(1.6); draw(p2, 600, () => rpath([[lx, ly + u * 0.2], [lx - u * 0.02, ly], [lx - u * 0.01, ly - u * 0.18]], 1, 1));
+          for (let i = 0; i < 12; i++) { const k = i / 12; if (p2 < k) break; const yy = ly - u * 0.02 - k * u * 0.16, xx = lx - u * 0.012 - k * u * 0.006; for (const sd of [-1, 1]) { wash(xx + sd * u * 0.012, yy, u * 0.011, "170,140,255", 0.8, 40 + i * 2 + sd); rcirc(xx + sd * u * 0.012, yy, u * 0.009, u * 0.006, 0.4, 1, sd * 0.6); } } }
+        const ox = W * 0.66, oy = H * 0.8, orr = u * 0.08; if (p3 > 0) { boil(t, 540); wash(ox, oy, orr * p3, "255,170,70", 0.6, 14); pen(1.8); draw(p3, 2 * Math.PI * orr * 1.2, () => rcirc(ox, oy, orr, orr, 1.2, 1));
+          for (let i = 0; i < 10; i++) { if (p3 < i / 10) break; const a = i / 10 * TAU; rline(ox, oy, ox + Math.cos(a) * orr * 0.85, oy + Math.sin(a) * orr * 0.85, 0.8, 1); } }
+        if (p1 > 0.9) scrawl("rose", rx, ry - u * 0.1, 26); if (p2 > 0.9) scrawl("lavender", lx, ly - u * 0.22, 26); if (p3 > 0.9) scrawl("orange", ox, oy - orr - 12, 26);
+        for (const p of pet) { p.y += p.vy * dt; const x = p.x + Math.sin(t * 1.3 + p.ph) * 34; boil(t, 560 + p.id); g.save(); g.translate(x, p.y); g.rotate(Math.sin(t * 2 + p.ph) * 1.4); wash(0, 0, p.s, p.c, 0.7, 600 + p.id); pen(1); rpath([[0, -p.s], [p.s * 0.8, 0], [0, p.s * 0.7], [-p.s * 0.8, 0], [0, -p.s]], 0.6, 1); g.restore(); }
+        g.globalAlpha = 1; return t < dur; } }; },
+    // a whiteboard sketch: boxes and arrows for a company's chores, a sticky note ticking them off
+    ai: () => { const dur = 7.5, steps = ["inbox", "reports", "meetings", "invoices"], ticks = ["214 emails sorted", "3 reports drafted", "meetings moved off Friday", "invoices sent"];
+      return { step(dt, t) { const f = fade(t, dur, 0.4, 1); g.globalAlpha = f; dim(0.84);
+        const u = Math.min(W, H), bw = Math.min(150, W * 0.18), bh = bw * 0.55, cx = W / 2, top = H * 0.24, gap = (Math.min(W * 0.9, 900) - bw) / 3, x0 = cx - gap * 1.5;
+        // the chores, boxed, with arrows into a little robot brain in the middle
+        steps.forEach((s, i) => { const k = ease((t - 0.3 - i * 0.25) / 0.5); if (!k) return; const x = x0 + i * gap, y = top; boil(t, 700 + i); g.globalAlpha = f * k; wash(x, y, bw * 0.48, ["240,138,108", "217,179,108", "111,211,184", "143,180,255"][i], 0.35, 20 + i); pen(2); rpath([[x - bw / 2, y - bh / 2], [x + bw / 2, y - bh / 2], [x + bw / 2, y + bh / 2], [x - bw / 2, y + bh / 2]], 1.5, 2, true); scrawl(s, x, y + 9, Math.min(30, bw * 0.2)); });
+        g.globalAlpha = f; const by = top + u * 0.28, br = Math.min(70, u * 0.1), kb = ease((t - 1.3) / 0.6);
+        if (kb) { boil(t, 710); g.globalAlpha = f * kb; steps.forEach((_, i) => { const x = x0 + i * gap; pen(1.8, "rgba(243,236,220,0.8)"); rpath([[x, top + bh / 2 + 6], [lerp(x, cx, 0.5), lerp(top + bh / 2, by - br, 0.6)], [lerp(x, cx, 0.85), by - br - 8]], 1.2, 1); const ax = lerp(x, cx, 0.85), ay = by - br - 8, an = Math.atan2(by - br - 8 - (top + bh), ax - x); rline(ax, ay, ax - Math.cos(an - 0.5) * 12, ay - Math.sin(an - 0.5) * 12, 0.8, 1); rline(ax, ay, ax - Math.cos(an + 0.5) * 12, ay - Math.sin(an + 0.5) * 12, 0.8, 1); });
+          wash(cx, by, br, "143,180,255", 0.4, 30); pen(2.2); rcirc(cx, by, br, br * 0.85, 1.6, 2); const sp = t * 2; for (let i = 0; i < 6; i++) { const a = sp + i * TAU / 6; rline(cx + Math.cos(a) * br * 0.3, by + Math.sin(a) * br * 0.25, cx + Math.cos(a) * br * 0.65, by + Math.sin(a) * br * 0.55, 0.8, 1); } rcirc(cx, by, br * 0.25, br * 0.22, 1, 1); scrawl("AI", cx, by + br + 28, 30, "#8fb4ff"); }
+        // the sticky note
+        const nw = Math.min(330, W * 0.8), nh = 170, nx = cx - nw / 2, ny = Math.min(H - nh - 30, by + br + 50), kn = ease((t - 2) / 0.5); if (kn) { boil(t, 720); g.globalAlpha = f * kn; g.save(); g.translate(nx + nw / 2, ny + nh / 2); g.rotate(-0.025);
+          g.fillStyle = "rgba(242,214,120,0.92)"; g.beginPath(); g.moveTo(-nw / 2 + jit(1), -nh / 2); g.lineTo(nw / 2, -nh / 2 + jit(1)); g.lineTo(nw / 2 + jit(1), nh / 2); g.lineTo(-nw / 2, nh / 2 + jit(1)); g.fill();
+          ticks.forEach((tx, i) => { const kk = clamp((t - 2.6 - i * 0.6) / 0.4, 0, 1); const y = -nh / 2 + 36 + i * 34; scrawl(tx, 6, y, 24, "#2a2018"); if (kk > 0) { g.strokeStyle = "#2f7a4c"; g.lineWidth = 3; g.lineCap = "round"; g.beginPath(); g.moveTo(-nw / 2 + 16, y - 8); g.lineTo(-nw / 2 + 16 + 6 * Math.min(1, kk * 2), y - 8 + 6 * Math.min(1, kk * 2)); if (kk > 0.5) g.lineTo(-nw / 2 + 22 + 12 * (kk - 0.5) * 2, y - 2 - 16 * (kk - 0.5) * 2); g.stroke(); } }); g.restore(); }
+        g.globalAlpha = 1; return t < dur; } }; },
+    // a notebook-margin arcade: doodled aliens wobbling down, a doodled ship that follows you, POW!
+    games: () => { const dur = 10, cols = Math.min(8, Math.floor(W * 0.8 / 70)), fleet = [], shots = [], pows = []; let ship = W / 2, cd = 0, score = 0, clear = 0;
+      for (let r = 0; r < 3; r++) for (let c = 0; c < cols; c++) fleet.push({ c, r, alive: true, id: r * 20 + c, col: ["111,211,184", "143,180,255", "240,138,108"][r] });
       const onMove = e => { const rc = cv.getBoundingClientRect(); ship = e.clientX - rc.left; }; addEventListener("pointermove", onMove, { passive: true });
-      return { step(dt, t) { const f = fade(t, dur, 0.3, 0.8); g.globalAlpha = f; g.fillStyle = "rgba(2,3,8,0.88)"; g.fillRect(0, 0, W, H);
-        for (const s of stars) { s.y += s.z * 160 * dt; if (s.y > H) { s.y = 0; s.x = R(0, W); } g.fillStyle = `rgba(220,230,255,${s.z * 0.8})`; g.fillRect(s.x, s.y, s.z * 2, s.z * 2 + s.z * 3); }
-        const fw = cols * px * 13, march = Math.sin(t * 0.9) * (W - fw) * 0.35, down = Math.min(H * 0.18, t * 22), sy = H - px * 14;
-        for (const a of fleet) { if (!a.alive) continue; const ax = (W - fw) / 2 + march + a.c * px * 13, ay = H * 0.12 + down + a.r * px * 10, fr = Math.floor(t * 2.5) % 2; a.cx = ax + px * 3.5; a.cy = ay + px * 3;
-          g.fillStyle = a.col; a.sp.forEach((row, y) => [...row].forEach((v, x) => { if (v === "1") g.fillRect(ax + x * px + (y === 5 && fr ? (x < 3 ? px : -px) : 0), ay + y * px, px, px); })); }
-        cd -= dt; if (cd <= 0 && t < dur - 1.5 && !clear) { shots.push({ x: ship, y: sy - px * 2 }); cd = 0.16; }
-        g.save(); g.globalCompositeOperation = "lighter";
-        for (let i = shots.length - 1; i >= 0; i--) { const s = shots[i]; s.y -= 820 * dt; glowDot(s.x, s.y + px * 2, px * 3, "255,230,170", 0.5); g.fillStyle = "#fff4dc"; g.fillRect(s.x - 1.5, s.y, 3, px * 4);
-          const hit = fleet.find(a => a.alive && a.cx !== undefined && Math.abs(a.cx - s.x) < px * 4.2 && Math.abs(a.cy - s.y) < px * 4); if (hit) { hit.alive = false; shots.splice(i, 1); score += (4 - hit.r) * 10; booms.push({ x: hit.cx, y: hit.cy, b: t, c: hit.col }); for (let k = 0; k < 22; k++) bits.push({ x: hit.cx, y: hit.cy, vx: R(-260, 260), vy: R(-260, 140), c: hit.col, l: R(0.5, 1) }); } else if (s.y < -20) shots.splice(i, 1); }
-        for (let i = booms.length - 1; i >= 0; i--) { const b = booms[i], k = (t - b.b) / 0.5; if (k > 1) { booms.splice(i, 1); continue; } g.strokeStyle = b.c; g.globalAlpha = f * (1 - k); g.lineWidth = 2; g.beginPath(); g.arc(b.x, b.y, px * 2 + k * px * 10, 0, TAU); g.stroke(); glowDot(b.x, b.y, px * 8 * (1 - k) + 1, "255,240,200", 0.6 * (1 - k)); }
-        g.restore(); g.globalAlpha = f;
-        for (let i = bits.length - 1; i >= 0; i--) { const b = bits[i]; b.l -= dt; b.vy += 320 * dt; b.x += b.vx * dt; b.y += b.vy * dt; g.fillStyle = b.c; g.globalAlpha = f * clamp(b.l, 0, 1); g.fillRect(b.x, b.y, px, px); if (b.l <= 0) bits.splice(i, 1); }
-        g.globalAlpha = f; g.fillStyle = "#d9b36c"; const sx = clamp(ship, px * 6, W - px * 6); ship = sx;
-        [[0, 0, 1, 1], [-1, 1, 3, 1], [-3, 2, 7, 2]].forEach(([x, y, w, h]) => g.fillRect(sx + x * px - px / 2, sy + y * px, w * px, h * px)); glowDot(sx, sy + px * 5, px * 4 + Math.sin(t * 30) * px, "255,160,90", 0.6);
-        g.font = `700 ${Math.max(12, px * 3)}px ui-monospace, Menlo, monospace`; g.textAlign = "left"; g.fillStyle = "#f5f3ee"; g.fillText("SCORE " + String(score).padStart(5, "0"), 20, 90); g.textAlign = "right"; g.fillText("HI 01370", W - 20, 90);
-        if (!clear && fleet.every(a => !a.alive)) clear = t; if (clear) { g.textAlign = "center"; g.font = `700 ${Math.max(22, px * 7)}px ui-monospace, Menlo, monospace`; g.fillStyle = Math.floor(t * 4) % 2 ? "#d9b36c" : "#f5f3ee"; g.fillText("STAGE CLEAR", W / 2, H * 0.45); }
-        // scanlines and a curved-glass vignette
-        g.fillStyle = "rgba(0,0,0,0.22)"; for (let y = 0; y < H; y += 3) g.fillRect(0, y, W, 1);
-        const vg = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.75); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,0.6)"); g.fillStyle = vg; g.fillRect(0, 0, W, H);
+      return { step(dt, t) { const f = fade(t, dur, 0.3, 0.8); g.globalAlpha = f; dim(0.86);
+        // notebook lines
+        pen(1, "rgba(143,180,255,0.12)"); for (let y = 60; y < H; y += 28) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); } pen(1.2, "rgba(240,138,108,0.25)"); g.beginPath(); g.moveTo(54, 0); g.lineTo(54, H); g.stroke();
+        const sz = Math.min(34, W / (cols * 2.2)), fw = cols * sz * 2, march = Math.sin(t * 0.9) * (W - fw) * 0.3, down = Math.min(H * 0.16, t * 18), sy = H - 50;
+        for (const a of fleet) { if (!a.alive) continue; const ax = (W - fw) / 2 + march + a.c * sz * 2 + sz, ay = H * 0.16 + down + a.r * sz * 1.7, wob = Math.sin(t * 4 + a.id) * 3; a.cx = ax; a.cy = ay; boil(t, 800 + a.id);
+          wash(ax, ay + wob, sz * 0.55, a.col, 0.6, a.id + 50); pen(1.8); rcirc(ax, ay + wob, sz * 0.55, sz * 0.42, 1, 1); rline(ax - sz * 0.3, ay - sz * 0.35 + wob, ax - sz * 0.45, ay - sz * 0.7 + wob, 0.8, 1); rline(ax + sz * 0.3, ay - sz * 0.35 + wob, ax + sz * 0.45, ay - sz * 0.7 + wob, 0.8, 1);
+          g.fillStyle = INK; g.beginPath(); g.arc(ax - sz * 0.18, ay - sz * 0.05 + wob, 2.5, 0, TAU); g.arc(ax + sz * 0.18, ay - sz * 0.05 + wob, 2.5, 0, TAU); g.fill(); for (let l = -1; l <= 1; l++) rline(ax + l * sz * 0.25, ay + sz * 0.35 + wob, ax + l * sz * 0.32 + Math.sin(t * 8 + l) * 3, ay + sz * 0.65 + wob, 0.8, 1); }
+        cd -= dt; if (cd <= 0 && t < dur - 1.5 && !clear) { shots.push({ x: ship, y: sy - 20 }); cd = 0.18; }
+        pen(2.2, "#d9b36c"); for (let i = shots.length - 1; i >= 0; i--) { const s = shots[i]; s.y -= 760 * dt; boil(t, 900 + i); rline(s.x, s.y, s.x, s.y + 12, 0.6, 1);
+          const hit = fleet.find(a => a.alive && a.cx !== undefined && Math.abs(a.cx - s.x) < sz * 0.6 && Math.abs(a.cy - s.y) < sz * 0.6); if (hit) { hit.alive = false; shots.splice(i, 1); score += (3 - hit.r) * 10; pows.push({ x: hit.cx, y: hit.cy, b: t, w: ["POW!", "ZAP!", "BAM!", "POP!"][Math.floor(R(0, 4))], c: hit.col }); } else if (s.y < -20) shots.splice(i, 1); }
+        for (let i = pows.length - 1; i >= 0; i--) { const p = pows[i], k = (t - p.b) / 0.7; if (k > 1) { pows.splice(i, 1); continue; } g.globalAlpha = f * (1 - k); boil(t, 950 + i); pen(1.6, `rgba(${p.c},1)`); for (let j = 0; j < 10; j++) { const a = j / 10 * TAU, r1 = sz * 0.4 + k * sz, r2 = r1 + sz * 0.4; rline(p.x + Math.cos(a) * r1, p.y + Math.sin(a) * r1, p.x + Math.cos(a) * r2, p.y + Math.sin(a) * r2, 0.6, 1); } scrawl(p.w, p.x, p.y + 8, 22 + k * 10, "#f3ecdc", jit(0.2)); }
+        g.globalAlpha = f; const sx = clamp(ship, 30, W - 30); ship = sx; boil(t, 990); wash(sx, sy, 22, "217,179,108", 0.5, 70); pen(2); rpath([[sx - 22, sy + 10], [sx, sy - 22], [sx + 22, sy + 10], [sx, sy + 3], [sx - 22, sy + 10]], 1, 2);
+        pen(1.4, "rgba(240,138,108,0.8)"); rline(sx - 6, sy + 10, sx - 4, sy + 22 + Math.sin(t * 30) * 4, 0.6, 1); rline(sx + 6, sy + 10, sx + 4, sy + 22 + Math.cos(t * 30) * 4, 0.6, 1);
+        g.textAlign = "left"; scrawl("score " + score, 120, 96, 30); if (!clear && fleet.every(a => !a.alive)) clear = t; if (clear) scrawl("you win!", W / 2, H * 0.45, 64, "#d9b36c", -0.06);
         g.globalAlpha = 1; const over = t >= dur || (clear && t > clear + 1.6); if (over) removeEventListener("pointermove", onMove); return !over; } }; },
-    // a globe turns; flights rise off it from city to city, a plane glinting along each arc, pins landing
-    trips: () => { const dur = 8, land = [], lat0 = 0.35; for (let i = 0; i < 6000; i++) { const u = R(-1, 1), lo = R(-Math.PI, Math.PI), la = Math.asin(u);
-        const v = Math.sin(lo * 2.1 + 0.5) * Math.cos(la * 2.6) + Math.sin(lo * 3.7 - la * 2.2 + 1.3) * 0.6 + Math.cos(lo * 1.3 + la * 4.1) * 0.35; if (v > 0.35) land.push([la, lo]); }
-      const cities = [[0.66, -2.14], [0.62, -0.05], [0.62, 2.43], [-0.59, 2.64], [0.02, 1.81], [0.66, -2.14]], pins = ["#f08a6c", "#6fd3b8", "#d9b36c", "#8fb4ff", "#f4b6c8", "#f08a6c"];
-      const proj = (la, lo, rot, cx, cy, r, alt = 0) => { const l = lo + rot, x = Math.cos(la) * Math.sin(l), y = Math.sin(la), z = Math.cos(la) * Math.cos(l), y2 = y * Math.cos(lat0) - z * Math.sin(lat0), z2 = y * Math.sin(lat0) + z * Math.cos(lat0); const s = r * (1 + alt); return [cx + x * s, cy - y2 * s, z2]; };
-      const slerp = (a, b, k) => { const v = ([la, lo]) => [Math.cos(la) * Math.cos(lo), Math.cos(la) * Math.sin(lo), Math.sin(la)], A = v(a), B = v(b), d = Math.acos(clamp(A[0] * B[0] + A[1] * B[1] + A[2] * B[2], -1, 1)) || 1e-6, s1 = Math.sin((1 - k) * d) / Math.sin(d), s2 = Math.sin(k * d) / Math.sin(d), P = A.map((q, i) => q * s1 + B[i] * s2); return [Math.asin(clamp(P[2], -1, 1)), Math.atan2(P[1], P[0])]; };
-      return { step(dt, t) { const f = fade(t, dur, 0.4, 1); g.globalAlpha = f; dim(0.8);
-        const r = Math.min(W, H) * 0.3 * (0.6 + 0.4 * ease(t / 1)), cx = W / 2, cy = H * 0.5, rot = 2.3 - t * 0.32;
-        g.save(); g.globalCompositeOperation = "lighter"; glowDot(cx, cy, r * 1.35, "110,150,255", 0.22); g.restore();
-        const oc = g.createRadialGradient(cx - r * 0.35, cy - r * 0.4, r * 0.1, cx, cy, r); oc.addColorStop(0, "#1b2a4a"); oc.addColorStop(1, "#070b16"); g.fillStyle = oc; g.beginPath(); g.arc(cx, cy, r, 0, TAU); g.fill();
-        g.strokeStyle = "rgba(143,180,255,0.14)"; g.lineWidth = 1;
-        for (let la = -60; la <= 60; la += 30) { g.beginPath(); let st = false; for (let lo = -180; lo <= 180; lo += 6) { const [x, y, z] = proj(la * Math.PI / 180, lo * Math.PI / 180, rot, cx, cy, r); if (z < 0) { st = false; continue; } st ? g.lineTo(x, y) : g.moveTo(x, y); st = true; } g.stroke(); }
-        for (let lo = -180; lo < 180; lo += 30) { g.beginPath(); let st = false; for (let la = -90; la <= 90; la += 6) { const [x, y, z] = proj(la * Math.PI / 180, lo * Math.PI / 180, rot, cx, cy, r); if (z < 0) { st = false; continue; } st ? g.lineTo(x, y) : g.moveTo(x, y); st = true; } g.stroke(); }
-        for (const [la, lo] of land) { const [x, y, z] = proj(la, lo, rot, cx, cy, r); if (z < 0.02) continue; g.fillStyle = `rgba(226,210,170,${0.35 + z * 0.65})`; g.fillRect(x - 1, y - 1, 2, 2); }
-        const sh = g.createRadialGradient(cx + r * 0.4, cy + r * 0.4, r * 0.2, cx, cy, r * 1.05); sh.addColorStop(0, "rgba(0,0,0,0.55)"); sh.addColorStop(0.7, "rgba(0,0,0,0)"); g.fillStyle = sh; g.beginPath(); g.arc(cx, cy, r, 0, TAU); g.fill();
-        g.strokeStyle = "rgba(160,190,255,0.5)"; g.lineWidth = 1.5; g.beginPath(); g.arc(cx, cy, r, 0, TAU); g.stroke();
-        // flights, one after another
-        const leg = 1.15, legs = cities.length - 1;
-        for (let i = 0; i < legs; i++) { const k = clamp((t - 0.8 - i * leg) / leg, 0, 1); if (k <= 0) break; g.strokeStyle = "rgba(245,243,238,0.85)"; g.lineWidth = 1.6; g.setLineDash([4, 5]); g.beginPath(); let st = false, head = null;
-          for (let s = 0; s <= 40 * k; s++) { const kk = s / 40, p = slerp(cities[i], cities[i + 1], kk), [x, y, z] = proj(p[0], p[1], rot, cx, cy, r, Math.sin(kk * Math.PI) * 0.22); if (z < -0.1) { st = false; continue; } st ? g.lineTo(x, y) : g.moveTo(x, y); st = true; head = [x, y]; } g.stroke(); g.setLineDash([]);
-          if (k < 1 && head) sparkle(head[0], head[1], 4, f, "255,245,220");
-          const [px2, py2, pz] = proj(cities[i + 1][0], cities[i + 1][1], rot, cx, cy, r); if (k >= 1 && pz > 0) { const e = clamp((t - 0.8 - (i + 1) * leg) * 3, 0, 1); g.strokeStyle = pins[i + 1]; g.globalAlpha = f * (1 - e) * 0.8; g.beginPath(); g.arc(px2, py2, e * 30, 0, TAU); g.stroke(); g.globalAlpha = f;
-            g.fillStyle = pins[i + 1]; g.beginPath(); g.arc(px2, py2 - 14, 7, Math.PI, 0); g.lineTo(px2, py2); g.closePath(); g.fill(); g.fillStyle = "#0b0b0d"; g.beginPath(); g.arc(px2, py2 - 14, 2.6, 0, TAU); g.fill(); } }
-        { const [x, y, z] = proj(cities[0][0], cities[0][1], rot, cx, cy, r); if (z > 0) { g.fillStyle = pins[0]; g.beginPath(); g.arc(x, y - 14, 7, Math.PI, 0); g.lineTo(x, y); g.closePath(); g.fill(); } }
+    // a travel journal map: wobbly coastlines, a paper plane drawing the dotted route, pins and scribbled names
+    trips: () => { const dur = 8, u = Math.min(W, H);
+      const isl = [[0.2, 0.45, 0.16], [0.47, 0.32, 0.12], [0.55, 0.62, 0.1], [0.78, 0.42, 0.14], [0.85, 0.75, 0.08]].map(([x, y, r], i) => { const pts = []; SEED = 4242 + i * 31; for (let k = 0; k < 18; k++) { const a = k / 18 * TAU, rr = r * u * (0.7 + srnd() * 0.5); pts.push([x * W + Math.cos(a) * rr * 1.3, y * H + Math.sin(a) * rr]); } return { pts, x: x * W, y: y * H, r: r * u }; });
+      const stops = [[0.16, 0.42, "home"], [0.45, 0.3, "London"], [0.56, 0.6, "Rome"], [0.76, 0.4, "Tokyo"], [0.86, 0.74, "Sydney"]].map(([x, y, n]) => [x * W, y * H, n]);
+      const path = []; for (let i = 0; i < stops.length - 1; i++) { const [a, b] = [stops[i], stops[i + 1]], mx = (a[0] + b[0]) / 2, my = Math.min(a[1], b[1]) - u * 0.12; for (let k = 0; k < 30; k++) { const s = k / 30; path.push([(1 - s) * (1 - s) * a[0] + 2 * (1 - s) * s * mx + s * s * b[0], (1 - s) * (1 - s) * a[1] + 2 * (1 - s) * s * my + s * s * b[1]]); } } path.push(stops[stops.length - 1]);
+      return { step(dt, t) { const f = fade(t, dur, 0.4, 1); g.globalAlpha = f; dim(0.84);
+        // sea hatching and islands
+        pen(1, "rgba(143,180,255,0.18)"); for (let i = 0; i < 40; i++) { const x = (i * 137) % W, y = (i * 211) % H; boil(t, 1000 + i); rpath([[x, y], [x + 10, y - 4], [x + 20, y], [x + 30, y - 4]], 0.6, 1); }
+        isl.forEach((s, i) => { const k = ease((t - i * 0.12) / 0.8); if (!k) return; g.globalAlpha = f * k; wash(s.x, s.y, s.r * 1.1, "120,160,110", 0.35, 80 + i); boil(t, 1100 + i); pen(2); rpath(s.pts, 1.4, 2, true); pen(1, "rgba(243,236,220,0.28)"); hatch(() => { g.moveTo(...s.pts[0]); s.pts.forEach(p => g.lineTo(...p)); g.closePath(); }, s.x - s.r * 1.4, s.y - s.r * 1.2, s.r * 2.8, s.r * 2.4, 11, 0.6); });
+        g.globalAlpha = f;
+        // compass rose
+        boil(t, 1200); const cr = u * 0.06, crx = W - cr * 1.8, cry = cr * 1.8 + 50; pen(1.4, "rgba(243,236,220,0.7)"); rcirc(crx, cry, cr, cr, 1, 1); for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 - Math.PI / 2; rpath([[crx + Math.cos(a + 0.4) * cr * 0.25, cry + Math.sin(a + 0.4) * cr * 0.25], [crx + Math.cos(a) * cr * 1.2, cry + Math.sin(a) * cr * 1.2], [crx + Math.cos(a - 0.4) * cr * 0.25, cry + Math.sin(a - 0.4) * cr * 0.25]], 0.6, 1); } scrawl("N", crx, cry - cr * 1.35, 20);
+        // the route, drawn as the plane flies it
+        const k = clamp((t - 0.8) / 5, 0, 1), n = Math.floor(k * (path.length - 1)); pen(2.2, "rgba(217,179,108,0.95)"); g.setLineDash([2, 9]); g.beginPath(); g.moveTo(...path[0]); for (let i = 1; i <= n; i++) g.lineTo(...path[i]); g.stroke(); g.setLineDash([]);
+        stops.forEach(([x, y, nm], i) => { const reached = i === 0 || n >= i * 30; if (!reached) return; boil(t, 1300 + i); pen(2.6, "#f08a6c"); rline(x - 9, y - 9, x + 9, y + 9, 1, 1); rline(x + 9, y - 9, x - 9, y + 9, 1, 1); scrawl(nm, x, y + 30, 26); });
+        if (k < 1 || t < 6.4) { const i = Math.min(path.length - 2, n), [x, y] = path[i], [x2, y2] = path[i + 1], a = Math.atan2(y2 - y, x2 - x), s = 20; boil(t, 1400); g.save(); g.translate(x, y); g.rotate(a);
+          g.fillStyle = "rgba(243,236,220,0.95)"; g.beginPath(); g.moveTo(s, 0); g.lineTo(-s, -s * 0.6); g.lineTo(-s * 0.5, 0); g.lineTo(-s, s * 0.6); g.closePath(); g.fill(); pen(1.4, "#2a2018"); rline(s, 0, -s * 0.5, 0, 0.5, 1); g.restore(); }
+        scrawl("next trip?", W * 0.22, H * 0.84, 36, "rgba(243,236,220,0.8)", -0.05);
         g.globalAlpha = 1; return t < dur; } }; },
   };
   // a note in the corner: how many you've found
