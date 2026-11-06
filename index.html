@@ -390,6 +390,41 @@ body[data-page="projects"] .dk-felt, .dk-felt { background: radial-gradient(110%
 .dk-felt::before { opacity: 0.1 !important; }
 .dk-felt .pl-zod, .dk-felt .pl-orb { display: none !important; }
 
+/* v96: the projects as a tidy list on the dark page */
+body.pj-listed #projects .dk-table, body.pj-listed .parlour, body.pj-listed .crow-fly { display: none !important; }
+body.pj-listed[data-page="projects"] #projects .part-head { opacity: 1 !important; transform: none !important; }
+.pj-list { display: grid; gap: 0; max-width: 1080px; margin: clamp(18px, 3vw, 36px) auto clamp(40px, 6vw, 80px) 0; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+.pj-row { display: grid; grid-template-columns: clamp(150px, 19vw, 230px) 1fr; gap: clamp(20px, 3.2vw, 44px); align-items: start; padding: clamp(22px, 3vw, 34px) 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.pj-pic { position: relative; display: block; aspect-ratio: 5 / 6; border-radius: 12px; overflow: hidden; background: #141210; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 18px 30px -18px rgba(0, 0, 0, 0.9); transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.35s ease; }
+.pj-pic svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.pj-pic svg * { animation-play-state: paused; }
+.pj-row:hover .pj-pic svg * { animation-play-state: running; }
+.pj-row:hover .pj-pic, .pj-pic:focus-visible { transform: translateY(-3px); box-shadow: 0 0 0 1px rgba(217, 179, 108, 0.55), 0 24px 36px -18px rgba(0, 0, 0, 0.95); outline: none; }
+.pj-body { min-width: 0; padding-top: 4px; }
+.pj-kick { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 0 0 10px; font: 600 11.5px/1.2 var(--font-ui); letter-spacing: 0.14em; text-transform: uppercase; color: #d9b36c; }
+.pj-st { display: inline-flex; align-items: center; gap: 7px; padding: 4px 9px 4px 8px; border-radius: 6px; background: rgba(255, 255, 255, 0.05); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.09); color: #e9e0cf; letter-spacing: 0.1em; font-size: 10.5px; }
+.pj-st::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #a99f8e; }
+.pj-st-ok::before { background: #4fd18b; box-shadow: 0 0 0 3px rgba(79, 209, 139, 0.16); }
+.pj-st-wip::before { background: #f2b544; box-shadow: 0 0 0 3px rgba(242, 181, 68, 0.16); }
+.pj-st-est::before { background: #d9b36c; }
+.pj-st-info::before { background: #8fb4ff; }
+.pj-name { margin: 0 0 6px; font: 500 clamp(26px, 2.9vw, 38px)/1.08 var(--font-display); letter-spacing: -0.01em; color: #f6efe2; }
+.pj-line { margin: 0 0 10px; font: 500 clamp(15px, 1.25vw, 17px)/1.45 var(--font-ui); color: #e6dccb; }
+.pj-text { margin: 0 0 18px; max-width: 64ch; font: 400 clamp(14px, 1.1vw, 15.5px)/1.65 var(--font-ui); color: rgba(233, 224, 207, 0.66); }
+.pj-links { display: flex; flex-wrap: wrap; gap: 10px; }
+.pj-btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 8px; font: 600 13px/1 var(--font-ui); letter-spacing: 0.02em; color: #efe5d2; text-decoration: none; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16); transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
+.pj-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.2s ease; }
+.pj-btn:hover, .pj-btn:focus-visible { background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3); outline: none; }
+.pj-btn:hover svg { transform: translateX(2px); }
+.pj-btn.pri { background: #d9b36c; color: #17120b; box-shadow: none; }
+.pj-btn.pri:hover, .pj-btn.pri:focus-visible { background: #e6c47f; }
+@media (max-width: 640px) {
+  .pj-row { grid-template-columns: 1fr; gap: 16px; }
+  .pj-pic { aspect-ratio: 16 / 10; }
+  .pj-pic svg { height: auto; top: 50%; transform: translateY(-50%); }
+}
+@media (prefers-reduced-motion: reduce) { .pj-pic, .pj-btn, .pj-btn svg { transition: none; } }
+
 .hero .robot { position: absolute; transform: translateZ(0.7px); visibility: hidden; pointer-events: none; }
 .edge { position: absolute; backface-visibility: hidden; background: linear-gradient(180deg, #c99e5a, #8f6a33); }
 .edge.e-b { transform-origin: top; transform: rotateX(-90deg); background: linear-gradient(180deg, #b5884a, #7c5a2c); }
@@ -10662,7 +10697,8 @@ window.__intro = {
   poke(x, y) { pointer.x = x; pointer.y = y; pointer.on = true; ripples.push({ x, y, t0: performance.now() - 500 }); render(now()); },
   go: { setGame, setMove, play: playGo, pause: pauseGo, state: () => ({ g: gob.g, k: gob.k, playing: gob.playing }) },
   manga: { setZ(z) { MG.on = true; buildManga(); MG.zOverride = z; renderManga(); }, set(p) { MG.on = true; buildManga(); MG.zOverride = null; MG.p = p; MG.target = p; MG.drawnP = -1; renderManga(); }, state: () => ({ p: MG.p, z: mgZ(MG.p), W: MG.W, H: MG.H, n: MG_N, lead: MG.lead, links: MG.links.length, linksOn: MG.linksOn }) },
-};
+};try { window.__DECK = DECK; window.__DART = DART; } catch (e) {}
+
 })();
 // v74: behind the plain pages, a background of their own that moves slowly: a Go board where stones come and go
 // (About), graph paper with a timeline being inked (Résumé), a notebook's ruled lines with ink drifting (Blog), paper
@@ -11442,6 +11478,39 @@ const AMB = window.AMB = (() => {
   // the crow's "Pick a card… any card." clears as soon as the hand is down, so it never sits over the cards
   new MutationObserver(() => { if (deck.classList.contains("ready")) setTimeout(() => document.querySelectorAll(".cw-words span.on").forEach(() => document.querySelector(".cw-words").classList.add("gone")), 500); }).observe(deck, { attributes: true, attributeFilter: ["class"] });
   fix(); new MutationObserver(fix).observe(deck, { childList: true, subtree: true });
+})();
+
+// v96: the projects, listed. One row each on a plain dark page, like the site's first pages: the picture, a category
+// and status line, the name, what it is, and its links. The card table, curtains, candles and crow are put away.
+(() => {
+  const sec = document.getElementById("projects"); if (!sec || !window.__DECK) return; const DECK = window.__DECK, DART = window.__DART;
+  const KICK = { "PolyMind": "AI · Strategy game", "Learn more about Go": "Go · Story & lessons", "Fraguessr": "Web game · Data", "Muse": "Generative art · Audio", "Go Global": "Community · Nonprofit", "Opening Move": "Web · Interactive" };
+  const stat = t => /live/i.test(t) ? "ok" : /progress|training/i.test(t) ? "wip" : /founded/i.test(t) ? "est" : "info";
+  const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const arrow = ext => ext ? `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11 11 5M6 5h5v5"/></svg>` : `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"/></svg>`;
+  // each picture is the card's own painting, copied with its ids renamed so it can't borrow from (or lend to) the deck
+  const artOf = (c, i) => { let h = "";
+    try { h = typeof DART !== "undefined" && DART[c.art] ? `<svg viewBox="0 0 250 350" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${DART[c.art]()}</svg>` : ""; } catch (e) { h = ""; }
+    if (!h) return ""; const ids = [...h.matchAll(/\sid="([^"]+)"/g)].map(m => m[1]);
+    for (const id of ids) { const n = `pj${i}-${id}`; h = h.split(`id="${id}"`).join(`id="${n}"`).split(`url(#${id})`).join(`url(#${n})`).split(`href="#${id}"`).join(`href="#${n}"`); }
+    return h; };
+  const build = () => {
+    if (sec.querySelector(".pj-list")) return true;
+    const list = document.createElement("div"); list.className = "pj-list";
+    const order = DECK.cards.filter(c => !c.side).concat(DECK.cards.filter(c => c.side));
+    list.innerHTML = order.map((c, i) => { const [first, ...rest] = c.links || [];
+      const link = ([t, href], primary) => { const ext = /^https?:/.test(href); return `<a class="pj-btn${primary ? " pri" : ""}" href="${esc(href)}"${ext ? ' target="_blank" rel="noopener"' : ""}>${esc(t)}${arrow(ext)}</a>`; };
+      const main = first ? first[1] : "#projects", ext = /^https?:/.test(main);
+      return `<article class="pj-row" style="--i:${i}">` +
+        `<a class="pj-pic" href="${esc(main)}"${ext ? ' target="_blank" rel="noopener"' : ""} aria-label="${esc(c.name)}">${artOf(c, i)}</a>` +
+        `<div class="pj-body"><p class="pj-kick"><span>${esc(KICK[c.name] || "")}</span><span class="pj-st pj-st-${stat(c.tag)}">${esc(c.tag)}</span></p>` +
+        `<h3 class="pj-name">${esc(c.name)}</h3><p class="pj-line">${esc(c.line)}</p><p class="pj-text">${esc(c.text)}</p>` +
+        `<div class="pj-links">${first ? link(first, true) : ""}${rest.map(l => link(l, false)).join("")}</div></div></article>`; }).join("");
+    const table = sec.querySelector(".dk-table"); (table ? table.parentNode : sec).insertBefore(list, table || null);
+    document.body.classList.add("pj-listed");
+    for (const p of sec.querySelectorAll(".part-head p")) if (/dealt as one hand/.test(p.textContent)) p.textContent = "Five things I've made, and the site you're on. Each has a page of its own.";
+    return true; };
+  if (!build()) { const mo = new MutationObserver(() => { if (build()) mo.disconnect(); }); mo.observe(document.body, { childList: true, subtree: true }); }
 })();
 
 </script>
