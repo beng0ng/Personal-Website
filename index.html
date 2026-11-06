@@ -311,38 +311,43 @@ body.pj-lit[data-page="projects"] #projects .dk-table { opacity: 1; }
 .dk-lit text, .dk-lit .glow, .dk-lit .steam { display: none; }
 .desk.dk-dive .dk-lit { display: none; }
 
-/* v97: the abstract home screen */
-.desk.abh { background: #070709; }
-.desk.abh .dk-wood, .desk.abh .dk-photo, .desk.abh .dk-grain, .desk.abh .dk-light, .desk.abh .dk-lit, .desk.abh .dk-shade, .desk.abh .dk-sheen, .desk.abh .dk-pen, .desk.abh .dk-fall { display: none !important; }
-.ab-svg { font-family: var(--font-ui); }
-.ab-svg .ab-door { cursor: pointer; outline: none; }
-.ab-svg .ab-t1 { font-family: var(--font-display); font-weight: 500; fill: #f6efe2; letter-spacing: -0.01em; }
-.ab-svg .ab-t2 { font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; fill: rgba(233, 224, 207, 0.55); }
-.ab-svg .ab-n { font: 600 12px var(--font-ui); letter-spacing: 0.22em; }
-.ab-svg.tall .ab-n { font-size: 16px; }
-.ab-svg .ab-float { animation: abFloat 7s ease-in-out var(--d, 0s) infinite; }
-.ab-svg .ab-g .ab-gs { transform-box: fill-box; transform-origin: center; transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1); }
-.ab-svg .ab-halo { opacity: 0.55; transition: opacity 0.4s ease; }
-.ab-svg .ab-hit { transition: stroke-opacity 0.4s ease; }
-.ab-svg .ab-door:hover .ab-halo, .ab-svg .ab-door:focus-visible .ab-halo { opacity: 1; }
-.ab-svg .ab-door:hover .ab-hit, .ab-svg .ab-door:focus-visible .ab-hit { stroke-opacity: 0.6; }
-.ab-svg .ab-door:hover .ab-gs, .ab-svg .ab-door:focus-visible .ab-gs { transform: scale(1.12) rotate(8deg); }
-.ab-svg .ab-door:hover .ab-t1, .ab-svg .ab-door:focus-visible .ab-t1 { fill: #fff; }
-.ab-svg .ab-spin { transform-box: view-box; transform-origin: 50% 50%; animation: abSpin var(--t, 100s) linear infinite; }
-.ab-svg .ab-spin.r { animation-direction: reverse; }
-.ab-svg .ab-tw { animation: abTw 5s ease-in-out var(--d, 0s) infinite; }
-.ab-svg .ab-core { animation: abPulse 6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-.ab-svg .ab-th { animation: abFlow 14s linear infinite; }
-.ab-svg .ab-f1 { animation: abDrift 26s ease-in-out infinite alternate; }
-.ab-svg .ab-f2 { animation: abDrift 32s ease-in-out -9s infinite alternate-reverse; }
-.ab-svg .ab-f3 { animation: abDrift 38s ease-in-out -4s infinite alternate; }
-@keyframes abFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
-@keyframes abSpin { to { transform: rotate(360deg); } }
-@keyframes abTw { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.9; } }
-@keyframes abPulse { 0%, 100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.12); opacity: 1; } }
-@keyframes abFlow { to { stroke-dashoffset: -200; } }
-@keyframes abDrift { from { transform: translate(-30px, -20px); } to { transform: translate(40px, 30px); } }
-@media (prefers-reduced-motion: reduce) { .ab-svg * { animation: none !important; } }
+/* v98: the home screen, black and professional */
+.desk.pro { background: #000; transform: none !important; }
+.desk.pro .dk-wood, .desk.pro .dk-photo, .desk.pro .dk-grain, .desk.pro .dk-light, .desk.pro .dk-lit, .desk.pro .dk-shade, .desk.pro .dk-sheen, .desk.pro .dk-pen, .desk.pro .dk-fall, .desk.pro .dk-dark { display: none !important; }
+.pr { position: absolute; inset: 0; background: radial-gradient(120% 80% at 50% 110%, #101014 0%, #000 60%); color: #ecebe6; overflow: hidden; }
+.pr-fx { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.pr::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0) 70%); }
+.pr-wrap { position: relative; z-index: 1; height: 100%; box-sizing: border-box; max-width: 1240px; margin: 0 auto; padding: clamp(96px, 14vh, 150px) clamp(20px, 5vw, 64px) clamp(28px, 6vh, 56px); display: flex; flex-direction: column; }
+.pr-eye { display: flex; align-items: center; gap: 10px; margin: 0 0 22px; font: 600 12px/1 var(--font-ui); letter-spacing: 0.18em; text-transform: uppercase; color: rgba(236, 235, 230, 0.6); }
+.pr-dot { width: 7px; height: 7px; border-radius: 50%; background: #4fd18b; box-shadow: 0 0 0 4px rgba(79, 209, 139, 0.15); }
+.pr-h { font: 500 clamp(40px, 6.2vw, 88px)/1.02 var(--font-display); letter-spacing: -0.025em; color: #f5f3ee; margin: 0 0 22px; }
+.pr-sub { max-width: 52ch; margin: 0; font: 400 clamp(15px, 1.3vw, 18px)/1.6 var(--font-ui); color: rgba(236, 235, 230, 0.66); }
+.pr-grid { margin-top: auto; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid rgba(255, 255, 255, 0.14); }
+.pr-card { position: relative; display: block; color: inherit; text-decoration: none; outline: none; }
+.pr-card + .pr-card { border-left: 1px solid rgba(255, 255, 255, 0.1); }
+.pr-card .dk-art { position: relative; display: flex; flex-direction: column; gap: 8px; min-height: 150px; padding: 22px 22px 20px; box-sizing: border-box; background: rgba(0, 0, 0, 0.35); transition: background 0.3s ease; }
+.pr-card::before { content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 1px; background: #d9b36c; transform: scaleX(0); transform-origin: left; transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1); z-index: 1; }
+.pr-card:hover::before, .pr-card:focus-visible::before { transform: scaleX(1); }
+.pr-card:hover .dk-art, .pr-card:focus-visible .dk-art { background: rgba(255, 255, 255, 0.04); }
+.pr-n { font: 600 12px/1 var(--font-ui); letter-spacing: 0.16em; color: #d9b36c; }
+.pr-t { margin-top: 10px; font: 500 clamp(20px, 1.8vw, 26px)/1.15 var(--font-display); color: #f5f3ee; }
+.pr-s { font: 400 13.5px/1.5 var(--font-ui); color: rgba(236, 235, 230, 0.55); padding-right: 28px; }
+.pr-a { position: absolute; right: 20px; bottom: 20px; width: 18px; height: 18px; color: rgba(236, 235, 230, 0.5); transition: transform 0.3s ease, color 0.3s ease; }
+.pr-a svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.pr-card:hover .pr-a, .pr-card:focus-visible .pr-a { transform: translateX(4px); color: #d9b36c; }
+/* arrival: the words and cards rise in one after another */
+.desk.pro .pr-eye, .desk.pro .pr-h, .desk.pro .pr-sub, .desk.pro .pr-card { opacity: 0; transform: translateY(14px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.desk.pro.on .pr-eye, .desk.pro.on .pr-h, .desk.pro.on .pr-sub, .desk.pro.on .pr-card { opacity: 1; transform: none; }
+.desk.pro.on .pr-h { transition-delay: 0.08s; } .desk.pro.on .pr-sub { transition-delay: 0.16s; } .desk.pro.on .pr-card { transition-delay: calc(0.28s + var(--i) * 0.07s); }
+.desk.pro .dk-o > *:first-child { opacity: 1; }
+@media (max-width: 860px) { .pr-grid { grid-template-columns: 1fr 1fr; } .pr-card:nth-child(3) { border-left: 0; } .pr-card:nth-child(n+3) { border-top: 1px solid rgba(255, 255, 255, 0.1); } }
+@media (max-width: 520px) {
+  .pr-wrap { padding-top: 84px; }
+  .pr::after { background: linear-gradient(180deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 55%, rgba(0,0,0,0.6) 100%); }
+  .pr-card .dk-art { min-height: 0; padding: 16px 14px; gap: 4px; }
+  .pr-t { margin-top: 6px; font-size: 19px; } .pr-s { font-size: 12.5px; padding-right: 0; } .pr-a { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .desk.pro .pr-eye, .desk.pro .pr-h, .desk.pro .pr-sub, .desk.pro .pr-card { transition: none; } }
 /* the blog is off for now */
 #topbar a[href="#blog"], a[href="#blog"], a[href^="#blog-"] { display: none !important; }
 .hub-lumos { display: none !important; }
@@ -11269,69 +11274,66 @@ const AMB = window.AMB = (() => {
     if (!on) { desk.style.removeProperty("transform"); const sh = sheen(); if (sh) sh.style.removeProperty("transform"); cx = cy = 0; } else if (nx || ny) kick(); }).observe(desk, { attributes: true, attributeFilter: ["class"] });
 })();
 
-// v97: the home screen, abstract. No board and no desk: a dark field with drifting light, slow orbit lines and four
-// glowing shapes, one per door (Projects, More about AlphaGo, Résumé, Contact me). The blog is left out for now.
-// It reuses the desk's frame for the tilt toward the pointer and the dive into whatever you pick.
+// v98: the home screen, plain and professional. A black page with one quiet effect behind it (a field of points
+// rolling like a wave, leaning toward the pointer), my name and a line about what I do, and four clean cards that
+// open the rest of the site. It reuses the desk's frame only for the dive into whatever you pick.
 (() => {
   const desk = document.querySelector(".desk"), scene = desk && desk.querySelector(".dk-scene"); if (!scene) return;
   const DOORS = [
-    { k: "laptop", href: "#projects", name: "Projects", sub: "Things I've built", c: "#e2bd72", n: "01" },
-    { k: "manga", href: "#manga", name: "More about AlphaGo", sub: "Move 37, in pencil", c: "#8fb4ff", n: "02" },
-    { k: "folder", href: "#resume", name: "Résumé", sub: "Experience & skills", c: "#6fd3b8", n: "03" },
-    { k: "letter", href: "#hello", name: "Contact me", sub: "Say hello", c: "#f08a6c", n: "04" },
+    { k: "laptop", href: "#projects", n: "01", name: "Projects", sub: "PolyMind, Fraguessr, Fude and Go Global" },
+    { k: "manga", href: "#manga", n: "02", name: "More about AlphaGo", sub: "Move 37, told in pencil" },
+    { k: "folder", href: "#resume", n: "03", name: "Résumé", sub: "Experience, education and skills" },
+    { k: "letter", href: "#hello", n: "04", name: "Contact me", sub: "ben_gong@berkeley.edu" },
   ];
-  const L = {
-    wide: { vb: [1600, 1000], ctr: [800, 500], R: 64, at: { laptop: [430, 300], letter: [1170, 300], manga: [1170, 680], folder: [430, 680] } },
-    tall: { vb: [900, 1600], ctr: [450, 800], R: 66, at: { laptop: [280, 480], letter: [620, 480], manga: [620, 1120], folder: [280, 1120] } },
-  };
-  // each door's shape, drawn around 0,0 at radius r
-  const glyph = (k, r, col, sw) => { const s = `fill="none" stroke="${col}" stroke-width="${sw}" stroke-linejoin="round" stroke-linecap="round"`;
-    const poly = (n, rr, rot) => Array.from({ length: n }, (_, i) => { const a = rot + i * 2 * Math.PI / n; return `${(Math.cos(a) * rr).toFixed(1)},${(Math.sin(a) * rr).toFixed(1)}`; }).join(" ");
-    if (k === "laptop") return `<polygon points="${poly(4, r, -Math.PI / 2)}" ${s}/><polygon points="${poly(4, r * 0.55, -Math.PI / 2)}" ${s} opacity="0.6"/><circle r="${r * 0.12}" fill="${col}"/>`;
-    if (k === "manga") return `<polygon points="${poly(3, r, -Math.PI / 2)}" ${s}/><circle cy="${r * 0.12}" r="${r * 0.3}" ${s} opacity="0.6"/><circle cy="${r * 0.12}" r="${r * 0.1}" fill="${col}"/>`;
-    if (k === "folder") return `<polygon points="${poly(6, r, Math.PI / 6)}" ${s}/><path d="M${-r * 0.42} ${-r * 0.24}H${r * 0.42}M${-r * 0.42} 0H${r * 0.42}M${-r * 0.42} ${r * 0.24}H${r * 0.16}" ${s} opacity="0.7"/>`;
-    return `<circle r="${r}" ${s}/><path d="M${-r * 0.55} 0 Q${-r * 0.28} ${-r * 0.42} 0 0 T${r * 0.55} 0" ${s} opacity="0.75"/><circle r="${r * 0.62}" ${s} opacity="0.35" stroke-dasharray="${r * 0.12} ${r * 0.16}"/>`; };
-  let sd = 7; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+  const arrow = `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"/></svg>`;
   const build = () => {
-    const tall = innerWidth / innerHeight < 0.9, Ly = tall ? L.tall : L.wide, [W, H] = Ly.vb, [cx, cy] = Ly.ctr, R = Ly.R; sd = 7;
-    let o = `<svg class="dk-svg ab-svg${tall ? " tall" : ""}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" role="group" aria-label="Home: four shapes, each a door to part of the site">`;
-    o += `<defs><radialGradient id="abBg" cx="50%" cy="48%" r="70%"><stop offset="0" stop-color="#1a1822"/><stop offset="0.55" stop-color="#0e0d12"/><stop offset="1" stop-color="#070709"/></radialGradient>` +
-      DOORS.map(d => `<radialGradient id="abH-${d.k}"><stop offset="0" stop-color="${d.c}" stop-opacity="0.38"/><stop offset="0.45" stop-color="${d.c}" stop-opacity="0.1"/><stop offset="1" stop-color="${d.c}" stop-opacity="0"/></radialGradient>`).join("") +
-      `<radialGradient id="abCore"><stop offset="0" stop-color="#fff4dc" stop-opacity="0.9"/><stop offset="0.12" stop-color="#e2bd72" stop-opacity="0.45"/><stop offset="0.5" stop-color="#8f6cff" stop-opacity="0.08"/><stop offset="1" stop-color="#8f6cff" stop-opacity="0"/></radialGradient></defs>`;
-    o += `<rect class="dk-dec" width="${W}" height="${H}" fill="url(#abBg)"/>`;
-    // drifting colour fields
-    o += `<g class="dk-dec ab-fog"><circle class="ab-f1" cx="${W * 0.22}" cy="${H * 0.3}" r="${Math.max(W, H) * 0.32}" fill="url(#abH-manga)"/><circle class="ab-f2" cx="${W * 0.8}" cy="${H * 0.75}" r="${Math.max(W, H) * 0.3}" fill="url(#abH-letter)"/><circle class="ab-f3" cx="${W * 0.7}" cy="${H * 0.2}" r="${Math.max(W, H) * 0.25}" fill="url(#abH-folder)"/></g>`;
-    // a field of faint points
-    let dots = ""; for (let i = 0; i < 120; i++) { const x = rnd() * W, y = rnd() * H, r = 0.6 + rnd() * 1.6, a = 0.12 + rnd() * 0.4; dots += `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${r.toFixed(1)}" fill="#efe5d2" opacity="${a.toFixed(2)}"${i % 9 === 0 ? ` class="ab-tw" style="--d:${(rnd() * 6).toFixed(1)}s"` : ""}/>`; }
-    o += `<g class="dk-dec">${dots}</g>`;
-    // orbits around the middle, slowly turning
-    const rx = tall ? 300 : 520, ry = tall ? 520 : 300;
-    o += `<g class="dk-dec ab-orbits" fill="none" stroke="#efe5d2">` +
-      `<g class="ab-spin" style="--t:140s"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" stroke-opacity="0.09"/><circle cx="${cx + rx}" cy="${cy}" r="3" fill="#e2bd72" stroke="none"/></g>` +
-      `<g class="ab-spin r" style="--t:90s"><ellipse cx="${cx}" cy="${cy}" rx="${rx * 0.62}" ry="${ry * 0.62}" stroke-opacity="0.07" stroke-dasharray="2 10"/><circle cx="${cx}" cy="${cy - ry * 0.62}" r="2.4" fill="#8fb4ff" stroke="none"/></g>` +
-      `<g class="ab-spin" style="--t:60s"><circle cx="${cx}" cy="${cy}" r="${Math.min(rx, ry) * 0.42}" stroke-opacity="0.08"/><circle cx="${cx - Math.min(rx, ry) * 0.42}" cy="${cy}" r="2" fill="#6fd3b8" stroke="none"/></g>` +
-      `<circle cx="${cx}" cy="${cy}" r="${R * 2.2}" fill="url(#abCore)" stroke="none" class="ab-core"/><circle cx="${cx}" cy="${cy}" r="4" fill="#fff4dc" stroke="none"/></g>`;
-    // threads from the middle out to each door
-    o += `<g class="dk-dec ab-threads" fill="none">` + DOORS.map(d => { const [x, y] = Ly.at[d.k], mx = (cx + x) / 2 + (y - cy) * 0.18, my = (cy + y) / 2 - (x - cx) * 0.18;
-      return `<path class="ab-th" d="M${cx} ${cy} Q${mx.toFixed(0)} ${my.toFixed(0)} ${x} ${y}" stroke="${d.c}" stroke-opacity="0.32" stroke-width="1.2" stroke-dasharray="3 7"/>`; }).join("") + `</g>`;
-    DOORS.forEach((d, i) => { const [x, y] = Ly.at[d.k], fs1 = tall ? 32 : 30, fs2 = tall ? 15 : 13, ly = y + R * 1.25 + fs1 + (tall ? 30 : 26);
-      o += `<a class="dk-o dk-${d.k} ab-door" href="${d.href}" aria-label="${d.name}" style="--i:${i};--c:${d.c}"><g class="dk-lift"><g class="ab-float" style="--d:${(-i * 1.7).toFixed(1)}s"><g class="dk-art">` +
-        `<circle class="ab-halo" cx="${x}" cy="${y}" r="${R * 2.1}" fill="url(#abH-${d.k})"/><circle class="ab-hit" cx="${x}" cy="${y}" r="${R * 1.25}" fill="rgba(10,10,14,0.55)" stroke="${d.c}" stroke-opacity="0.18"/>` +
-        `<g class="ab-g" transform="translate(${x} ${y})"><g class="ab-gs">${glyph(d.k, R * 0.62, d.c, tall ? 3 : 2.4)}</g></g></g>` +
-        `<g class="ab-lab" text-anchor="middle"><text class="ab-n" x="${x}" y="${ly - fs1 - 2}" fill="${d.c}">${d.n}</text><text class="ab-t1" x="${x}" y="${ly}" style="font-size:${fs1}px">${d.name}</text><text class="ab-t2" x="${x}" y="${ly + fs2 + 12}" style="font-size:${fs2}px">${d.sub}</text></g></g></g></a>`; });
-    scene.innerHTML = o + "</svg>"; scene.dataset.ab = tall ? "tall" : "wide";
+    scene.innerHTML = `<div class="pr" role="group" aria-label="Home"><canvas class="pr-fx" aria-hidden="true"></canvas><div class="pr-wrap">` +
+      `<p class="pr-eye"><span class="pr-dot"></span>Ben Gong · UC Berkeley, Haas</p>` +
+      `<div class="pr-h" role="heading" aria-level="1">Building games, AI<br>and communities.</div>` +
+      `<p class="pr-sub">I study business at Berkeley Haas with computer science on the side, and build things in between: a strategy-game AI, an app that paints music, a perfume game, and a youth Go nonprofit.</p>` +
+      `<nav class="pr-grid" aria-label="Sections">` + DOORS.map((d, i) => `<a class="dk-o dk-${d.k} pr-card" href="${d.href}" style="--i:${i}"><span class="dk-art"><span class="pr-n">${d.n}</span><span class="pr-t">${d.name}</span><span class="pr-s">${d.sub}</span><span class="pr-a">${arrow}</span></span></a>`).join("") + `</nav>` +
+      `</div></div>`;
+    fx(scene.querySelector(".pr-fx"));
   };
-  const tryBuild = () => { const tall = innerWidth / innerHeight < 0.9; if (scene.dataset.ab !== (tall ? "tall" : "wide") || !scene.querySelector(".ab-svg")) build(); };
-  new MutationObserver(() => { if (!scene.querySelector(".ab-svg")) build(); }).observe(scene, { childList: true });
-  addEventListener("resize", () => setTimeout(tryBuild, 30));
+  // the wave: a grid of points seen in perspective, rising and falling, brighter and warmer near the pointer
+  let stop = null;
+  const fx = cv => { if (stop) stop(); const g = cv.getContext("2d"); let W = 0, H = 0, dpr = 1, raf = 0, mx = 0.5, my = 0.6, tmx = 0.5, tmy = 0.6, t0 = performance.now();
+    const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const size = () => { dpr = Math.min(2, devicePixelRatio || 1); W = cv.clientWidth; H = cv.clientHeight; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); };
+    const COLS = 90, ROWS = 34;
+    const draw = now => { raf = 0; if (!cv.isConnected) return;
+      if (!W) size(); const t = (now - t0) / 1000; mx += (tmx - mx) * 0.05; my += (tmy - my) * 0.05;
+      g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+      const hor = H * 0.46, fov = H * 0.9;
+      for (let r = 0; r < ROWS; r++) { const z = 1 + r * 0.55, depth = r / (ROWS - 1);
+        for (let c = 0; c < COLS; c++) { const xw = (c / (COLS - 1) - 0.5) * 34;
+          const y0 = Math.sin(xw * 0.32 + t * 0.7) * 0.55 + Math.sin(z * 0.5 - t * 0.9 + xw * 0.11) * 0.7 + Math.cos(xw * 0.08 - z * 0.21 + t * 0.35) * 0.9;
+          const sx = W / 2 + xw / z * fov * 0.55, sy = hor + (2.6 - y0 * 0.55) / z * fov * 0.32;
+          if (sx < -4 || sx > W + 4 || sy > H + 4) continue;
+          const dx = sx / W - mx, dy = sy / H - my, near = Math.max(0, 1 - Math.sqrt(dx * dx * 1.2 + dy * dy * 3) * 3.2);
+          const a = (1 - depth) * 0.8 + 0.1 + near * 0.5, rad = Math.max(0.5, (1.9 - depth * 1.3) + near * 0.9);
+          g.fillStyle = near > 0.02 ? `rgba(${235},${Math.round(215 - near * 40)},${Math.round(190 - near * 90)},${a.toFixed(3)})` : `rgba(225,228,236,${a.toFixed(3)})`;
+          g.fillRect(sx - rad / 2, sy - rad / 2, rad, rad); } }
+      if (!RM && desk.classList.contains("on") && !document.hidden) raf = requestAnimationFrame(draw); };
+    const kick = () => { if (!raf) raf = requestAnimationFrame(draw); };
+    const onMove = e => { const r = cv.getBoundingClientRect(); tmx = (e.clientX - r.left) / r.width; tmy = (e.clientY - r.top) / r.height; };
+    const onSize = () => { size(); kick(); };
+    addEventListener("pointermove", onMove, { passive: true }); addEventListener("resize", onSize);
+    const mo = new MutationObserver(kick); mo.observe(desk, { attributes: true, attributeFilter: ["class"] });
+    document.addEventListener("visibilitychange", kick);
+    stop = () => { cancelAnimationFrame(raf); removeEventListener("pointermove", onMove); removeEventListener("resize", onSize); mo.disconnect(); document.removeEventListener("visibilitychange", kick); };
+    requestAnimationFrame(() => { size(); kick(); }); };
+  new MutationObserver(() => { if (!scene.querySelector(".pr")) build(); }).observe(scene, { childList: true });
   build();
-  desk.classList.add("abh");
-  // the little emblem each page keeps of where it came from: that door's shape
+  desk.classList.add("pro");
+  // the little emblem each page keeps of where it came from: a small black tile with the section's number
   const D = window.__desk || {}, art0 = D.art;
   const SIZE = { laptop: 300, manga: 220, folder: 240, notebook: 220, letter: 200, note: 160 };
-  const mini = k => { const s = SIZE[k] || 200, d = DOORS.find(q => q.k === k) || DOORS[0];
-    return `<g><circle r="${s * 0.5}" fill="#121118" stroke="${d.c}" stroke-opacity="0.35" stroke-width="${s * 0.012}"/>${glyph(d.k, s * 0.3, d.c, s * 0.022)}</g>`; };
-  window.__desk = Object.assign({}, D, { art: k => (k === "pencil" && art0 ? art0(k) : mini(k)), abstract: true });
+  const mini = k => { const s = SIZE[k] || 200, d = DOORS.find(q => q.k === k) || DOORS[0], h = s / 2;
+    let dots = ""; for (let r = 0; r < 4; r++) for (let c = 0; c < 7; c++) dots += `<rect x="${(-h * 0.7 + c * h * 0.233).toFixed(1)}" y="${(h * 0.18 + r * h * 0.14).toFixed(1)}" width="${(s * 0.012 + (3 - r) * s * 0.004).toFixed(1)}" height="${(s * 0.012 + (3 - r) * s * 0.004).toFixed(1)}" fill="#e1e4ec" opacity="${(0.25 + r * 0.18).toFixed(2)}"/>`;
+    return `<g><rect x="${-h}" y="${-h}" width="${s}" height="${s}" rx="${s * 0.08}" fill="#0b0b0d" stroke="rgba(255,255,255,0.18)" stroke-width="${s * 0.01}"/>${dots}` +
+      `<text x="${-h * 0.7}" y="${-h * 0.25}" fill="#d9b36c" style="font: 600 ${(s * 0.2).toFixed(0)}px var(--font-ui)">${d.n}</text></g>`; };
+  window.__desk = Object.assign({}, D, { art: k => (k === "pencil" && art0 ? art0(k) : mini(k)), pro: true });
 })();
 
 
@@ -11343,13 +11345,13 @@ const AMB = window.AMB = (() => {
   const NS = "http://www.w3.org/2000/svg";
   const OBJ = { projects: "laptop", polymind: "laptop", go: "laptop", fraguessr: "laptop", muse: "laptop", goglobal: "laptop", story: "manga", resume: "folder", blog: "notebook", hello: "letter", home: "note" };
   const VB = { laptop: "-285 -235 570 570", manga: "-140 -180 280 360", folder: "-175 -180 350 315", notebook: "-140 -185 350 410", letter: "-165 -112 330 224", note: "-100 -100 200 200" };
-  const CAP = { laptop: "back home", manga: "back home", folder: "back home", notebook: "back home", letter: "back home", note: "back home" };
+  const CAP = { laptop: "home", manga: "home", folder: "home", notebook: "home", letter: "home", note: "home" };
   const sketch = (k, cls) => `<svg class="dk-svg ${cls}" viewBox="${VB[k]}" aria-hidden="true">${D.art(k)}</svg>`;
   // 1. the object each page came from, pinned beside its heading
   const HEADS = { projects: "projects", polymind: "polymind", gofilm: "go", fraguessr: "fraguessr", muse: "muse", goglobal: "goglobal", resume: "resume", blog: "blog", hello: "hello" };
   for (const [id, pg] of Object.entries(HEADS)) {
     const sec = document.getElementById(id), head = sec && sec.querySelector(".part-head"); if (!head || head.querySelector(".pc-obj")) continue;
-    const k = OBJ[pg], a = document.createElement("a"); a.className = "pc-obj pc-" + k; a.href = "#hub"; a.setAttribute("aria-label", "Back home");
+    const k = OBJ[pg], a = document.createElement("a"); a.className = "pc-obj pc-" + k; a.href = "#hub"; a.setAttribute("aria-label", "Back to home");
     a.innerHTML = sketch(k, "pc-svg") + `<span class="pc-cap">${CAP[k]}</span>`; head.classList.add("pc-has"); head.prepend(a);
   }
   // 2. each page ending shows the next thing you'll pick up off the desk
@@ -11436,9 +11438,9 @@ const AMB = window.AMB = (() => {
     { name: "Fraguessr", kind: "Web game · Data", tag: "Live", when: "",
       pts: ["A daily perfume guessing game at fraguessr.com.", "An atlas of 354 ingredients from 116 countries on a globe you can spin."],
       links: [["Open it", "#fraguessr"], ["fraguessr.com", "https://fraguessr.com"], ["Source", "https://github.com/beng0ng/fraguessr"]] },
-    { name: "Muse", kind: "Generative art · Audio", tag: "In progress", when: "",
-      pts: ["Maps each of the twelve notes to a color you choose.", "Repaints The Starry Night in the proportions a song's notes are played."],
-      links: [["Open Muse", "https://claude.ai/artifact/8Avjqfou2j6pjYp61eGXBJ"], ["About it", "#muse"]] },
+    { name: "Fude", kind: "Generative art · Music", tag: "In progress", when: "",
+      pts: ["Turns music into paintings: every note has its own color, covering as much of the canvas as the note is played.", "Runs as a website, an iPhone and Android app, and a Chrome or Edge side panel."],
+      links: [["Fude on GitHub", "https://github.com/beng0ng/Fude"]] },
     { name: "Go Global", kind: "Community · Nonprofit", tag: "Active", when: "Founded 2024",
       pts: ["Founded a youth-led nonprofit offering free Go lessons with strong young players.", "45+ volunteer teachers and 500+ hours taught."],
       links: [["See it", "#goglobal"], ["goglobals.org", "https://goglobals.org/"]] },
