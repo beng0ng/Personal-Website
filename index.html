@@ -18,6 +18,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,400&family=Figtree:wght@400;500&family=Architects+Daughter&family=Manrope:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&family=Nunito:wght@700;800;900&display=swap">
+<script>try{var m=localStorage.getItem("bg-mode");if(/^(light|aurora|stars|embers)$/.test(m||""))document.documentElement.dataset.mode=m}catch(e){}</script>
 </head>
 <body style="margin:0">
 <style>
@@ -11821,4 +11822,250 @@ const AMB = window.AMB = (() => {
   if (!build()) { const mo = new MutationObserver(() => { if (build()) mo.disconnect(); }); mo.observe(document.body, { childList: true, subtree: true }); }
 })();
 
+</script>
+<style id="modeStyles">
+/* v100: a switch in the top-left corner for the backdrop: Night (the site as designed), Light, and three skies that
+   move behind the words: Aurora, Stars and Embers. The choice is remembered, and a change opens as a circle from the
+   switch, the same way pages change. */
+.mode-sw { position: fixed; z-index: 45; left: max(14px, env(safe-area-inset-left, 0px)); top: 8px; font: 500 11px/1 var(--font-ui); }
+.mode-btn { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border-radius: 50%; cursor: pointer;
+  background: rgba(17, 16, 15, 0.62); border: 1px solid rgba(236, 230, 218, 0.16); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  box-shadow: 0 8px 20px -12px rgba(0, 0, 0, 0.9); transition: border-color 0.25s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1); -webkit-tap-highlight-color: transparent; }
+.mode-btn:hover, .mode-btn:focus-visible, .mode-sw.open .mode-btn { border-color: rgba(217, 179, 108, 0.6); outline: none; }
+.mode-btn:focus-visible { box-shadow: 0 0 0 3px rgba(217, 179, 108, 0.25); }
+.mode-btn:active { transform: scale(0.92); }
+.mode-btn .sw { width: 16px; height: 16px; transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+.mode-sw.open .mode-btn .sw { transform: rotate(-35deg) scale(1.08); }
+.sw { display: block; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14); }
+.sw-night { background: radial-gradient(circle at 34% 30%, #4a3b22, #17130d 55%, #050505); box-shadow: inset 0 0 0 1px rgba(217, 179, 108, 0.55); }
+.sw-light { background: radial-gradient(circle at 34% 30%, #fffdf7, #efe6d2 55%, #cdbf9f); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4); }
+.sw-aurora { background: radial-gradient(70% 60% at 30% 75%, rgba(80, 255, 180, 0.95), rgba(80, 255, 180, 0) 70%), radial-gradient(70% 60% at 75% 35%, rgba(150, 110, 255, 0.95), rgba(150, 110, 255, 0) 70%), #071019; }
+.sw-stars { background: radial-gradient(1.2px 1.2px at 28% 32%, #fff 99%, transparent), radial-gradient(1px 1px at 68% 22%, #fff 99%, transparent), radial-gradient(1.4px 1.4px at 58% 66%, #fff 99%, transparent), radial-gradient(1px 1px at 30% 74%, #cfe0ff 99%, transparent), radial-gradient(90% 80% at 70% 80%, rgba(90, 80, 200, 0.6), transparent 70%), #05060c; }
+.sw-embers { background: radial-gradient(22% 22% at 40% 64%, #ffd27a, rgba(255, 140, 40, 0) 100%), radial-gradient(16% 16% at 68% 38%, #ffb35c, rgba(255, 120, 30, 0) 100%), radial-gradient(18% 18% at 30% 30%, #ff9a3c, rgba(255, 120, 30, 0) 100%), radial-gradient(90% 70% at 50% 110%, rgba(170, 70, 15, 0.9), transparent 70%), #0d0806; }
+
+.mode-menu { position: absolute; left: 0; top: 40px; min-width: 176px; margin: 0; padding: 6px; list-style: none; box-sizing: border-box; border-radius: 14px;
+  background: rgba(14, 14, 18, 0.94); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: 0 0 0 1px rgba(236, 230, 218, 0.1), 0 24px 48px -18px rgba(0, 0, 0, 0.9);
+  opacity: 0; visibility: hidden; transform: translateY(-6px) scale(0.96); transform-origin: 16px 0;
+  transition: opacity 0.22s ease, transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.32s; }
+.mode-sw.open .mode-menu { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+.mode-menu .mk { margin: 4px 10px 8px; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(236, 230, 218, 0.5); }
+.mode-menu button { display: flex; align-items: center; gap: 11px; width: 100%; padding: 8px 10px; border: 0; border-radius: 9px; background: none; cursor: pointer;
+  font: 500 12px/1 var(--font-ui); letter-spacing: 0.14em; text-transform: uppercase; color: rgba(236, 230, 218, 0.72); text-align: left;
+  opacity: 0; transform: translateX(-4px); transition: background 0.2s ease, color 0.2s ease, opacity 0.3s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1); -webkit-tap-highlight-color: transparent; }
+.mode-sw.open .mode-menu button { opacity: 1; transform: none; transition-delay: 0s, 0s, calc(var(--i) * 35ms + 40ms), calc(var(--i) * 35ms + 40ms); }
+.mode-menu button .sw { width: 18px; height: 18px; transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+.mode-menu button:hover, .mode-menu button:focus-visible { background: rgba(217, 179, 108, 0.08); color: #ece6da; outline: none; }
+.mode-menu button:hover .sw, .mode-menu button:focus-visible .sw { transform: scale(1.12); }
+.mode-menu button[aria-checked="true"] { color: #ece6da; }
+.mode-menu button::after { content: ""; width: 5px; height: 5px; margin-left: auto; border-radius: 50%; background: #d9b36c; opacity: 0; transform: scale(0.4); transition: opacity 0.25s ease, transform 0.3s ease; }
+.mode-menu button[aria-checked="true"]::after { opacity: 1; transform: none; box-shadow: 0 0 0 3px rgba(217, 179, 108, 0.18); }
+
+/* room for the switch beside the name in the bar */
+#topbar { padding-left: calc(max(14px, env(safe-area-inset-left, 0px)) + 46px) !important; }
+@media (max-width: 479px) { .mode-sw { top: 7px; } }
+
+/* the skies: one canvas under everything, over a color of its own */
+.bgfx { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; display: block; opacity: 0; transition: opacity 1.2s ease; }
+html[data-mode="aurora"] .bgfx, html[data-mode="stars"] .bgfx, html[data-mode="embers"] .bgfx { opacity: 1; }
+html[data-mode="aurora"] { --bg: #04080d; }
+html[data-mode="stars"] { --bg: #04050a; }
+html[data-mode="embers"] { --bg: #0b0806; }
+html[data-mode="aurora"] body { background: radial-gradient(120% 70% at 50% 0%, #0b1a24 0%, #05090f 60%, #04080d 100%) fixed; }
+html[data-mode="stars"] body { background: radial-gradient(60% 50% at 78% 18%, rgba(70, 60, 160, 0.16), transparent 70%), radial-gradient(70% 55% at 12% 88%, rgba(30, 90, 150, 0.12), transparent 70%), #04050a fixed; }
+html[data-mode="embers"] body { background: radial-gradient(110% 60% at 50% 115%, rgba(150, 60, 14, 0.3), rgba(60, 20, 6, 0.1) 55%, transparent 80%), #0b0806 fixed; }
+/* the opening's own backdrop and bar give way to the sky */
+html[data-mode="aurora"] #bg, html[data-mode="stars"] #bg, html[data-mode="embers"] #bg { opacity: 0; }
+html[data-mode="aurora"] #topbar::before, html[data-mode="stars"] #topbar::before, html[data-mode="embers"] #topbar::before { background: linear-gradient(180deg, rgba(6, 7, 10, 0.72), rgba(6, 7, 10, 0.5) 58%, rgba(6, 7, 10, 0)); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); -webkit-mask-image: linear-gradient(#000 60%, transparent); mask-image: linear-gradient(#000 60%, transparent); }
+
+html[data-mode="aurora"] :is(.pr, .desk.pro, .hub-stick, .gf-stick), html[data-mode="stars"] :is(.pr, .desk.pro, .hub-stick, .gf-stick), html[data-mode="embers"] :is(.pr, .desk.pro, .hub-stick, .gf-stick) { background: transparent !important; }
+/* Light: the whole page turned to paper, and photos, paintings, boards and maps turned back to their own colors */
+html[data-mode="light"] { filter: invert(1) hue-rotate(180deg); background: #0b0b0c; }
+html[data-mode="light"] :is(.fin, .manga, .hero > *, .poly-board, .gf-canvas, .mode-keep, img, video, picture, .dk-photo, .sw):not(:is(.fin, .manga, .hero > *, .poly-board, .gf-canvas, .mode-keep) *) { filter: invert(1) hue-rotate(180deg); }
+@media print { .mode-sw, .bgfx { display: none !important; } html[data-mode] { filter: none !important; } }
+@media (prefers-reduced-motion: reduce) { .mode-menu, .mode-menu button, .mode-btn .sw, .bgfx { transition: none; } }
+html.mode-vt::view-transition-old(root) { animation: none; }
+html.mode-vt::view-transition-new(root) { animation: vtReveal 0.9s cubic-bezier(0.65, 0, 0.25, 1) both; }
+html.mode-vt::view-transition-group(topbar) { animation: none; }
+</style>
+<script id="modeScript">
+// v100: the backdrop switch. Night is the site as designed; Light turns it to paper; Aurora, Stars and Embers draw a
+// sky on one canvas under everything (at most ~30 frames a second for the aurora, paused when the tab is hidden,
+// a still frame when motion is reduced). The choice lives in localStorage under "bg-mode".
+(() => {
+  const MODES = [["night", "Night"], ["light", "Light"], ["aurora", "Aurora"], ["stars", "Stars"], ["embers", "Embers"]];
+  const root = document.documentElement, reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const valid = m => MODES.some(x => x[0] === m);
+  let mode = valid(root.dataset.mode) ? root.dataset.mode : "night";
+  const meta = document.querySelector('meta[name="theme-color"]');
+
+  // ---- the switch
+  const wrap = document.createElement("div"); wrap.className = "mode-sw";
+  wrap.innerHTML = `<button class="mode-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Background: Night" title="Background"><i class="sw sw-night"></i></button>` +
+    `<div class="mode-menu" role="menu" aria-label="Background"><p class="mk" aria-hidden="true">Background</p>` +
+    MODES.map(([k, t], i) => `<button type="button" role="menuitemradio" aria-checked="false" data-mode="${k}" style="--i:${i}" tabindex="-1"><i class="sw sw-${k}"></i>${t}</button>`).join("") + `</div>`;
+  document.body.append(wrap);
+  const btn = wrap.querySelector(".mode-btn"), items = [...wrap.querySelectorAll("[role=menuitemradio]")];
+  const open = on => { wrap.classList.toggle("open", on); btn.setAttribute("aria-expanded", on); if (on) (items.find(b => b.dataset.mode === mode) || items[0]).focus({ preventScroll: true }); };
+  btn.addEventListener("click", e => { e.stopPropagation(); open(!wrap.classList.contains("open")); });
+  document.addEventListener("pointerdown", e => { if (!wrap.contains(e.target)) open(false); });
+  wrap.addEventListener("keydown", e => {
+    const i = items.indexOf(document.activeElement);
+    if (e.key === "Escape") { open(false); btn.focus(); e.preventDefault(); e.stopPropagation(); }
+    else if ((e.key === "ArrowDown" || e.key === "ArrowUp") && wrap.classList.contains("open")) { const n = items.length; items[((i < 0 ? 0 : i) + (e.key === "ArrowDown" ? 1 : n - 1)) % n].focus(); e.preventDefault(); }
+    else if (e.key === "Tab" && wrap.classList.contains("open")) open(false);
+  });
+  items.forEach(b => b.addEventListener("click", e => { e.stopPropagation(); open(false); btn.focus({ preventScroll: true }); choose(b.dataset.mode); }));
+
+  function paint() {
+    if (mode === "night") delete root.dataset.mode; else root.dataset.mode = mode;
+    btn.querySelector(".sw").className = "sw sw-" + mode;
+    btn.setAttribute("aria-label", "Background: " + MODES.find(x => x[0] === mode)[1]);
+    items.forEach(b => b.setAttribute("aria-checked", b.dataset.mode === mode));
+    if (meta) meta.content = mode === "light" ? "#f4f3f1" : mode === "aurora" ? "#04080d" : mode === "stars" ? "#04050a" : mode === "embers" ? "#0b0806" : "#0b0b0c";
+    FX.set(mode);
+  }
+  function choose(m) {
+    if (!valid(m) || m === mode) return;
+    try { localStorage.setItem("bg-mode", m); } catch (e) {}
+    const r = btn.getBoundingClientRect();
+    if (document.startViewTransition && !reduce) {
+      try {
+        root.style.setProperty("--vx", Math.round(r.left + r.width / 2) + "px"); root.style.setProperty("--vy", Math.round(r.top + r.height / 2) + "px");
+        root.classList.add("mode-vt");
+        const vt = document.startViewTransition(() => { mode = m; paint(); });
+        vt.finished.finally(() => root.classList.remove("mode-vt"));
+        return;
+      } catch (e) { root.classList.remove("mode-vt"); }
+    }
+    mode = m; paint();
+  }
+
+  // ---- the skies
+  const FX = (() => {
+    const c = document.createElement("canvas"); c.className = "bgfx"; c.setAttribute("aria-hidden", "true");
+    document.body.prepend(c);
+    const g = c.getContext("2d");
+    let W = 0, H = 0, d = 1, cur = null, raf = 0, last = 0, t0 = performance.now(), parts = [], pt = { x: -1e4, y: -1e4, mx: 0, my: 0 }, shoot = null, nextShoot = 0;
+    const rnd = (a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; })(100);
+    // a soft round glow, drawn once per color
+    const glow = (rgb, s = 64) => { const k = document.createElement("canvas"); k.width = k.height = s; const x = k.getContext("2d"), q = x.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+      q.addColorStop(0, `rgba(${rgb},1)`); q.addColorStop(0.18, `rgba(${rgb},0.55)`); q.addColorStop(0.5, `rgba(${rgb},0.12)`); q.addColorStop(1, `rgba(${rgb},0)`); x.fillStyle = q; x.fillRect(0, 0, s, s); return k; };
+    // an aurora's curtain: bright at its lower hem, fading up into the sky
+    const curtain = rgb => { const k = document.createElement("canvas"); k.width = 2; k.height = 128; const x = k.getContext("2d"), q = x.createLinearGradient(0, 0, 0, 128);
+      q.addColorStop(0, `rgba(${rgb},0)`); q.addColorStop(0.55, `rgba(${rgb},0.18)`); q.addColorStop(0.86, `rgba(${rgb},0.75)`); q.addColorStop(0.93, `rgba(${rgb},1)`); q.addColorStop(1, `rgba(${rgb},0)`); x.fillStyle = q; x.fillRect(0, 0, 2, 128); return k; };
+    let SPR = null;
+    const sprites = () => SPR || (SPR = {
+      ember: [glow("255,196,110"), glow("255,150,60"), glow("255,226,160")],
+      bokeh: glow("255,140,50", 128),
+      aur: [curtain("90,255,180"), curtain("70,210,255"), curtain("160,110,255"), curtain("120,255,150")],
+      star: glow("220,232,255", 32),
+    });
+    const scale = () => cur === "aurora" ? 0.34 : Math.min(window.devicePixelRatio || 1, window.__lite ? 1 : 1.5);
+    function size() { d = scale(); W = innerWidth; H = innerHeight; c.width = Math.max(1, Math.round(W * d)); c.height = Math.max(1, Math.round(H * d)); seed(); }
+    function seed() {
+      parts = [];
+      if (cur === "stars") { const n = Math.round(Math.min(900, Math.max(160, W * H / 2400)));
+        for (let i = 0; i < n; i++) { const z = rnd(); parts.push({ x: rnd(), y: rnd(), z, r: 0.35 + Math.pow(rnd(), 3) * 1.5 + z * 0.3, tw: 0.6 + rnd() * 2.4, ph: rnd() * 7, hue: rnd() }); } }
+      if (cur === "embers") { const n = Math.round(Math.min(150, Math.max(45, W / 11)));
+        for (let i = 0; i < n; i++) parts.push(ember(true));
+        for (let i = 0; i < 7; i++) parts.push({ bokeh: true, x: rnd() * W, y: rnd() * H, r: 60 + rnd() * 140, v: 4 + rnd() * 8, ph: rnd() * 7, a: 0.035 + rnd() * 0.05 }); }
+    }
+    function ember(anywhere) { const z = 0.35 + rnd() * 0.65;
+      return { x: rnd() * W, y: anywhere ? rnd() * H : H + 10 + rnd() * 40, vx: 0, vy: -(14 + rnd() * 40) * z, z, s: (4 + rnd() * 11) * z, w: rnd() * 7, wf: 0.4 + rnd() * 1.2, life: 0, max: 7 + rnd() * 12, k: (rnd() * 3) | 0 }; }
+
+    function aurora(t) {
+      const S = sprites(), w = c.width, h = c.height;
+      g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, w, h); g.globalCompositeOperation = "lighter";
+      const sy = Math.min(scrollY, 4000) * 0.02 * d, s = t / 1000;
+      for (let k = 0; k < 4; k++) {
+        const base = h * (0.2 + k * 0.1) - sy, amp = h * (0.07 + k * 0.015), tall = h * (0.26 + 0.07 * Math.sin(s * 0.11 + k));
+        for (let x = -2; x < w + 2; x += 2) {
+          const u = x / w;
+          const y = base + Math.sin(u * (3.2 + k) + s * (0.07 + k * 0.02) + k * 1.7) * amp + Math.sin(u * (9 + k * 2) - s * 0.13 + k) * amp * 0.28;
+          let a = 0.5 + 0.5 * Math.sin(u * (5 + k * 1.3) + s * (0.18 + k * 0.03) + k * 2.1); a = a * a * (0.55 + 0.45 * Math.sin(u * 23 + s * 0.6 + k));
+          const fold = 0.75 + 0.25 * Math.sin(u * 61 - s * 0.9 + k * 4);
+          if (a < 0.02) continue;
+          g.globalAlpha = Math.min(1, a * 0.42 * fold); const hh = tall * (0.7 + 0.3 * fold);
+          g.drawImage(S.aur[k], x, y - hh, 2.4, hh * 1.06);
+        }
+      }
+      g.globalAlpha = 1; g.globalCompositeOperation = "source-over";
+    }
+    function stars(t, dt) {
+      const S = sprites(); g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, W, H);
+      pt.mx += ((pt.x > -1e3 ? (pt.x / W - 0.5) : 0) - pt.mx) * 0.04; pt.my += ((pt.y > -1e3 ? (pt.y / H - 0.5) : 0) - pt.my) * 0.04;
+      const s = t / 1000, sc = scrollY;
+      for (const p of parts) {
+        const par = 0.02 + p.z * 0.12;
+        let x = p.x * W - pt.mx * 26 * p.z, y = (p.y * H - sc * par) % H; if (y < 0) y += H; y -= pt.my * 18 * p.z;
+        const tw = 0.55 + 0.45 * Math.sin(s * p.tw + p.ph), a = Math.min(1, (0.25 + p.z * 0.75) * tw);
+        if (p.r > 1.25) { g.globalAlpha = a * 0.5; const R = p.r * 7; g.drawImage(S.star, x - R / 2, y - R / 2, R, R); }
+        g.globalAlpha = a; g.fillStyle = p.hue < 0.12 ? "#ffe2b8" : p.hue > 0.86 ? "#c8d8ff" : "#f4f6ff";
+        const r = p.r; if (r < 0.9) g.fillRect(x - r / 2, y - r / 2, r, r); else { g.beginPath(); g.arc(x, y, r * 0.62, 0, 6.2832); g.fill(); }
+      }
+      // now and then, a falling star
+      if (!reduce) {
+        if (!shoot && t > nextShoot) { const fromLeft = rnd() < 0.5, ang = (fromLeft ? 0.35 : Math.PI - 0.35) + (rnd() - 0.5) * 0.3;
+          shoot = { x: W * (fromLeft ? 0.05 + rnd() * 0.5 : 0.45 + rnd() * 0.5), y: H * (0.04 + rnd() * 0.35), a: ang, v: 900 + rnd() * 600, t: 0, dur: 0.7 + rnd() * 0.5 }; }
+        if (shoot) { shoot.t += dt; const p = shoot.t / shoot.dur;
+          if (p >= 1) { shoot = null; nextShoot = t + 4000 + rnd() * 7000; }
+          else { const L = 160 + 90 * Math.sin(Math.PI * p), hx = shoot.x + Math.cos(shoot.a) * shoot.v * shoot.t, hy = shoot.y + Math.sin(shoot.a) * shoot.v * shoot.t;
+            const tx = hx - Math.cos(shoot.a) * L, ty = hy - Math.sin(shoot.a) * L, q = g.createLinearGradient(tx, ty, hx, hy), al = Math.sin(Math.PI * p);
+            q.addColorStop(0, "rgba(255,255,255,0)"); q.addColorStop(1, `rgba(255,248,230,${0.85 * al})`);
+            g.globalAlpha = 1; g.strokeStyle = q; g.lineWidth = 1.4; g.lineCap = "round"; g.beginPath(); g.moveTo(tx, ty); g.lineTo(hx, hy); g.stroke();
+            g.globalAlpha = 0.7 * al; g.drawImage(S.star, hx - 9, hy - 9, 18, 18); } }
+      }
+      g.globalAlpha = 1;
+    }
+    function embers(t, dt) {
+      const S = sprites(); g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, W, H); const s = t / 1000;
+      g.globalCompositeOperation = "lighter";
+      for (const p of parts) if (p.bokeh) {
+        const y = ((p.y - s * p.v) % (H + 300) + H + 300) % (H + 300) - 150, a = p.a * (0.6 + 0.4 * Math.sin(s * 0.3 + p.ph));
+        g.globalAlpha = a; g.drawImage(S.bokeh, p.x - p.r, y - p.r, p.r * 2, p.r * 2);
+      }
+      for (let i = 0; i < parts.length; i++) { const p = parts[i]; if (p.bokeh) continue;
+        if (dt) {
+          p.life += dt; const dx = p.x - pt.x, dy = p.y - pt.y, dd = dx * dx + dy * dy;
+          if (dd < 14400) { const f = (1 - Math.sqrt(dd) / 120) * 160 * dt; const n = Math.sqrt(dd) || 1; p.vx += dx / n * f; p.vy += dy / n * f * 0.6; }
+          p.vx *= 1 - Math.min(1, dt * 1.6);
+          p.x += (p.vx + Math.sin(s * p.wf + p.w) * 12 * p.z) * dt; p.y += p.vy * dt;
+          if (p.y < -30 || p.life > p.max || p.x < -40 || p.x > W + 40) parts[i] = ember(false);
+        }
+        const fade = Math.min(1, p.life / 1.2, (p.max - p.life) / 2.5), flick = 0.7 + 0.3 * Math.sin(s * 9 + p.w * 3);
+        g.globalAlpha = Math.max(0, fade) * flick * (0.35 + p.z * 0.65); const R = p.s * 2.4;
+        g.drawImage(S.ember[p.k], p.x - R / 2, p.y - R / 2, R, R);
+      }
+      g.globalAlpha = 1; g.globalCompositeOperation = "source-over";
+    }
+    const DRAW = { aurora, stars, embers };
+    function frame(now) {
+      raf = 0; if (!DRAW[cur] || document.hidden) return;
+      const gap = cur === "aurora" ? 33 : 15;
+      if (now - last >= gap) { const dt = last ? Math.min(0.05, (now - last) / 1000) : 0; last = now; DRAW[cur](reduce ? 20000 : now - t0, reduce ? 0 : dt); }
+      if (!reduce) raf = requestAnimationFrame(frame);
+    }
+    const kick = () => { if (!raf && DRAW[cur]) raf = requestAnimationFrame(frame); };
+    let clearT = 0;
+    function set(m) {
+      const next = DRAW[m] ? m : null;
+      if (next === cur) return;
+      clearTimeout(clearT);
+      if (!next) { clearT = setTimeout(() => { if (!DRAW[cur]) { g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height); } }, 1300); cur = null; return; }
+      cur = next; last = 0; shoot = null; nextShoot = performance.now() - t0 + 2500; size();
+      if (reduce) { DRAW[cur](20000, 0); return; }
+      kick();
+    }
+    addEventListener("resize", () => { if (cur) { size(); if (reduce) DRAW[cur](20000, 0); } });
+    addEventListener("pointermove", e => { pt.x = e.clientX; pt.y = e.clientY; }, { passive: true });
+    document.addEventListener("pointerleave", () => { pt.x = pt.y = -1e4; });
+    document.addEventListener("visibilitychange", kick);
+    addEventListener("scroll", () => { if (reduce && cur) DRAW[cur](20000, 0); }, { passive: true });
+    return { set };
+  })();
+
+  paint();
+  window.__MODE = { set: m => choose(m), get: () => mode };
+})();
 </script>
