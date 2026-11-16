@@ -496,9 +496,10 @@ body.pj-listed[data-page="projects"] #projects .part-head { opacity: 1 !importan
 
 /* v99: the page change grows out of the dot you picked: the new page opens as a circle from that point while the
    old one sinks back a touch; links without a dot open from where you clicked */
-::view-transition-old(root) { animation: vtOld 0.75s cubic-bezier(0.6, 0, 0.2, 1) both; }
-::view-transition-new(root) { animation: vtReveal 0.8s cubic-bezier(0.7, 0, 0.2, 1) both; }
-@keyframes vtOld { to { opacity: 0.35; transform: scale(0.97); filter: blur(2px); } }
+::view-transition-old(root) { animation: vtOld 0.6s cubic-bezier(0.33, 0, 0.2, 1) both; }
+::view-transition-new(root) { animation: vtReveal 0.68s cubic-bezier(0.45, 0, 0.15, 1) both; }
+::view-transition-old(root), ::view-transition-new(root) { mix-blend-mode: normal; }
+@keyframes vtOld { to { opacity: 0.4; transform: scale(0.985); } }
 @keyframes vtReveal { from { clip-path: circle(0px at var(--vx, 50%) var(--vy, 50%)); } to { clip-path: circle(150vmax at var(--vx, 50%) var(--vy, 50%)); } }
 #topbar { view-transition-name: topbar; }
 ::view-transition-group(topbar) { animation: none; }
@@ -1038,7 +1039,7 @@ html { scroll-behavior: smooth; }
 body:not([data-page="home"]) #topbar::before { opacity: 1; }
 body:not([data-page="home"]) #topbar .brand { opacity: 1; transform: none; pointer-events: auto; }
 body:not([data-page="home"]) #site { padding-top: 24px; }
-#warp { position: fixed; inset: 0; z-index: 50; background: var(--bg); opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+#warp { position: fixed; inset: 0; z-index: 50; background: var(--bg); opacity: 0; pointer-events: none; transition: opacity 0.32s cubic-bezier(0.33, 0, 0.2, 1); }
 #warp.on { opacity: 1; pointer-events: auto; transition-duration: 0.17s; }
 .prose { display: grid; gap: 14px; }
 .prose p { margin: 0; font: 400 16.5px/1.65 var(--font-ui); color: var(--ink-dim); max-width: 62ch; text-wrap: pretty; }
@@ -5994,7 +5995,13 @@ document.addEventListener("visibilitychange", () => {
   if (document.hidden) hiddenAt = performance.now();
   else if (hiddenAt != null) { startTime += performance.now() - hiddenAt; hiddenAt = null; }
 });
-window.addEventListener("resize", () => { if (!intro.clientHeight) { sizeGo(); return; } resize(); sizeGo(); buildManga(); uiCache.reveal = null; rectAt = -1e9; bgRectAt = -1e9; render(now()); });
+// v100: a page change sends a synthetic resize so newly shown parts measure themselves; the opening and the manga
+// only rebuild when their size really changed, so coming back Home no longer stalls the transition
+let introKey = "";
+window.addEventListener("resize", e => { if (!intro.clientHeight) { sizeGo(); return; }
+  const key = innerWidth + "x" + innerHeight + "x" + intro.clientWidth + "x" + intro.clientHeight;
+  if (e.isTrusted || key !== introKey) { resize(); sizeGo(); buildManga(); introKey = key; } else sizeGo();
+  uiCache.reveal = null; rectAt = -1e9; bgRectAt = -1e9; render(now()); });
 
 intro.addEventListener("pointermove", e => {
   pointer.x = e.clientX; pointer.y = e.clientY; pointer.on = true; pointer.offAt = 0;
@@ -6008,7 +6015,7 @@ intro.addEventListener("pointerdown", e => {
   ripples.push({ x: e.clientX, y: e.clientY, t0: performance.now() });
 });
 
-resize();
+resize(); introKey = innerWidth + "x" + innerHeight + "x" + intro.clientWidth + "x" + intro.clientHeight;
 if (reduceMotion) seek(T.END);
 render(now());
 requestAnimationFrame(frame);
