@@ -16,7 +16,6 @@
 <meta name="twitter:description" content="UC Berkeley Haas, Global Management Program, intended CS double major. Product, consulting, and software I build myself.">
 <meta name="theme-color" content="#0e0e0f">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23c9a063'/%3E%3Cpath d='M8 20h48M8 32h48M8 44h48M20 8v48M32 8v48M44 8v48' stroke='%23533d1c' stroke-width='2'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%23141414'/%3E%3Ccircle cx='44' cy='20' r='9' fill='%23f3efe6'/%3E%3C/svg%3E">
-<link rel="preload" href="fonts/fraunces-name.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var m=localStorage.getItem("bg-mode");document.documentElement.dataset.theme=m==="light"?"light":"dark"}catch(e){document.documentElement.dataset.theme="dark"}</script>
 <script type="application/ld+json">
@@ -24,7 +23,6 @@
 </script>
 <style>
 @font-face { font-family: "Fraunces"; src: url(fonts/fraunces.woff2) format("woff2"); font-weight: 100 900; font-display: swap; }
-@font-face { font-family: "Fraunces Name"; src: url(fonts/fraunces-name.woff2) format("woff2"); font-weight: 700; font-display: block; }
 @font-face { font-family: "Figtree"; src: url(fonts/figtree-400.woff2) format("woff2"); font-weight: 400; font-display: swap; }
 @font-face { font-family: "Figtree"; src: url(fonts/figtree-500.woff2) format("woff2"); font-weight: 500; font-display: swap; }
 @font-face { font-family: "Figtree"; src: url(fonts/figtree-600.woff2) format("woff2"); font-weight: 600; font-display: swap; }
@@ -52,8 +50,9 @@ a:hover { text-decoration-color: var(--accent); }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* top bar */
-.top { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid transparent; transition: border-color .2s; }
+.top { position: fixed; left: 0; right: 0; top: 0; z-index: 10; opacity: 1; transition: opacity .25s, border-color .2s; background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid transparent; transition: border-color .2s; }
 .top.scrolled { border-bottom-color: var(--line); }
+.top.hide { opacity: 0; pointer-events: none; }
 .top .wrap { display: flex; align-items: center; gap: 20px; height: 60px; }
 .brand { font: 600 18px/1 var(--display); text-decoration: none; margin-right: auto; }
 .nav { display: flex; gap: 22px; font-size: 14.5px; color: var(--dim); }
@@ -65,14 +64,13 @@ a:hover { text-decoration-color: var(--accent); }
 @media (max-width: 720px) { .brand { display: none; } .nav { gap: 16px; font-size: 14px; margin-right: auto; } .top .wrap { padding: 0 16px; } .wrap { padding: 0 16px; } }
 @media (max-width: 360px) { .nav { gap: 11px; font-size: 13px; } }
 
-/* hero */
-.hero { min-height: calc(100svh - 60px); display: flex; flex-direction: column; justify-content: center; padding-top: 32px; padding-bottom: 56px; }
-.name { width: 100%; display: block; margin: 0 0 36px; }
-.name canvas { display: block; width: 100%; }
-.intro { max-width: 640px; }
-.role { font: 500 clamp(20px, 2.3vw, 24px)/1.45 var(--ui); margin: 0 0 10px; letter-spacing: -.005em; }
-.sub { color: var(--dim); margin: 0 0 28px; }
-.ctas { display: flex; flex-wrap: wrap; gap: 10px; }
+/* intro: the name in Go boards, and nothing else */
+.intro { position: relative; height: 100vh; height: 100svh; min-height: 560px; overflow: hidden; background: #0b0b0c; touch-action: pan-y; }
+.intro .bg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.stage { position: absolute; inset: 0; perspective: 1400px; perspective-origin: 50% 46%; pointer-events: none; }
+.world { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d; transform: translate3d(0, -8vh, 0) rotateX(8deg); }
+.mosaic { position: absolute; left: 0; top: 0; display: block; }
+.ctas { display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0 0; }
 .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; border: 1px solid var(--line2); text-decoration: none; font: 500 14.5px/1 var(--ui); background: none; color: var(--ink); cursor: pointer; }
 .btn:hover { border-color: var(--ink); }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
@@ -176,14 +174,14 @@ footer a { text-decoration: none; }
 footer a:hover { color: var(--ink); }
 
 @media print {
-  .top, .hero .name, .ctas, #projects details, .demo, #go, #contact form, .theme, footer { display: none !important; }
+  .top, .intro, .ctas, #projects details, .demo, #go, #contact form, .theme, footer { display: none !important; }
   body { background: #fff; color: #000; }
   section.part { padding: 24px 0; }
 }
 </style>
 </head>
 <body>
-<header class="top" id="top">
+<header class="top hide" id="top">
   <div class="wrap">
     <a class="brand" href="#">Ben Gong</a>
     <nav class="nav" aria-label="Sections">
@@ -200,28 +198,26 @@ footer a:hover { color: var(--ink); }
 </header>
 
 <main>
-<div class="wrap hero" id="home">
-  <h1 class="name"><span class="sr">Ben Gong</span><canvas id="name" aria-hidden="true"></canvas></h1>
-  <div class="intro">
-    <p class="role">Business at UC Berkeley Haas, with an intended double major in computer science.</p>
-    <p class="sub">I work on product and go-to-market, and I build software: a Polytopia AI you can play, a daily perfume game, and Go Global, the youth Go nonprofit I founded.</p>
-    <div class="ctas">
-      <a class="btn primary" href="resume/Ben_Gong_Resume.pdf" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Resume (PDF)</a>
-      <a class="btn" href="mailto:ben_gong@berkeley.edu">Email</a>
-      <a class="btn" href="https://www.linkedin.com/in/ben-gong" target="_blank" rel="noopener">LinkedIn</a>
-      <a class="btn" href="https://github.com/beng0ng" target="_blank" rel="noopener">GitHub</a>
-    </div>
-  </div>
-</div>
+<section class="intro" id="home" aria-label="Ben Gong">
+  <canvas class="bg" id="bg" aria-hidden="true"></canvas>
+  <div class="stage"><div class="world" id="world"><canvas class="mosaic" id="mosaic" aria-hidden="true"></canvas></div></div>
+  <h1 class="sr">Ben Gong</h1>
+</section>
 
 <section class="part" id="about">
   <div class="wrap head">
     <p class="kicker">About</p>
     <div>
-      <h2>Business student who builds.</h2>
+      <h2>Business at Berkeley Haas. Software on the side.</h2>
       <p class="lede">I study business at Berkeley Haas in the Global Management Program, with computer science as an intended second major. Right now I'm a contract product manager at OpenMind and an associate consultant at Lotus Foods. On the side I build things, most of them in a browser.</p>
       <p class="lede">I also play Go as a 5-dan. I played for Canada at the 2023 World Youth Go Championships (top 8, under-18), placed 6th in the Open Division of the 2024 Canadian Open, and in 2024 founded Go Global to teach the game for free.</p>
+      <div class="ctas">
+        <a class="btn primary" href="resume/Ben_Gong_Resume.pdf" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Resume (PDF)</a>
+        <a class="btn" href="mailto:ben_gong@berkeley.edu">Email</a>
+        <a class="btn" href="https://www.linkedin.com/in/ben-gong" target="_blank" rel="noopener">LinkedIn</a>
+        <a class="btn" href="https://github.com/beng0ng" target="_blank" rel="noopener">GitHub</a>
+      </div>
       <dl class="facts">
         <div><dt>Currently</dt><dd>Contract PM, OpenMind<br>Associate consultant, Lotus Foods</dd></div>
         <div><dt>Education</dt><dd>UC Berkeley, Haas School of Business<br>B.S., expected Aug 2030</dd></div>
@@ -503,71 +499,312 @@ function capture(b, p) {
   for (const q of seen) b[q] = 0;
 }
 
-// ---------- the name, spelled in small Go boards ----------
-const cv = document.getElementById("name"), ctx = cv.getContext("2d");
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-let rnd = 7; const rand = () => (rnd = (rnd * 16807) % 2147483647) / 2147483647;
-const POS = []; for (const g of GAMES) for (const k of [40, 70, 100, 130]) POS.push(playTo(g.m, k).b);
-let cells = [], cell = 10, t0 = 0, lastW = 0;
-function layout() {
-  const W = cv.parentElement.clientWidth; if (!W || W === lastW) return; lastW = W;
-  const lines = W < 560 ? ["Ben", "Gong"] : ["Ben Gong"];
-  const m = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
-  let F = 200; m.font = `700 ${F}px "Fraunces Name", Georgia, serif`;
-  const widest = Math.max(...lines.map(l => m.measureText(l).width));
-  F = Math.min(F * (W * 0.98) / widest, lines.length > 1 ? 150 : 240);
-  cell = Math.max(5, Math.round(F / 30));
-  const lh = F * 1.02, H = Math.ceil(lh * lines.length + F * 0.28);
-  m.canvas.width = W; m.canvas.height = H;
-  m.font = `700 ${F}px "Fraunces Name", Georgia, serif`; m.textBaseline = "alphabetic"; m.fillStyle = "#000";
-  lines.forEach((l, i) => m.fillText(l, 0, F * 0.86 + i * lh));
-  const d = m.getImageData(0, 0, W, H).data, hit = (x, y) => x < W && y < H && d[(y * W + x) * 4 + 3] > 128;
-  cells = []; rnd = 7;
-  for (let y = 0; y + cell <= H; y += cell) for (let x = 0; x + cell <= W; x += cell) {
-    let n = 0;
-    for (let yy = y; yy < y + cell; yy++) for (let xx = x; xx < x + cell; xx++) if (hit(xx, yy)) n++;
-    if (n >= cell * cell * 0.4) {
-      const pos = POS[(rand() * POS.length) | 0], ox = (rand() * 15) | 0, oy = (rand() * 15) | 0, st = [];
-      for (let j = 0; j < 5; j++) for (let i = 0; i < 5; i++) { const v = pos[(oy + j) * N + ox + i]; if (v) st.push([i, j, v]); }
-      cells.push({ x, y, tone: rand(), st, delay: (x / W) * 500 + rand() * 250 });
+{
+// ---------- the name, as it stood at the end of the old opening: boards in the letters, a warm halo, a slight tilt ----------
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const DISPLAY = '"Fraunces", "Iowan Old Style", "Palatino Linotype", Georgia, serif';
+const ASPECT = 1.075, MARGIN_CELLS = 0.9;
+const STARS = []; for (const c of [3, 9, 15]) for (const r of [3, 9, 15]) STARS.push([c, r]);
+const parseMoves = m => (m.match(/../g) || []).map((k, i) => ({ color: i % 2 ? "W" : "B", c: k.charCodeAt(0) - 97, r: k.charCodeAt(1) - 97, gone: -1 }));
+function simulate(list) {
+  const grid = new Array(N * N).fill(null), DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  const inside = (c, r) => c >= 0 && r >= 0 && c < N && r < N;
+  const group = start => {
+    const stones = [start], seen = new Set([start.r * N + start.c]); let libs = 0;
+    for (let i = 0; i < stones.length; i++) for (const [dc, dr] of DIRS) {
+      const c = stones[i].c + dc, r = stones[i].r + dr;
+      if (!inside(c, r) || seen.has(r * N + c)) continue;
+      seen.add(r * N + c);
+      const n = grid[r * N + c];
+      if (!n) libs++; else if (n.color === start.color) stones.push(n);
+    }
+    return { stones, libs };
+  };
+  list.forEach((m, i) => {
+    if (!inside(m.c, m.r)) return;
+    grid[m.r * N + m.c] = m;
+    for (const [dc, dr] of DIRS) {
+      const c = m.c + dc, r = m.r + dr, n = inside(c, r) ? grid[r * N + c] : null;
+      if (!n || n.color === m.color) continue;
+      const g = group(n);
+      if (g.libs === 0) for (const st of g.stones) { st.gone = i; grid[st.r * N + st.c] = null; }
+    }
+  });
+  return list;
+}
+const GM = GAMES.map(g => simulate(parseMoves(g.m)));
+
+const intro = document.getElementById("home"), bgCanvas = document.getElementById("bg"), bgCtx = bgCanvas.getContext("2d");
+const world = document.getElementById("world"), mosaicCanvas = document.getElementById("mosaic"), mctx = mosaicCanvas.getContext("2d");
+let dpr = 1, VW = 0, VH = 0, COLS = 144, ROWS = 46, P = 10, B = 8.6, lines = ["Ben Gong"];
+let tiles = [], tileGrid = new Map(), tileAtlas = null, atlasCell = 0, tileBox = 0, grainPattern = null;
+
+function drawWood(g, w, h, seed, tone) {
+  const rnd = mulberry32(seed);
+  const grad = g.createLinearGradient(0, 0, w, 0);
+  for (let i = 0; i <= 5; i++) {
+    const l = (0.86 + rnd() * 0.1) * tone;
+    grad.addColorStop(i / 5, `rgb(${Math.round(Math.min(255, 232 * l))},${Math.round(Math.min(255, 196 * l))},${Math.round(Math.min(255, 124 * l))})`);
+  }
+  g.fillStyle = grad; g.fillRect(0, 0, w, h);
+  const s = g.createLinearGradient(0, 0, w, 0);
+  s.addColorStop(0, "rgba(255,245,220,0.18)"); s.addColorStop(0.5, "rgba(120,80,30,0.08)"); s.addColorStop(1, "rgba(255,245,220,0.1)");
+  g.fillStyle = s; g.fillRect(0, 0, w, h);
+}
+function drawLines(g, x0, y0, cw, ch, lw, color) {
+  g.strokeStyle = color; g.lineWidth = lw; g.lineCap = "square";
+  g.beginPath();
+  for (let i = 0; i < N; i++) {
+    g.moveTo(x0, y0 + i * ch); g.lineTo(x0 + (N - 1) * cw, y0 + i * ch);
+    g.moveTo(x0 + i * cw, y0); g.lineTo(x0 + i * cw, y0 + (N - 1) * ch);
+  }
+  g.stroke();
+  g.fillStyle = color;
+  for (const [c, r] of STARS) { g.beginPath(); g.arc(x0 + c * cw, y0 + r * ch, Math.max(lw, cw * 0.11), 0, Math.PI * 2); g.fill(); }
+}
+function rasterizeName() {
+  const SS = 6, BASE = 44, FONT = `600 ${BASE}px ${DISPLAY}`;
+  const g = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
+  g.font = FONT;
+  const maxW = Math.max(...lines.map(l => g.measureText(l).width));
+  const k = (COLS * 0.94 * SS) / maxW;
+  let asc = 0, desc = 0;
+  for (const l of lines) { const m = g.measureText(l); asc = Math.max(asc, m.actualBoundingBoxAscent); desc = Math.max(desc, m.actualBoundingBoxDescent); }
+  const lineH = (asc + desc) * k, gap = BASE * k * 0.1;
+  const rows = Math.ceil((lines.length * lineH + (lines.length - 1) * gap) / SS) + 2;
+  const c = g.canvas;
+  c.width = COLS * SS; c.height = rows * SS;
+  g.setTransform(k, 0, 0, k, 0, 0);
+  g.font = FONT; g.fillStyle = "#fff"; g.textAlign = "center"; g.textBaseline = "alphabetic";
+  let y = (SS + asc * k) / k;
+  for (const l of lines) { g.fillText(l, c.width / 2 / k, y); y += (lineH + gap) / k; }
+  const data = g.getImageData(0, 0, c.width, c.height).data, cells = [];
+  for (let r = 0; r < rows; r++) for (let cc = 0; cc < COLS; cc++) {
+    let sum = 0;
+    for (let yy = 0; yy < SS; yy++) for (let xx = 0; xx < SS; xx++) sum += data[(((r * SS + yy) * c.width) + cc * SS + xx) * 4 + 3];
+    const cov = sum / (SS * SS * 255);
+    if (cov >= 0.22) cells.push({ c: cc, r, cov });
+  }
+  return { rows, cells };
+}
+function makeTileSprites() {
+  const out = [], box = P * 1.3, S = 2;
+  const cw = B / (N - 1 + 2 * MARGIN_CELLS), ch = cw * ASPECT, bh = B * ASPECT;
+  for (let v = 0; v < 8; v++) {
+    const c = document.createElement("canvas");
+    c.width = c.height = Math.ceil(box * dpr * S);
+    const g = c.getContext("2d"); g.scale(dpr * S, dpr * S);
+    const rnd = mulberry32(700 + v * 31);
+    const x0 = (box - B) / 2, y0 = (box - bh) / 2;
+    g.fillStyle = "rgba(0,0,0,0.35)"; g.fillRect(x0 + B * 0.04, y0 + bh * 0.08, B, bh);
+    g.fillStyle = "#8a6530"; g.fillRect(x0, y0 + bh * 0.05, B, bh);
+    g.save(); g.translate(x0, y0); g.beginPath(); g.rect(0, 0, B, bh); g.clip();
+    drawWood(g, B, bh, 300 + v, 1.0 + rnd() * 0.12);
+    drawLines(g, MARGIN_CELLS * cw, MARGIN_CELLS * ch, cw, ch, Math.max(0.06, cw * 0.08), "rgba(46,31,14,0.6)");
+    g.restore();
+    out.push(c);
+  }
+  return { sprites: out, box };
+}
+function buildMosaic() {
+  const raster = rasterizeName();
+  ROWS = raster.rows;
+  const W = intro.clientWidth, H = intro.clientHeight;
+  P = Math.min((W * 0.8) / COLS, (H * 0.44) / ROWS);
+  B = P * 0.86;
+  mosaicCanvas.width = Math.ceil(COLS * P * dpr); mosaicCanvas.height = Math.ceil(ROWS * P * dpr);
+  mosaicCanvas.style.width = (COLS * P) + "px"; mosaicCanvas.style.height = (ROWS * P) + "px";
+  mosaicCanvas.style.transform = `translate3d(${-COLS * P / 2}px, ${-ROWS * P / 2}px, 0)`;
+  const ts = makeTileSprites();
+  // the board nearest the middle of the name shows Move 37 itself
+  const heroCell = raster.cells.reduce((best, k) => {
+    const d = Math.hypot(k.c + 0.5 - COLS / 2, k.r + 0.5 - ROWS / 2);
+    return !best || d < best.d ? { ...k, d } : best;
+  }, null);
+  const rnd = mulberry32(5);
+  const cells = raster.cells.slice();
+  cells.sort((a, b) => a.c - b.c || a.r - b.r);
+  tiles = cells.map(k => {
+    rnd(); rnd();
+    const g = Math.floor(rnd() * GAMES.length), len = GM[g].length;
+    const tl = {
+      gc: k.c, gr: k.r, g, k: 14 + Math.floor(rnd() * (len - 14)),
+      x: (k.c + 0.5) * P, y: (k.r + 0.5) * P,
+      size: 0.7 + 0.3 * clamp((k.cov - 0.22) / 0.6, 0, 1),
+      sprite: ts.sprites[Math.floor(rnd() * ts.sprites.length)],
+    };
+    rnd(); rnd(); rnd();
+    return tl;
+  });
+  const ht = tiles.find(tl => tl.gc === heroCell.c && tl.gr === heroCell.r); if (ht) { ht.g = 0; ht.k = 37; }
+  tileBox = ts.box;
+  buildAtlas();
+  tileGrid = new Map();
+  for (const tl of tiles) tileGrid.set(tl.gc * 4096 + tl.gr, tl);
+}
+function buildAtlas() {
+  const n = tiles.length, cols = Math.ceil(Math.sqrt(n)), rows = Math.ceil(n / cols), cell = Math.max(8, Math.min(Math.ceil(tileBox * Math.min(dpr, 2) * 1.25), Math.floor(3072 / cols)));
+  const a = document.createElement("canvas"); a.width = cols * cell; a.height = rows * cell;
+  const g = a.getContext("2d"), sc = cell / tileBox;
+  const cw = B / (N - 1 + 2 * MARGIN_CELLS), ch = cw * ASPECT, bh = B * ASPECT;
+  const x0 = (tileBox - B) / 2, y0 = (tileBox - bh) / 2, sr = Math.max(cw * 0.5, 0.7 / sc);
+  tiles.forEach((tl, i) => {
+    const ax = (i % cols) * cell, ay = Math.floor(i / cols) * cell;
+    g.setTransform(1, 0, 0, 1, ax, ay);
+    g.drawImage(tl.sprite, 0, 0, cell, cell);
+    g.setTransform(sc, 0, 0, sc, ax + x0 * sc, ay + y0 * sc);
+    const gm = GM[tl.g], pb = new Path2D(), pw = new Path2D(), tiny = sr * sc < 2.5;
+    for (let j = 0; j < tl.k && j < gm.length; j++) {
+      const m = gm[j];
+      if (m.c < 0 || m.c >= N || m.r < 0 || m.r >= N) continue;
+      if (m.gone >= 0 && m.gone < tl.k) continue;
+      const x = MARGIN_CELLS * cw + m.c * cw, y = MARGIN_CELLS * ch + m.r * ch, pp = m.color === "B" ? pb : pw;
+      if (tiny) pp.rect(x - sr * 0.9, y - sr * 0.9, sr * 1.8, sr * 1.8); else { pp.moveTo(x + sr, y); pp.arc(x, y, sr, 0, Math.PI * 2); }
+    }
+    g.fillStyle = "#15161a"; g.fill(pb); g.fillStyle = "#f3eedf"; g.fill(pw);
+    tl.ax = ax; tl.ay = ay;
+  });
+  tileAtlas = a; atlasCell = cell;
+}
+function makeGrain() {
+  const n = 128, c = document.createElement("canvas"); c.width = c.height = n;
+  const g = c.getContext("2d"), img = g.createImageData(n, n), rnd = mulberry32(3);
+  for (let i = 0; i < img.data.length; i += 4) { const v = Math.floor(rnd() * 255); img.data[i] = v; img.data[i + 1] = v; img.data[i + 2] = v; img.data[i + 3] = 255; }
+  g.putImageData(img, 0, 0);
+  return bgCtx.createPattern(c, "repeat");
+}
+function pool(cx, cy, rx, ry, stops) {
+  const g = bgCtx;
+  g.save(); g.translate(cx, cy); g.scale(rx / ry, 1);
+  const r = g.createRadialGradient(0, 0, 0, 0, 0, ry);
+  for (const [o, c] of stops) r.addColorStop(o, c);
+  g.fillStyle = r; g.fillRect(-ry, -ry, ry * 2, ry * 2);
+  g.restore();
+}
+
+let pointer = { x: -1e4, y: -1e4, on: false, offAt: 0 }, ripples = [], hoverTile = null, rectCache = null, rectAt = -1e9;
+let yaw = 0, pitch = 0, yawT = 0, pitchT = 0, lightX = 0, lightY = 0, grainOx = 0, grainOy = 0, grainAt = -1e9, raf = 0, onScreen = true;
+
+function renderBg() {
+  const g = bgCtx, nowMs = performance.now(), span = Math.max(VW, VH);
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  let r = g.createLinearGradient(0, 0, 0, VH);
+  r.addColorStop(0, "#08080a"); r.addColorStop(0.55, "#0b0b0c"); r.addColorStop(1, "#0e0c0b");
+  g.fillStyle = r; g.fillRect(0, 0, VW, VH);
+  pool(VW / 2, VH * 0.45, Math.max(VW * 0.62, span * 0.45), VH * 0.42, [[0, "rgba(92,67,37,0.26)"], [0.5, "rgba(88,64,36,0.09)"], [1, "rgba(88,64,36,0)"]]);
+  const ir = intro.getBoundingClientRect(), nr = mosaicCanvas.getBoundingClientRect();
+  const cx = nr.left - ir.left + nr.width / 2, cy = nr.top - ir.top + nr.height / 2;
+  pool(cx, cy, Math.max(nr.width * 0.56, 1), Math.max(nr.height * 1.15, 1), [[0, "rgba(217,179,108,0.085)"], [0.55, "rgba(217,179,108,0.03)"], [1, "rgba(217,179,108,0)"]]);
+  if (pointer.on && !reduce) {
+    const tx = pointer.x - ir.left, ty = pointer.y - ir.top;
+    lightX += (tx - lightX) * 0.1; lightY += (ty - lightY) * 0.1;
+    r = g.createRadialGradient(lightX, lightY, 0, lightX, lightY, 420);
+    r.addColorStop(0, "rgba(217,179,108,0.05)"); r.addColorStop(0.5, "rgba(217,179,108,0.018)"); r.addColorStop(1, "rgba(217,179,108,0)");
+    g.fillStyle = r; g.fillRect(lightX - 420, lightY - 420, 840, 840);
+  }
+  if (!reduce && nowMs - grainAt > 90) { grainAt = nowMs; grainOx = Math.floor(Math.random() * 128); grainOy = Math.floor(Math.random() * 128); }
+  g.save(); g.translate(grainOx, grainOy); g.globalAlpha = 0.04; g.fillStyle = grainPattern; g.fillRect(-grainOx, -grainOy, VW, VH); g.restore();
+  r = g.createRadialGradient(VW / 2, VH / 2, Math.min(VW, VH) * 0.38, VW / 2, VH / 2, span * 0.8);
+  r.addColorStop(0, "rgba(0,0,0,0)"); r.addColorStop(1, "rgba(0,0,0,0.58)");
+  g.fillStyle = r; g.fillRect(0, 0, VW, VH);
+  r = g.createLinearGradient(0, 0, 0, VH * 0.35);
+  r.addColorStop(0, "rgba(0,0,0,0.28)"); r.addColorStop(1, "rgba(0,0,0,0)");
+  g.fillStyle = r; g.fillRect(0, 0, VW, VH * 0.35);
+}
+function camera() {
+  yaw += (yawT - yaw) * 0.06; pitch += (pitchT - pitch) * 0.06;
+  world.style.transform = `translate3d(0, ${(-VH * 0.08).toFixed(1)}px, 0) rotateX(${(8 + pitch).toFixed(2)}deg) rotateY(${yaw.toFixed(2)}deg)`;
+}
+function renderMosaic() {
+  mctx.setTransform(1, 0, 0, 1, 0, 0);
+  mctx.clearRect(0, 0, mosaicCanvas.width, mosaicCanvas.height);
+  mctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const nowMs = performance.now();
+  let rect = null, px = -1e4, py = -1e4;
+  if (pointer.on || ripples.length) {
+    if (nowMs - rectAt > 250) { rectCache = mosaicCanvas.getBoundingClientRect(); rectAt = nowMs; }
+    rect = rectCache;
+  }
+  const toLocal = (cx, cy) => [(cx - rect.left) / rect.width * COLS * P, (cy - rect.top) / rect.height * ROWS * P];
+  if (rect && pointer.on) [px, py] = toLocal(pointer.x, pointer.y);
+  ripples = ripples.filter(r => nowMs - r.t0 < 1600);
+  const waves = rect ? ripples.map(r => { const [x, y] = toLocal(r.x, r.y); return { x, y, rad: (nowMs - r.t0) * 0.55, age: (nowMs - r.t0) / 1600 }; }) : [];
+  const HOVER_R = Math.max(60, P * 7);
+  hoverTile = null;
+  if (pointer.on && rect) {
+    const gc = Math.floor(px / P), gr = Math.floor(py / P); let bd = P * 1.6;
+    for (let dc = -1; dc <= 1; dc++) for (let dr = -1; dr <= 1; dr++) {
+      const tl = tileGrid.get((gc + dc) * 4096 + gr + dr); if (!tl) continue;
+      const d = Math.hypot(tl.x - px, tl.y - py); if (d < bd) { bd = d; hoverTile = tl; }
     }
   }
-  const dpr = Math.min(devicePixelRatio || 1, 2);
-  cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + "px"; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  t0 = performance.now(); requestAnimationFrame(draw);
-}
-function draw(now) {
-  const W = cv.width, H = cv.height; ctx.clearRect(0, 0, W, H);
-  const light = document.documentElement.dataset.theme === "light";
-  let pending = false; const s = cell - 1, g = s / 6;
-  for (const c of cells) {
-    const a = reduce ? 1 : Math.min(1, Math.max(0, (now - t0 - c.delay) / 450));
-    if (a < 1) pending = true; if (a <= 0) continue;
-    ctx.globalAlpha = a;
-    const L = 58 + c.tone * 10; ctx.fillStyle = `hsl(37, ${light ? 50 : 46}%, ${L}%)`;
-    ctx.fillRect(c.x, c.y, s, s);
-    if (cell >= 6) {
-      ctx.strokeStyle = "rgba(70,46,14,.45)"; ctx.lineWidth = 0.6; ctx.beginPath();
-      for (let i = 1; i <= 5; i++) { const p = i * g; ctx.moveTo(c.x + p, c.y + g); ctx.lineTo(c.x + p, c.y + 5 * g); ctx.moveTo(c.x + g, c.y + p); ctx.lineTo(c.x + 5 * g, c.y + p); }
-      ctx.stroke();
+  for (const tl of tiles) {
+    let bump = 0;
+    if (!reduce) {
+      const d = Math.hypot(tl.x - px, tl.y - py);
+      if (d < HOVER_R) bump += 0.4 * Math.pow(1 - d / HOVER_R, 2);
+      if (tl === hoverTile) bump += 0.5;
+      for (const wv of waves) {
+        const dd = Math.abs(Math.hypot(tl.x - wv.x, tl.y - wv.y) - wv.rad);
+        if (dd < 70) bump += 0.35 * (1 - dd / 70) * (1 - wv.age);
+      }
     }
-    for (const [i, j, v] of c.st) {
-      ctx.fillStyle = v === 1 ? "#161514" : "#f4f1ea";
-      ctx.beginPath(); ctx.arc(c.x + (i + 1) * g, c.y + (j + 1) * g, g * 0.48, 0, 6.2832); ctx.fill();
-    }
+    const half = tileBox * tl.size * (1 + bump) / 2;
+    mctx.drawImage(tileAtlas, tl.ax, tl.ay, atlasCell, atlasCell, tl.x - half, tl.y - half - bump * P * 0.6, half * 2, half * 2);
   }
-  ctx.globalAlpha = 1;
-  if (pending) requestAnimationFrame(draw);
 }
-(document.fonts && document.fonts.load ? document.fonts.load('700 100px "Fraunces Name"').catch(() => {}) : Promise.resolve()).then(() => { lastW = 0; layout(); });
-let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(layout, 120); });
+function heroFrame() {
+  raf = 0;
+  if (pointer.offAt && performance.now() > pointer.offAt) { pointer.on = false; pointer.offAt = 0; yawT = 0; pitchT = 0; }
+  camera(); renderBg(); renderMosaic();
+  const busy = pointer.on || ripples.length || Math.abs(yawT - yaw) > 0.01 || Math.abs(pitchT - pitch) > 0.01;
+  if (busy && onScreen) raf = requestAnimationFrame(heroFrame);
+}
+var kick = () => { if (!raf) raf = requestAnimationFrame(heroFrame); };
+function resize() {
+  dpr = Math.min(1.5, devicePixelRatio || 1);
+  VW = intro.clientWidth; VH = intro.clientHeight;
+  bgCanvas.width = Math.round(VW); bgCanvas.height = Math.round(VH);
+  const narrow = VW < 640;
+  lines = narrow ? ["Ben", "Gong"] : ["Ben Gong"];
+  COLS = narrow ? 72 : 144;
+  grainPattern = makeGrain();
+  buildMosaic();
+  rectAt = -1e9;
+  heroFrame();
+}
+intro.addEventListener("pointermove", e => {
+  pointer.x = e.clientX; pointer.y = e.clientY; pointer.on = true; pointer.offAt = 0;
+  if (!reduce) { yawT = (e.clientX / VW - 0.5) * 6; pitchT = (e.clientY / VH - 0.5) * 4; }
+  kick();
+});
+intro.addEventListener("pointerleave", () => { pointer.on = false; yawT = 0; pitchT = 0; kick(); });
+intro.addEventListener("pointerdown", e => {
+  pointer.x = e.clientX; pointer.y = e.clientY; pointer.on = true;
+  if (e.pointerType !== "mouse") pointer.offAt = performance.now() + 7000;
+  ripples.push({ x: e.clientX, y: e.clientY, t0: performance.now() });
+  kick();
+});
+addEventListener("scroll", () => { rectAt = -1e9; }, { passive: true });
+if ("IntersectionObserver" in window) new IntersectionObserver(es => { onScreen = es[0].isIntersecting; if (onScreen) kick(); }).observe(intro);
+let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { if (intro.clientWidth !== VW || Math.abs(intro.clientHeight - VH) > 120) resize(); }, 120); });
+(document.fonts && document.fonts.load ? document.fonts.load('600 44px "Fraunces"').catch(() => {}) : Promise.resolve()).then(resize);
+}
 
 // ---------- theme ----------
 document.getElementById("theme").addEventListener("click", () => {
   const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
   document.documentElement.dataset.theme = next;
   try { localStorage.setItem("bg-mode", next === "light" ? "light" : "night"); } catch (e) {}
-  requestAnimationFrame(draw);
 });
 
 // ---------- top bar ----------
@@ -575,6 +812,7 @@ const top = document.getElementById("top");
 const navLinks = [...document.querySelectorAll(".nav a")];
 const secs = navLinks.map(a => document.querySelector(a.getAttribute("href")));
 function onScroll() {
+  top.classList.toggle("hide", scrollY < innerHeight * 0.6);
   top.classList.toggle("scrolled", scrollY > 8);
   let on = -1; secs.forEach((s, i) => { if (s.getBoundingClientRect().top < innerHeight * 0.35) on = i; });
   navLinks.forEach((a, i) => a.classList.toggle("on", i === on));
